@@ -145,19 +145,19 @@ public class GimbalLock implements GLEventListener, KeyListener {
         matrixStack.rotateZ(gimbalAngles.angleZ);
 
         drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Z_AXIS, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
-        
+
         programObject.bind(gl3);
         {
             matrixStack.scale(new Vec3(3.0f, 3.0f, 3.0f));
             matrixStack.rotateX(-90.0f);
-            
+
             gl3.glUniform4f(programObject.getBaseColorUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
             gl3.glUniformMatrix4fv(programObject.getModelToCameraMatUnLoc(), 1, false, matrixStack.top().toFloatArray(), 0);
-            
+
             ship.render(gl3, "tint");
         }
         programObject.unbind(gl3);
-        
+
         glad.swapBuffers();
     }
 
@@ -280,7 +280,37 @@ public class GimbalLock implements GLEventListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
 
+        float smallAngleIncrement = 9.0f;
+
         switch (e.getKeyCode()) {
+
+            case KeyEvent.VK_W:
+                gimbalAngles.angleX += smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_S:
+                gimbalAngles.angleX -= smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_A:
+                gimbalAngles.angleY += smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_D:
+                gimbalAngles.angleY -= smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_Q:
+                gimbalAngles.angleZ += smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_E:
+                gimbalAngles.angleZ -= smallAngleIncrement;
+                break;
+
+            case KeyEvent.VK_SPACE:
+                drawGimbals = !drawGimbals;
+                break;
         }
 
         canvas.display();
