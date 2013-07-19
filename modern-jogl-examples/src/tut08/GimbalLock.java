@@ -312,7 +312,6 @@ public class GimbalLock implements GLEventListener, KeyListener {
                 drawGimbals = !drawGimbals;
                 break;
         }
-
         canvas.display();
     }
 
