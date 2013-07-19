@@ -145,7 +145,6 @@ public class GimbalLock implements GLEventListener, KeyListener {
         matrixStack.rotateZ(gimbalAngles.angleZ);
 
         drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Z_AXIS, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
-
         
         programObject.bind(gl3);
         {
@@ -154,8 +153,8 @@ public class GimbalLock implements GLEventListener, KeyListener {
             
             gl3.glUniform4f(programObject.getBaseColorUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
             gl3.glUniformMatrix4fv(programObject.getModelToCameraMatUnLoc(), 1, false, matrixStack.top().toFloatArray(), 0);
-            matrixStack.top().print("matrixStack:");
-            ship.render(gl3);
+            
+            ship.render(gl3, "tint");
         }
         programObject.unbind(gl3);
         
