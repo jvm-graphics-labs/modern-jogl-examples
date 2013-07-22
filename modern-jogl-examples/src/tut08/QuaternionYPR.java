@@ -16,8 +16,8 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import jglm.Mat4;
+import jglm.Quat;
 import jglm.Vec3;
-import jglm.Vec4;
 import mesh.Mesh;
 import stack.MatrixStack;
 import tut08.glsl.GLSLProgramObject_1;
@@ -26,7 +26,7 @@ import tut08.glsl.GLSLProgramObject_1;
  *
  * @author gbarbieri
  */
-public class GimbalLock implements GLEventListener, KeyListener {
+public class QuaternionYPR implements GLEventListener, KeyListener {
 
     private int imageWidth = 800;
     private int imageHeight = 600;
@@ -46,23 +46,23 @@ public class GimbalLock implements GLEventListener, KeyListener {
     private float zNear;
     private float zFar;
     private boolean drawLookAtPoint;
-    private Mesh[] gimbals;
     private Mesh ship;
-    private float frustumScale = MatrixStack.calculatFrustumScale(20.0f);
-    private GimbalAngles gimbalAngles;
-    private boolean drawGimbals;
+    private float frustumScale;
+    private Quat orientation;
+    private boolean rightMultiply;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        GimbalLock gimbalLock = new GimbalLock();
 
-        Frame frame = new Frame("Tutorial 08 - Gimbal Lock");
+        QuaternionYPR quaternionYPR = new QuaternionYPR();
 
-        frame.add(gimbalLock.getCanvas());
+        Frame frame = new Frame("Tutorial 08 - Quaternion YPR");
 
-        frame.setSize(gimbalLock.getCanvas().getWidth(), gimbalLock.getCanvas().getHeight());
+        frame.add(quaternionYPR.getCanvas());
+
+        frame.setSize(quaternionYPR.getCanvas().getWidth(), quaternionYPR.getCanvas().getHeight());
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -74,7 +74,7 @@ public class GimbalLock implements GLEventListener, KeyListener {
         frame.setVisible(true);
     }
 
-    public GimbalLock() {
+    public QuaternionYPR() {
         initGL();
     }
 
@@ -99,6 +99,8 @@ public class GimbalLock implements GLEventListener, KeyListener {
 
         GL3 gl3 = glad.getGL().getGL3();
 
+        frustumScale = MatrixStack.calculatFrustumScale(20.0f);
+
         initializePrograms(gl3);
 
         initializeObjects(gl3);
@@ -112,8 +114,8 @@ public class GimbalLock implements GLEventListener, KeyListener {
         gl3.glDepthFunc(GL3.GL_LEQUAL);
         gl3.glDepthRangef(0.0f, 1.0f);
 
-        gimbalAngles = new GimbalAngles();
-        drawGimbals = true;
+        rightMultiply = true;
+        orientation = new Quat(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     @Override
@@ -134,17 +136,11 @@ public class GimbalLock implements GLEventListener, KeyListener {
         MatrixStack matrixStack = new MatrixStack();
 
         matrixStack.translate(new Vec3(0.0f, 0.0f, -200.0f));
-        matrixStack.rotateX(gimbalAngles.angleX);
+        matrixStack.applyMat(orientation.toMatrix());
 
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_X_AXIS, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
-
-        matrixStack.rotateY(gimbalAngles.angleY);
-
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Y_AXIS, new Vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        matrixStack.rotateZ(gimbalAngles.angleZ);
-
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Z_AXIS, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
+//        orientation.toMatrix().print("Orientation.toMartix():");
+//
+//        matrixStack.top().print("matrixStack:");
 
         programObject.bind(gl3);
         {
@@ -159,47 +155,6 @@ public class GimbalLock implements GLEventListener, KeyListener {
         programObject.unbind(gl3);
 
         glad.swapBuffers();
-    }
-
-    private void drawGimbal(GL3 gl3, MatrixStack matrixStack, GimbalAxis gimbalAxis, Vec4 baseColor) {
-
-        if (!drawGimbals) {
-            return;
-        }
-
-        int index = -1;
-
-        matrixStack.push();
-        {
-            switch (gimbalAxis) {
-
-                case GIMBAL_X_AXIS:
-                    index = 0;
-                    break;
-
-                case GIMBAL_Y_AXIS:
-                    index = 1;
-                    matrixStack.rotateZ(90.0f);
-                    matrixStack.rotateX(90.0f);
-                    break;
-
-                case GIMBAL_Z_AXIS:
-                    index = 2;
-                    matrixStack.rotateY(90.0f);
-                    matrixStack.rotateX(90.0f);
-                    break;
-            }
-
-            programObject.bind(gl3);
-            {
-                gl3.glUniform4fv(programObject.getBaseColorUnLoc(), 1, baseColor.toFloatArray(), 0);
-                gl3.glUniformMatrix4fv(programObject.getModelToCameraMatUnLoc(), 1, false, matrixStack.top().toFloatArray(), 0);
-
-                gimbals[index].render(gl3);
-            }
-            programObject.unbind(gl3);
-        }
-        matrixStack.pop();
     }
 
     @Override
@@ -223,19 +178,11 @@ public class GimbalLock implements GLEventListener, KeyListener {
     private void initializeObjects(GL3 gl3) {
         System.out.println("initializeObjects");
 
-        gimbals = new Mesh[3];
-
-        String[] gimbalNames = new String[]{"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
-
-        for (int i = 0; i < gimbals.length; i++) {
-
-            gimbals[i] = new Mesh(dataFilepath + gimbalNames[i], gl3);
-        }
-
         ship = new Mesh(dataFilepath + "Ship.xml", gl3);
     }
 
     private void initializePrograms(GL3 gl3) {
+
         System.out.println("initializePrograms...");
 
         programObject = new GLSLProgramObject_1(gl3, shadersFilepath, "PosColorLocalTransform_VS.glsl", "ColorMultUniform_FS.glsl");
@@ -256,6 +203,26 @@ public class GimbalLock implements GLEventListener, KeyListener {
             gl3.glUniformMatrix4fv(programObject.getCameraToClipMatUnLoc(), 1, false, cameraToClipMatrix.toFloatArray(), 0);
         }
         programObject.unbind(gl3);
+    }
+
+    private void offsetOrientation(Vec3 axis, float angDeg) {
+
+        float angRad = (float) Math.toRadians(angDeg);
+//        System.out.println("angRad: " + angRad);
+        axis = axis.normalize();
+//        axis.print("axis:");
+        axis = axis.times((float) Math.sin(angRad / 2.0f));
+
+        float scalar = (float) Math.cos(angRad / 2.0f);
+
+        Quat offset = new Quat(axis, scalar);
+
+        if (rightMultiply) {
+            orientation = orientation.mult(offset);
+//            orientation.print("orientation:");
+        } else {
+            orientation = offset.mult(orientation);
+        }
     }
 
     public GLCanvas getCanvas() {
@@ -285,31 +252,32 @@ public class GimbalLock implements GLEventListener, KeyListener {
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_W:
-                gimbalAngles.angleX += smallAngleIncrement;
+                offsetOrientation(new Vec3(1.0f, 0.0f, 0.0f), smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_S:
-                gimbalAngles.angleX -= smallAngleIncrement;
+                offsetOrientation(new Vec3(1.0f, 0.0f, 0.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_A:
-                gimbalAngles.angleY += smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 0.0f, 1.0f), smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_D:
-                gimbalAngles.angleY -= smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 0.0f, 1.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_Q:
-                gimbalAngles.angleZ += smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 1.0f, 0.0f), smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_E:
-                gimbalAngles.angleZ -= smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 1.0f, 0.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_SPACE:
-                drawGimbals = !drawGimbals;
+                rightMultiply = !rightMultiply;
+                System.out.println("rightMultiply: " + rightMultiply);
                 break;
         }
         canvas.display();
@@ -317,12 +285,5 @@ public class GimbalLock implements GLEventListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-    }
-
-    enum GimbalAxis {
-
-        GIMBAL_X_AXIS,
-        GIMBAL_Y_AXIS,
-        GIMBAL_Z_AXIS
     }
 }

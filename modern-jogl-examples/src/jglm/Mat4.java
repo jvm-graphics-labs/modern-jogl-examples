@@ -125,6 +125,148 @@ public class Mat4 extends Mat {
         return new Mat4(transposed);
     }
 
+    public Quat toQuaternion() {
+
+        float trace;
+        float s;
+        float x;
+        float y;
+        float z;
+        float w;
+
+//        trace = c0.x + c1.y + c2.z + 1;
+//
+//        if (trace > 0) {
+//
+//            s = 0.5f / (float) Math.sqrt(trace);
+//
+//            x = (c2.y - c1.z) * s;
+//
+//            y = (c0.z - c2.x) * s;
+//
+//            z = (c1.x - c0.y) * s;
+//
+//            w = 0.25f / s;
+//
+//        } else if (c0.x > c1.y && c0.x > c2.z) {
+//
+//            s = (float) Math.sqrt(1.0f + c0.x - c1.y - c2.z) * 2;
+//
+//            x = 0.5f / s;
+//
+//            y = (c0.y + c1.x) / s;
+//
+//            z = (c0.z + c2.x) / s;
+//
+//            w = (c1.z + c2.y) / s;
+//
+//        } else if (c1.y > c2.z) {
+//
+//            s = (float) Math.sqrt(1.0f + c1.y - c0.x - c2.z) * 2;
+//
+//            x = (c0.y + c1.x) / s;
+//
+//            y = 0.5f / s;
+//
+//            z = (c1.z + c2.y) / s;
+//
+//            w = (c0.z + c2.x) / s;
+//
+//        } else {
+//
+//            s = (float) Math.sqrt(1.0f + c2.z - c0.x - c1.y) * 2;
+//
+//            x = (c0.z + c2.x) / s;
+//
+//            y = (c1.z + c2.y) / s;
+//
+//            z = 0.5f / s;
+//
+//            w = (c0.y + c1.x) / s;
+//        }
+
+        trace = c0.x + c1.y + c2.z + 1;
+
+        if (trace > 0) {
+
+            s = 0.5f / (float) Math.sqrt(trace);
+
+            x = (c1.z - c2.y) * s;
+
+            y = (c2.x - c0.z) * s;
+
+            z = (c0.y - c1.x) * s;
+
+            w = 0.25f / s;
+
+        } else if (c0.x > c1.y && c0.x > c2.z) {
+
+            s = (float) Math.sqrt(1.0f + c0.x - c1.y - c2.z) * 2;
+
+            x = 0.5f / s;
+
+            y = (c1.x + c0.y) / s;
+
+            z = (c2.x + c0.z) / s;
+
+            w = (c2.y + c1.z) / s;
+
+        } else if (c1.y > c2.z) {
+
+            s = (float) Math.sqrt(1.0f + c1.y - c0.x - c2.z) * 2;
+
+            x = (c1.x + c0.y) / s;
+
+            y = 0.5f / s;
+
+            z = (c2.y + c1.z) / s;
+
+            w = (c2.x + c0.z) / s;
+
+        } else {
+
+            s = (float) Math.sqrt(1.0f + c2.z - c0.x - c1.y) * 2;
+
+            x = (c2.x + c0.z) / s;
+
+            y = (c2.y + c1.z) / s;
+
+            z = 0.5f / s;
+
+            w = (c1.x + c0.y) / s;
+        }
+
+        
+        Quat quat = new Quat(x, y, z, w);
+        
+        quat.normalize();
+        
+        return quat;
+    }
+    
+    public static Mat4 CalcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
+
+        Vec3 lookDir = lookPt.minus(cameraPt);
+        lookDir = lookDir.normalize();
+        Vec3 upDir = upPt.normalize();
+
+        Vec3 crossProduct = lookDir.crossProduct(upDir);
+        Vec3 rightDir = crossProduct.normalize();
+        Vec3 perpUpDir = rightDir.crossProduct(lookDir);
+
+        Mat4 rotationMat = new Mat4(1.0f);
+        rotationMat.c0 = new Vec4(rightDir, 0.0f);
+        rotationMat.c1 = new Vec4(perpUpDir, 0.0f);
+        rotationMat.c2 = new Vec4(lookDir.negated(), 0.0f);
+
+        rotationMat = rotationMat.transpose();
+
+        Mat4 translationMat = new Mat4(1.0f);
+        translationMat.c3 = new Vec4(cameraPt.negated(), 1.0f);
+
+        return rotationMat.times(translationMat);
+    }
+
     public void print() {
         System.out.println(c0.x + " " + c1.x + " " + c2.x + " " + c3.x + "\n");
         System.out.println(c0.y + " " + c1.y + " " + c2.y + " " + c3.y + "\n");

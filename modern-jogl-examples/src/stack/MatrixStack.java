@@ -31,7 +31,8 @@ public class MatrixStack {
 
         Mat4 newMat = top().times(translationMat);
 
-        matrices.set(matrices.size() - 1, newMat);
+//        matrices.set(matrices.size() - 1, newMat);
+        setTop(newMat);
     }
 
     public void scale(Vec3 scaling) {
@@ -43,7 +44,8 @@ public class MatrixStack {
 
         Mat4 newMat = top().times(scalingMat);
 
-        matrices.set(matrices.size() - 1, newMat);
+//        matrices.set(matrices.size() - 1, newMat);
+        setTop(newMat);
     }
 
     public void rotateX(float fAngDeg) {
@@ -52,7 +54,8 @@ public class MatrixStack {
 
         Mat4 newMat = top().times(rotationMat);
 
-        matrices.set(matrices.size() - 1, newMat);
+//        matrices.set(matrices.size() - 1, newMat);
+        setTop(newMat);
     }
 
     public void rotateY(float fAngDeg) {
@@ -61,7 +64,8 @@ public class MatrixStack {
 
         Mat4 newMat = top().times(rotationMat);
 
-        matrices.set(matrices.size() - 1, newMat);
+//        matrices.set(matrices.size() - 1, newMat);
+        setTop(newMat);
     }
 
     public void rotateZ(float fAngDeg) {
@@ -70,7 +74,8 @@ public class MatrixStack {
 
         Mat4 newMat = top().times(rotationMat);
 
-        matrices.set(matrices.size() - 1, newMat);
+//        matrices.set(matrices.size() - 1, newMat);
+        setTop(newMat);
     }
 
     public void perspective(float fovDeg, float aspect, float zNear, float zFar) {
@@ -85,7 +90,8 @@ public class MatrixStack {
         perspectiveMatrix.c2.w = -1.0f;
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
-        matrices.set(matrices.size() - 1, perspectiveMatrix);
+//        matrices.set(matrices.size() - 1, perspectiveMatrix);
+        setTop(perspectiveMatrix);
     }
 
     public void perspective(float fovDeg, float zNear, float zFar) {
@@ -100,7 +106,14 @@ public class MatrixStack {
         perspectiveMatrix.c2.w = -1.0f;
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
-        matrices.set(matrices.size() - 1, perspectiveMatrix);
+//        matrices.set(matrices.size() - 1, perspectiveMatrix);
+        setTop(perspectiveMatrix);
+    }
+
+    public void applyMat(Mat4 mat4) {
+
+//        setTop(mat4.times(top()));
+        setTop(top().times(mat4));
     }
 
     public static float calculatFrustumScale(float fFovDeg) {
