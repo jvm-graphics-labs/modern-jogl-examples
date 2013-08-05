@@ -52,6 +52,13 @@ public class Vec3 extends Vec {
         return new Vec3(x * scalar, y * scalar, z * scalar);
     }
 
+    public Vec3 times(Quat quat) {
+        
+        Quat inverse = quat.conjugate();
+        
+        return inverse.mult(this);
+    }
+
     public Vec3 plus(Vec3 vec3) {
 
         return new Vec3(x + vec3.x, y + vec3.y, z + vec3.z);

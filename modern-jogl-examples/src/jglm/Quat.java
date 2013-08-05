@@ -214,7 +214,7 @@ public class Quat {
         result.x = w * q.x + x * q.w + y * q.z - z * q.y;
 
         result.y = w * q.y + y * q.w + z * q.x - x * q.z;
-        
+
 //        result.y = w*q.y;
 //        System.out.println("result.y = "+result.y);
 //        result.y+=(-x*q.z);
@@ -232,10 +232,30 @@ public class Quat {
      *
      * @param n a float constant
      */
-    public void mult(float n) {
-        x *= n;
-        y *= n;
-        z *= n;
+    public Quat mult(float n) {
+
+        Quat result = new Quat(x, y, z, w);
+
+        result.x *= n;
+        result.y *= n;
+        result.z *= n;
+
+        return result;
+    }
+
+    public Vec3 mult(Vec3 v) {
+
+        Vec3 quatVector = new Vec3(x, y, z);
+
+        Vec3 uv = quatVector.crossProduct(v);
+
+        Vec3 uuv = quatVector.crossProduct(uv);
+        
+        uv = uv.times(2 * w);
+        
+        uuv = uuv.times(2);
+        
+        return v.plus(uv).plus(uuv);
     }
 
     /**
@@ -267,8 +287,8 @@ public class Quat {
 //        x = -x / norm;
 //        y = -y / norm;
 //        z = -z / norm;
-        
-        return new Quat(-x/norm, -y/norm, -z/norm, w/norm);
+
+        return new Quat(-x / norm, -y / norm, -z / norm, w / norm);
     }
 
     /**

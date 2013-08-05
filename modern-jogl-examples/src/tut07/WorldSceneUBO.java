@@ -5,7 +5,6 @@
 package tut07;
 
 import com.jogamp.opengl.util.GLBuffers;
-import glsl.GLSLProgramObject;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -24,7 +23,7 @@ import jglm.Mat4;
 import jglm.Vec3;
 import jglm.Vec4;
 import mesh.Mesh;
-import stack.MatrixStack;
+import glutil.MatrixStack;
 import tut07.glsl.GLSLProgramObject_2;
 
 /**

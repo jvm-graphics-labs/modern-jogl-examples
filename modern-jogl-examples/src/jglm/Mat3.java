@@ -31,6 +31,15 @@ public class Mat3 extends Mat {
         }
     }
 
+    public Mat3(Mat4 mat4) {
+
+        this();
+
+        c0 = new Vec3(mat4.c0.x, mat4.c0.y, mat4.c0.z);
+        c1 = new Vec3(mat4.c1.x, mat4.c1.y, mat4.c1.z);
+        c2 = new Vec3(mat4.c2.x, mat4.c2.y, mat4.c2.z);
+    }
+
     public float[] toFloatArray() {
         return new float[]{
             c0.x, c0.y, c0.z,
@@ -140,5 +149,18 @@ public class Mat3 extends Mat {
                 return c1.z;
         }
         return -1;
+    }
+
+    public void print() {
+        System.out.println(c0.x + " " + c1.x + " " + c2.x + "\n");
+        System.out.println(c0.y + " " + c1.y + " " + c2.y + "\n");
+        System.out.println(c0.z + " " + c1.z + " " + c2.z + "\n");
+    }
+
+    public void print(String title) {
+        System.out.println("" + title);
+        System.out.println(c0.x + " " + c1.x + " " + c2.x + "\n");
+        System.out.println(c0.y + " " + c1.y + " " + c2.y + "\n");
+        System.out.println(c0.z + " " + c1.z + " " + c2.z + "\n");
     }
 }

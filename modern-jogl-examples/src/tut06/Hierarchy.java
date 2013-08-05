@@ -21,7 +21,7 @@ import javax.media.opengl.awt.GLCanvas;
 import jglm.Jglm;
 import jglm.Mat4;
 import jglm.Vec3;
-import stack.MatrixStack;
+import glutil.MatrixStack;
 
 /**
  *

@@ -19,7 +19,7 @@ import jglm.Mat4;
 import jglm.Quat;
 import jglm.Vec3;
 import mesh.Mesh;
-import stack.MatrixStack;
+import glutil.MatrixStack;
 import tut08.glsl.GLSLProgramObject_1;
 
 /**

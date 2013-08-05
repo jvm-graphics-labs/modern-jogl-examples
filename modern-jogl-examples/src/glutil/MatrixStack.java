@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package stack;
+package glutil;
 
 import java.util.ArrayList;
 import jglm.Mat3;
@@ -82,7 +82,7 @@ public class MatrixStack {
 
         float frustumScale = calculatFrustumScale(fovDeg);
 
-        Mat4 perspectiveMatrix = new Mat4(1.0f);
+        Mat4 perspectiveMatrix = new Mat4();
 
         perspectiveMatrix.c0.x = frustumScale / aspect;
         perspectiveMatrix.c1.y = frustumScale;
@@ -91,14 +91,14 @@ public class MatrixStack {
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
 //        matrices.set(matrices.size() - 1, perspectiveMatrix);
-        setTop(perspectiveMatrix);
+        setTop(top().times(perspectiveMatrix));
     }
 
     public void perspective(float fovDeg, float zNear, float zFar) {
 
         float frustumScale = calculatFrustumScale(fovDeg);
 
-        Mat4 perspectiveMatrix = new Mat4(1.0f);
+        Mat4 perspectiveMatrix = new Mat4();
 
         perspectiveMatrix.c0.x = frustumScale;
         perspectiveMatrix.c1.y = frustumScale;
@@ -107,7 +107,7 @@ public class MatrixStack {
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
 //        matrices.set(matrices.size() - 1, perspectiveMatrix);
-        setTop(perspectiveMatrix);
+        setTop(top().times(perspectiveMatrix));
     }
 
     public void applyMat(Mat4 mat4) {

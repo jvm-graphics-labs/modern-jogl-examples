@@ -49,4 +49,12 @@ public class Vec4 extends Vec {
         this.w = w;
         vector = new float[]{this.x, this.y, this.z, this.w};
     }
+
+    public void print() {
+        System.out.println("(" + x + ", " + y + ", " + z + ", " + w + ")");
+    }
+
+    public void print(String title) {
+        System.out.println(title + " (" + x + ", " + y + ", " + z + ", " + w + ")");
+    }
 }

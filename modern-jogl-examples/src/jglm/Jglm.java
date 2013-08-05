@@ -47,4 +47,29 @@ public class Jglm {
 
         return value;
     }
+
+    public static Mat4 translate(Mat4 mat, Vec3 vec3) {
+
+        Mat4 result = mat;
+
+        result.c3 = mat.times(new Vec4(vec3, 1.0f));
+
+        return result;
+    }
+
+    public static Quat angleAxis(Vec3 vec3, float angle) {
+
+        Quat result = new Quat();
+
+        float a = (float) Math.toRadians(angle);
+
+        float s = (float) Math.sin(a * 0.5f);
+
+        result.x = vec3.x * s;
+        result.y = vec3.y * s;
+        result.z = vec3.z * s;
+        result.w = (float) Math.cos(a * 0.5f);
+
+        return result;
+    }
 }

@@ -87,7 +87,7 @@ public class Mat4 extends Mat {
     }
 
     public Mat4 times(Mat4 second) {
-        float[] newMatrix = new float[16];
+        float[] result = new float[16];
         float partial;
 
 //        System.out.println("this: ");
@@ -107,11 +107,30 @@ public class Mat4 extends Mat {
 //                            + (this.toFloatArray()[4 * k + j] * second.toFloatArray()[4 * i + k]) + " partial: " + partial);
                 }
 
-                newMatrix[4 * i + j] = partial;
+                result[4 * i + j] = partial;
             }
         }
 
-        return new Mat4(newMatrix);
+        return new Mat4(result);
+    }
+
+    public Vec4 times(Vec4 second) {
+
+        float[] result = new float[4];
+        float partial;
+
+        for (int i = 0; i < order; i++) {
+
+            partial = 0;
+
+            for (int j = 0; j < order; j++) {
+
+                partial += this.toFloatArray()[4 * j + i] * second.toFloatArray()[j];
+            }
+            result[i] = partial;
+        }
+        
+        return new Vec4(result);
     }
 
     public Mat4 transpose() {
@@ -236,14 +255,14 @@ public class Mat4 extends Mat {
             w = (c1.x + c0.y) / s;
         }
 
-        
+
         Quat quat = new Quat(x, y, z, w);
-        
+
         quat.normalize();
-        
+
         return quat;
     }
-    
+
     public static Mat4 CalcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
 
         Vec3 lookDir = lookPt.minus(cameraPt);
