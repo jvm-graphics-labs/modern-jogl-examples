@@ -113,7 +113,7 @@ public class GLSLProgramObject {
     }
 
     public void bindTextureRECT(GL3 gl3, String texname, int texid, int texunit) {
-        bindTexture(gl3, GL3.GL_TEXTURE_RECTANGLE_ARB, texname, texid, texunit);
+        bindTexture(gl3, GL3.GL_TEXTURE_RECTANGLE, texname, texid, texunit);
     }
 
     public final void attachVertexShader(GL3 gl3, String filename) {

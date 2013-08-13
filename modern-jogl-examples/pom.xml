@@ -1,0 +1,68 @@
+<!-- maven pom file to build and run the modern-jogl-examples
+     ported to JOGL 2 from the www.arcsynthesis.org/gltut book
+-->
+<project> 
+
+    <!-- This is the 4 required maven project lines
+         all maven projects require these to be set
+         http://maven.apache.org/guides/introduction/introduction-to-the-pom.html
+    -->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.arcsynthesis.gltut</groupId>
+    <artifactId>modern-jogl-examples</artifactId>
+    <version>0</version>
+
+    <!-- modern-jogl-examples depends on JogAmp gluegen and jogl
+         these dependencies will be downloaded from maven central
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt-main</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all-main</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+    </dependencies>
+
+    <!-- maven can build the entire project in one commandline
+             mvn install
+    --> 
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+
+        <!-- include all files in the src dir into the generated jar
+             this is a catch all in order to include all shaders
+             used by the tutorials
+        -->
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- You can run examples using maven
+             mvn exec:java -Dexec.mainClass="tut08.CameraRelative"
+
+         the following properties file will set a default mainClass
+             mvn exec:java
+    -->
+    <properties>
+        <exec.mainClass>tut01.Tut01</exec.mainClass>
+    </properties>
+</project>
