@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package depthpeeling;
+package depthpeelingGL2;
 
 import com.jogamp.opengl.util.GLBuffers;
 import java.awt.Frame;
@@ -53,9 +53,9 @@ public class DepthPeeling implements GLEventListener, KeyListener, MouseListener
     private boolean panning = false;
     private boolean scaling = false;
 //    private float[] rot = new 
-//    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\Frontlader5.stl";
+    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\Frontlader5.stl";
 //    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\ATLAS_RADLADER.stl";
-    private String filename = "C:\\temp\\model.stl";
+//    private String filename = "C:\\temp\\model.stl";
     private float[] min = new float[3];
     private float[] max = new float[3];
     private int[] drawnBuffers = new int[]{

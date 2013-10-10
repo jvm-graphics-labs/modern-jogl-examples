@@ -1,4 +1,4 @@
-package depthpeeling;
+package depthpeelingGL2;
 
 // Translated from C++ Version see below:
 //
@@ -22,6 +22,8 @@ import java.net.URL;
 
 public class GLSLProgramObject {
 
+    private String shadersFilepath = "/depthpeelingGL2/shaders/";
+    
     public GLSLProgramObject() {
         _progId = 0;
     }
@@ -105,7 +107,7 @@ public class GLSLProgramObject {
 //        URL fileURL = getClass().getClassLoader().getResource(
 //                File.separator + "depthPeeling"
 //                + File.separator + "shaders" + File.separator + filename);
-        String resourcePath = "/depthpeeling/shaders/" + filename;
+        String resourcePath = shadersFilepath + filename;
         URL fileURL = getClass().getResource(resourcePath);
         if (fileURL != null) {
             String content = "";
@@ -166,7 +168,7 @@ public class GLSLProgramObject {
 //        URL fileURL = getClass().getClassLoader().getResource(
 //                File.separator + "depthPeeling"
 //                + File.separator + "shaders" + File.separator + filename);
-        String resourcePath = "/depthpeeling/shaders/" + filename;
+        String resourcePath = shadersFilepath + filename;
         URL fileURL = getClass().getResource(resourcePath);
         if (fileURL != null) {
             String content = "";
