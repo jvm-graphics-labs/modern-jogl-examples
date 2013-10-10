@@ -43,6 +43,8 @@ public class MatrixStack {
         scalingMat.c2.z = scaling.z;
 
         Mat4 newMat = top().times(scalingMat);
+        
+//        newMat.print("scaling mat");
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
@@ -76,38 +78,6 @@ public class MatrixStack {
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
-    }
-
-    public void perspective(float fovDeg, float aspect, float zNear, float zFar) {
-
-        float frustumScale = calculatFrustumScale(fovDeg);
-
-        Mat4 perspectiveMatrix = new Mat4();
-
-        perspectiveMatrix.c0.x = frustumScale / aspect;
-        perspectiveMatrix.c1.y = frustumScale;
-        perspectiveMatrix.c2.z = (zFar + zNear) / (zNear - zFar);
-        perspectiveMatrix.c2.w = -1.0f;
-        perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
-
-//        matrices.set(matrices.size() - 1, perspectiveMatrix);
-        setTop(top().times(perspectiveMatrix));
-    }
-
-    public void perspective(float fovDeg, float zNear, float zFar) {
-
-        float frustumScale = calculatFrustumScale(fovDeg);
-
-        Mat4 perspectiveMatrix = new Mat4();
-
-        perspectiveMatrix.c0.x = frustumScale;
-        perspectiveMatrix.c1.y = frustumScale;
-        perspectiveMatrix.c2.z = (zFar + zNear) / (zNear - zFar);
-        perspectiveMatrix.c2.w = -1.0f;
-        perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
-
-//        matrices.set(matrices.size() - 1, perspectiveMatrix);
-        setTop(top().times(perspectiveMatrix));
     }
 
     public void applyMat(Mat4 mat4) {

@@ -45,4 +45,8 @@ public class ViewData {
     public void setOrient(Quat orient) {
         this.orient = orient;
     }
+
+    public void setDegSpinRotation(float degSpinRotation) {
+        this.degSpinRotation = degSpinRotation;
+    }
 }

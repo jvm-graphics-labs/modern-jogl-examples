@@ -23,15 +23,15 @@ public class GLSLProgramObject_1 extends GLSLProgramObject {
     public GLSLProgramObject_1(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int projectionBlockIndex) {
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
 
-        modelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgId(), "modelToCameraMatrix");
-        normalModelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgId(), "normalModelToCameraMatrix");
-        cameraToClipMatUnLoc = gl3.glGetUniformLocation(getProgId(), "cameraToClipMatrix");
+        modelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");
+        normalModelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgramId(), "normalModelToCameraMatrix");
+        cameraToClipMatUnLoc = gl3.glGetUniformLocation(getProgramId(), "cameraToClipMatrix");
 
-        dirToLightUnLoc = gl3.glGetUniformLocation(getProgId(), "dirToLight");
-        lightIntensityUnLoc = gl3.glGetUniformLocation(getProgId(), "lightIntensity");
+        dirToLightUnLoc = gl3.glGetUniformLocation(getProgramId(), "dirToLight");
+        lightIntensityUnLoc = gl3.glGetUniformLocation(getProgramId(), "lightIntensity");
 
-        projectionUBI = gl3.glGetUniformBlockIndex(getProgId(), "Projection");
-        gl3.glUniformBlockBinding(getProgId(), projectionUBI, projectionBlockIndex);
+        projectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "Projection");
+        gl3.glUniformBlockBinding(getProgramId(), projectionUBI, projectionBlockIndex);
     }
 
     public int getModelToCameraMatUnLoc() {

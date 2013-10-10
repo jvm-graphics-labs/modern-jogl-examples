@@ -17,13 +17,13 @@ public class GLSLProgramObject_2 extends GLSLProgramObject_1 {
     public GLSLProgramObject_2(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int globalMatricesBindingIndex) {
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
 
-        setModelToWorldMatUnLoc(gl3.glGetUniformLocation(getProgId(), "modelToWorldMatrix"));
-        setWorldToCameraMatUnLoc(gl3.glGetUniformLocation(getProgId(), "worldToCameraMatrix"));
-        setCameraToClipMatUnLoc(gl3.glGetUniformLocation(getProgId(), "cameraToClipMatrix"));
-        setBaseColorUnLoc(gl3.glGetUniformLocation(getProgId(), "baseColor"));
+        setModelToWorldMatUnLoc(gl3.glGetUniformLocation(getProgramId(), "modelToWorldMatrix"));
+        setWorldToCameraMatUnLoc(gl3.glGetUniformLocation(getProgramId(), "worldToCameraMatrix"));
+        setCameraToClipMatUnLoc(gl3.glGetUniformLocation(getProgramId(), "cameraToClipMatrix"));
+        setBaseColorUnLoc(gl3.glGetUniformLocation(getProgramId(), "baseColor"));
 
-        globalUniformBlockIndex = gl3.glGetUniformBlockIndex(getProgId(), "GlobalMatrices");
+        globalUniformBlockIndex = gl3.glGetUniformBlockIndex(getProgramId(), "GlobalMatrices");
 
-        gl3.glUniformBlockBinding(getProgId(), globalUniformBlockIndex, globalMatricesBindingIndex);
+        gl3.glUniformBlockBinding(getProgramId(), globalUniformBlockIndex, globalMatricesBindingIndex);
     }
 }

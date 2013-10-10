@@ -28,6 +28,9 @@ import glutil.ViewScale;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import jglm.Jglm;
 import jglm.Mat3;
 import jglm.Vec4;
 import tut09.glsl.GLSLProgramObject_1;
@@ -36,7 +39,7 @@ import tut09.glsl.GLSLProgramObject_1;
  *
  * @author gbarbieri
  */
-public class BasicLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener {
+public class BasicLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     private int imageWidth = 800;
     private int imageHeight = 600;
@@ -138,6 +141,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
         initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
+
         viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f / 250.0f);
 
         viewPole = new ViewPole(initialViewData, viewScale);
@@ -255,7 +259,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
         MatrixStack perspectiveMatrix = new MatrixStack();
 
-        perspectiveMatrix.perspective(45.0f, (float) w / (float) h, zNear, zFar);
+        perspectiveMatrix.setTop(Jglm.perspective(45.0f, (float) w / (float) h, zNear, zFar));
 
         perspectiveMatrix.top().print("perspectiveMatrix.top()");
 
@@ -312,18 +316,19 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
     @Override
     public void mousePressed(MouseEvent e) {
-        
+
         viewPole.mousePressed(e);
         objectPole.mousePressed(e);
-        
+
         canvas.display();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        
-        viewPole.mouseRelease(e);
-        
+
+        viewPole.mouseReleased(e);
+        objectPole.mouseReleased(e);
+
         canvas.display();
     }
 
@@ -358,14 +363,21 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        
+
         viewPole.mouseMove(e);
-        
+        objectPole.mouseMove(e);
+
         canvas.display();
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        
+//        viewPole.
     }
 
     public enum RotatingMode {

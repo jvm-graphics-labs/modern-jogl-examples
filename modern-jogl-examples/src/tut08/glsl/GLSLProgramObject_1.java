@@ -20,9 +20,9 @@ public class GLSLProgramObject_1 extends GLSLProgramObject{
     public GLSLProgramObject_1(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader) {
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
 
-        modelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgId(), "modelToCameraMatrix");
-        cameraToClipMatUnLoc = gl3.glGetUniformLocation(getProgId(), "cameraToClipMatrix");
-        baseColorUnLoc = gl3.glGetUniformLocation(getProgId(), "baseColor");
+        modelToCameraMatUnLoc = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");
+        cameraToClipMatUnLoc = gl3.glGetUniformLocation(getProgramId(), "cameraToClipMatrix");
+        baseColorUnLoc = gl3.glGetUniformLocation(getProgramId(), "baseColor");
     }
 
     public int getModelToCameraMatUnLoc() {

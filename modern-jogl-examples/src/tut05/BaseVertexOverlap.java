@@ -258,7 +258,7 @@ public class BaseVertexOverlap implements GLEventListener {
 
         programObject.bind(gl3);
         {
-            int perspectiveMatrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "perspectiveMatrix");
+            int perspectiveMatrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "perspectiveMatrix");
             gl3.glUniformMatrix4fv(perspectiveMatrixLocation, 1, false, perspectiveMatrix, 0);
         }
         programObject.unbind(gl3);
@@ -310,7 +310,7 @@ public class BaseVertexOverlap implements GLEventListener {
             perspectiveMatrix[14] = (2 * fzFar * fzNear) / (fzNear - fzFar);
             perspectiveMatrix[11] = -1.0f;
 
-            int matrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "perspectiveMatrix");
+            int matrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "perspectiveMatrix");
             gl3.glUniformMatrix4fv(matrixLocation, 1, false, perspectiveMatrix, 0);
         }
         programObject.unbind(gl3);

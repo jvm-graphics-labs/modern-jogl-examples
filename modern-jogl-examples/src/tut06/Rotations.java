@@ -197,7 +197,7 @@ public class Rotations implements GLEventListener {
 
         programObject.bind(gl3);
         {
-            int cameraToClipMatrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "cameraToClipMatrix");
+            int cameraToClipMatrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "cameraToClipMatrix");
             gl3.glUniformMatrix4fv(cameraToClipMatrixLocation, 1, false, cameraToClipMatrix.toFloatArray(), 0);
         }
         programObject.unbind(gl3);
@@ -249,10 +249,10 @@ public class Rotations implements GLEventListener {
             cameraToClipMatrix.c2.w = -1.0f;
             cameraToClipMatrix.c3.z = (2 * fzFar * fzNear) / (fzNear - fzFar);
 
-            int cameraToClipMatrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "cameraToClipMatrix");
+            int cameraToClipMatrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "cameraToClipMatrix");
             gl3.glUniformMatrix4fv(cameraToClipMatrixLocation, 1, false, cameraToClipMatrix.toFloatArray(), 0);
 
-            modelToCameraMatrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "modelToCameraMatrix");
+            modelToCameraMatrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "modelToCameraMatrix");
         }
         programObject.unbind(gl3);
     }

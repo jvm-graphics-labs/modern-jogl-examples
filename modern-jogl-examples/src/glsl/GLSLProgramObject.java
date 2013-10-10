@@ -31,16 +31,30 @@ public class GLSLProgramObject {
         _progId = 0;
     }
 
-    public GLSLProgramObject(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader){
-        
+    public GLSLProgramObject(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader) {
+
         this(gl3);
-        
+
         attachVertexShader(gl3, shadersFilepath + vertexShader);
         attachFragmentShader(gl3, shadersFilepath + fragmentShader);
-        
+
         initializeProgram(gl3, true);
     }
-    
+
+    public GLSLProgramObject(GL3 gl3, String shadersFilepath, String[] vertexShaders, String[] fragmentShaders) {
+
+        this(gl3);
+
+        for (String vertexShader : vertexShaders) {
+            attachVertexShader(gl3, shadersFilepath + vertexShader);
+        }
+        for (String fragmentShader : fragmentShaders) {
+            attachFragmentShader(gl3, shadersFilepath + fragmentShader);
+        }
+
+        initializeProgram(gl3, true);
+    }
+
     public void destroy(GL3 gl3) {
         for (int i = 0; i < _vertexShaders.size(); i++) {
             gl3.glDeleteShader(_vertexShaders.get(i));
@@ -292,7 +306,7 @@ public class GLSLProgramObject {
         }
     }
 
-    public Integer getProgId() {
+    public Integer getProgramId() {
         return _progId;
     }
 };

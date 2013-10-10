@@ -195,11 +195,11 @@ public class WorldSceneUBO implements GLEventListener, KeyListener {
                 {
                     modelMatrix.translate(camTarget);
                     modelMatrix.scale(new Vec3(1.0f, 1.0f, 1.0f));
-                    
+
                     objectColor.bind(gl3);
                     {
                         gl3.glUniformMatrix4fv(objectColor.getModelToWorldMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
-                        
+
                         cubeColor.render(gl3);
                     }
                     objectColor.unbind(gl3);
@@ -470,7 +470,7 @@ public class WorldSceneUBO implements GLEventListener, KeyListener {
 
         MatrixStack perspectiveMatrix = new MatrixStack();
 
-        perspectiveMatrix.perspective(45.0f, w / (float) h, zNear, zFar);
+        perspectiveMatrix.setTop(Jglm.perspective(45.0f, w / (float) h, zNear, zFar));
 
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, globalMatricesUBO[0]);
         {

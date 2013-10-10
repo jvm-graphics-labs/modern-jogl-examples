@@ -167,7 +167,7 @@ public class MatrixPerspective implements GLEventListener {
             matrix[14] = (2 * fzFar * fzNear) / (fzNear - fzFar);
             matrix[11] = -1.0f;
             
-            int matrixLocation = gl3.glGetUniformLocation(programObject.getProgId(), "perspectiveMatrix");
+            int matrixLocation = gl3.glGetUniformLocation(programObject.getProgramId(), "perspectiveMatrix");
             gl3.glUniformMatrix4fv(matrixLocation, 1, false, matrix, 0);
         }
         programObject.unbind(gl3);

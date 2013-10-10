@@ -24,6 +24,7 @@ void main()
     vec3 normalCamSpace = normalize(normalModelToCameraMatrix * normal);
 
     float cosIncidenceAngle = dot(normalCamSpace, dirToLight);
+
     cosIncidenceAngle = clamp(cosIncidenceAngle, 0, 1);
 
     interpColor = lightIntensity * diffuseColor * cosIncidenceAngle;

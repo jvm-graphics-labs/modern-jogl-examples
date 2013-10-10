@@ -4,6 +4,8 @@
  */
 package jglm;
 
+import static glutil.MatrixStack.calculatFrustumScale;
+
 /**
  *
  * @author gbarbieri
@@ -64,6 +66,8 @@ public class Jglm {
         float a = (float) Math.toRadians(angle);
 
         float s = (float) Math.sin(a * 0.5f);
+        
+        vec3.normalize();
 
         result.x = vec3.x * s;
         result.y = vec3.y * s;
@@ -71,5 +75,65 @@ public class Jglm {
         result.w = (float) Math.cos(a * 0.5f);
 
         return result;
+    }
+
+    public static Mat4 perspective(float fovDeg, float aspect, float zNear, float zFar) {
+
+        float frustumScale = calculatFrustumScale(fovDeg);
+
+        Mat4 perspectiveMatrix = new Mat4();
+
+        perspectiveMatrix.c0.x = frustumScale / aspect;
+        perspectiveMatrix.c1.y = frustumScale;
+        perspectiveMatrix.c2.z = (zFar + zNear) / (zNear - zFar);
+        perspectiveMatrix.c2.w = -1.0f;
+        perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
+
+//        matrices.set(matrices.size() - 1, perspectiveMatrix);
+//        setTop(top().times(perspectiveMatrix));
+
+        return perspectiveMatrix;
+    }
+
+    public static Mat4 perspective(float fovDeg, float zNear, float zFar) {
+
+        float frustumScale = calculatFrustumScale(fovDeg);
+
+        Mat4 perspectiveMatrix = new Mat4();
+
+        perspectiveMatrix.c0.x = frustumScale;
+        perspectiveMatrix.c1.y = frustumScale;
+        perspectiveMatrix.c2.z = (zFar + zNear) / (zNear - zFar);
+        perspectiveMatrix.c2.w = -1.0f;
+        perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
+
+//        matrices.set(matrices.size() - 1, perspectiveMatrix);
+//        setTop(top().times(perspectiveMatrix));
+
+        return perspectiveMatrix;
+    }
+
+    public static Mat4 orthographic(float left, float right, float bottom, float top, float nearVal, float farVal) {
+
+        Mat4 orthographicMatric = new Mat4(1.0f);
+
+        orthographicMatric.c0.x = 2 / (right - left);
+
+        orthographicMatric.c1.y = 2 / (top - bottom);
+
+        orthographicMatric.c2.z = -2 / (farVal - nearVal);
+
+        orthographicMatric.c3.x = -(right + left) / (right - left);
+
+        orthographicMatric.c3.y = -(top + bottom) / (top - bottom);
+
+        orthographicMatric.c3.z = -(farVal + nearVal) / (farVal - nearVal);
+        
+        return orthographicMatric;
+    }
+    
+    public static Mat4 orthographic2D(float left, float right, float bottom, float top) {
+
+        return orthographic(left, right, bottom, top, -1.0f, 1.0f);
     }
 }

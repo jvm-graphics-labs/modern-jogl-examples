@@ -5,6 +5,7 @@
 package glutil;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
 import jglm.Jglm;
 import jglm.Mat4;
@@ -42,6 +43,8 @@ public class ViewPole {
         Mat4 mat = new Mat4(1.0f);
 
         mat = Jglm.translate(mat, new Vec3(0.0f, 0.0f, -currView.getRadius()));
+//        System.out.println("currView.getRadius(): "+(-currView.getRadius()));
+//        mat.print("mat");
 
         Quat fullRotation = Jglm.angleAxis(new Vec3(0.0f, 0.0f, 1.0f), currView.getDegSpinRotation());
         fullRotation = fullRotation.mult(currView.getOrient());
@@ -54,11 +57,11 @@ public class ViewPole {
     }
 
     public void mousePressed(MouseEvent mouseEvent) {
-        
+
         if (!isDragging) {
-            
+
             if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
-                
+
                 Vec2 position = new Vec2(mouseEvent.getX(), mouseEvent.getY());
 
                 if (mouseEvent.isControlDown()) {
@@ -70,7 +73,7 @@ public class ViewPole {
                     beginDragRotate(position, RotatingMode.SPIN);
 
                 } else {
-                    
+
                     beginDragRotate(position, RotatingMode.DUAL_AXIS);
                 }
             }
@@ -91,9 +94,9 @@ public class ViewPole {
     }
 
     public void mouseMove(MouseEvent mouseEvent) {
-        
+
         if (isDragging) {
-            
+
             onDragRotate(mouseEvent);
         }
     }
@@ -101,7 +104,7 @@ public class ViewPole {
     private void onDragRotate(MouseEvent mouseEvent) {
 
         Vec2 current = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-        
+
         current = current.minus(startDragMouseLoc);
 
         switch (rotatingMode) {
@@ -109,23 +112,34 @@ public class ViewPole {
             case DUAL_AXIS:
                 processXYchange(current);
                 break;
+
+            case SPIN:
+                processSpinAxis(current);
+                break;
         }
     }
 
     private void processXYchange(Vec2 diff) {
-        
+
         diff = diff.times(viewScale.getRotationScale());
 
         Quat yWorldSpace = Jglm.angleAxis(new Vec3(0.0f, 1.0f, 0.0f), diff.x);
 
         currView.setOrient(startDragOrient.mult(yWorldSpace));
-        
+
         Quat xLocalSpace = Jglm.angleAxis(new Vec3(1.0f, 0.0f, 0.0f), diff.y);
 
         currView.setOrient(xLocalSpace.mult(currView.getOrient()));
     }
 
-    public void mouseRelease(MouseEvent mouseEvent) {
+    private void processSpinAxis(Vec2 diff) {
+
+        float degSpinDiff = diff.x * viewScale.getRotationScale();
+
+        currView.setDegSpinRotation(degSpinDiff + degStartDragSpin);
+    }
+
+    public void mouseReleased(MouseEvent mouseEvent) {
 
         if (isDragging) {
 
@@ -140,9 +154,9 @@ public class ViewPole {
     }
 
     private void endDragRotate(MouseEvent mouseEvent) {
-        
+
         onDragRotate(mouseEvent);
-        
+
         isDragging = false;
     }
 }

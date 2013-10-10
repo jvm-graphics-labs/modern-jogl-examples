@@ -85,6 +85,32 @@ public class Quat {
         return vec;
     }
 
+    public void printEulerAngles() {
+
+        double heading, attitude, bank;
+
+        double test = x * y + z * w;
+
+        if (test > 0.499) { // singularity at north pole
+            heading = 2 * Math.atan2(x, w);
+            attitude = Math.PI / 2;
+            bank = 0;
+        }
+        if (test < -0.499) { // singularity at south pole
+            heading = -2 * Math.atan2(x, w);
+            attitude = -Math.PI / 2;
+            bank = 0;
+        }
+        double sqx = x * x;
+        double sqy = y * y;
+        double sqz = z * z;
+        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz);
+        attitude = Math.asin(2 * test);
+        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz);
+
+        System.out.println("heading: " + heading + " attitude: " + attitude + " bank: " + bank + " ");
+    }
+
     /**
      * Normalize a vector
      *
@@ -250,11 +276,11 @@ public class Quat {
         Vec3 uv = quatVector.crossProduct(v);
 
         Vec3 uuv = quatVector.crossProduct(uv);
-        
+
         uv = uv.times(2 * w);
-        
+
         uuv = uuv.times(2);
-        
+
         return v.plus(uv).plus(uuv);
     }
 

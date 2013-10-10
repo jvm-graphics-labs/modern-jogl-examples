@@ -477,7 +477,7 @@ public class WorldScene implements GLEventListener, KeyListener {
 
         MatrixStack perspectiveMatrix = new MatrixStack();
 
-        perspectiveMatrix.perspective(45.0f, w / (float) h, zNear, zFar);
+        perspectiveMatrix.setTop(Jglm.perspective(45.0f, w / (float) h, zNear, zFar));
 
         uniformColor.bind(gl3);
         {

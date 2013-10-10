@@ -41,6 +41,7 @@ public class Mat3 extends Mat {
     }
 
     public float[] toFloatArray() {
+        
         return new float[]{
             c0.x, c0.y, c0.z,
             c1.x, c1.y, c1.z,

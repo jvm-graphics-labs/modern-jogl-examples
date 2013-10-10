@@ -75,6 +75,17 @@ public class ObjectPole {
             }
         }
     }
+    
+    public void mouseReleased(MouseEvent mouseEvent){
+        
+        if(isDragging){
+            
+            if(SwingUtilities.isRightMouseButton(mouseEvent)){
+                
+                mouseMove(mouseEvent);
+            }
+        }
+    }
 
     public void mouseMove(MouseEvent mouseEvent) {
 
