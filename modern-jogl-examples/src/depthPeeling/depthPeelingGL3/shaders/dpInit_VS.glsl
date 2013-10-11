@@ -12,6 +12,7 @@
 layout (location = 0) in vec4 position;
 
 layout(std140) uniform mvpMatrixes  {
+
     mat4 projectionMatrix;
     mat4 cameraMatrix;
 };

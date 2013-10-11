@@ -9,14 +9,12 @@
 
 #version 330
 
-out vec4 outputColor;
+vec4 ShadeFragment();
 
-uniform float Alpha;
+out vec4 outputColor;
 
 void main(void)
 {
-	vec4 color;
-	color.rgb = vec3(.4,.85,.0);
-
-	outputColor = vec4(color.rgb * Alpha, 1.0 - Alpha);
+	vec4 color = ShadeFragment();
+	outputColor = vec4(color.rgb * color.a, 1.0 - color.a);
 }

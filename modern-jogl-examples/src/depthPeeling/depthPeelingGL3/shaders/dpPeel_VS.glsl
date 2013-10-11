@@ -7,10 +7,17 @@
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-vec3 ShadeVertex();
+#version 330
+
+layout (location = 0) in vec4 position;
+
+layout(std140) uniform mvpMatrixes  {
+
+    mat4 projectionMatrix;
+    mat4 cameraMatrix;
+};
 
 void main(void)
 {
-	gl_Position = ftransform();
-	gl_TexCoord[0].xyz = ShadeVertex();
+	gl_Position = projectionMatrix * cameraMatrix * position;
 }

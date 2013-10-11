@@ -7,11 +7,17 @@
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-uniform samplerRECT ColorTex;
+#version 330
+
+uniform samplerRect ColorTex;
 uniform vec3 BackgroundColor;
+
+out vec4 outputColor;
 
 void main(void)
 {
-	vec4 frontColor = textureRect(ColorTex, gl_FragCoord.xy);
-	gl_FragColor.rgb = frontColor + BackgroundColor * frontColor.a;
+	vec4 frontColor = texture(ColorTex, gl_FragCoord.xy);
+	//gl_FragColor.rgb = frontColor + BackgroundColor * frontColor.a;
+	outputColor.rgb = frontColor.rgb + BackgroundColor * frontColor.a;
+	outputColor.a = 1.0f;
 }

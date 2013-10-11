@@ -12,7 +12,7 @@ uniform float Alpha;
 #define COLOR_FREQ 30.0
 #define ALPHA_FREQ 30.0
 
-#if 1
+#if 0
 vec4 ShadeFragment()
 {
 	float xWorldPos = gl_TexCoord[0].x;

@@ -7,6 +7,8 @@
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
+#version 330
+
 uniform float Alpha;
 
 vec4 ShadeFragment()
@@ -16,4 +18,3 @@ vec4 ShadeFragment()
 	color.a = Alpha;
 	return color;
 }
-

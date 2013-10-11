@@ -54,7 +54,7 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
     private boolean panning = false;
     private boolean scaling = false;
 //    private float[] rot = new 
-//    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\Frontlader5.stl";
+//    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\Frontlader5_3.stl";
     private String filename = "/depthPeeling/data/Frontlader5.stl";
 //    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\ATLAS_RADLADER.stl";
 //    private String filename = "C:\\temp\\model.stl";
@@ -79,7 +79,7 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
     private float[] rot = new float[]{0.0f, 0.0f};
     private float[] transl = new float[]{0.0f, 0.0f, 0.0f};
     private float scale = 1.0f;
-    private float[] opacity = new float[]{0.6f};
+    private float[] opacity = new float[]{0.1f};
     private int quadDisplayList;
     private float[] backgroundColor = new float[]{1.0f, 1.0f, 1.0f};
     private FloatBuffer primitiveData;
@@ -403,7 +403,7 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
 
     @Override
     public void display(GLAutoDrawable glad) {
-//        System.out.println("display");
+        System.out.println("display, passesNumber: "+passesNumber);
 
         GL2 gl2 = glad.getGL().getGL2();
         GLU glu = GLU.createGLU(gl2);
@@ -452,11 +452,13 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
          */
         int layersNumber = (passesNumber - 1) * 2;
 //        System.out.println("layersNumber: " + layersNumber);
-        for (int layer = 1; layer < layersNumber; layer++) {
+        for (int layer = 1; layer < 2; layer++) {
+            
             int currentId = layer % 2;
             int previousId = 1 - currentId;
 
-            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[currentId]);
+//            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[currentId]);
+            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
             gl2.glDrawBuffer(drawnBuffers[0]);
 
             gl2.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -497,15 +499,15 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
         /**
          * (3) Final pass.
          */
-        gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-        gl2.glDrawBuffer(GL2.GL_BACK);
-        gl2.glDisable(GL2.GL_DEPTH_TEST);
-
-        shaderFinal.bind(gl2);
-        shaderFinal.setUniform(gl2, "BackgroundColor", backgroundColor, 3);
-        shaderFinal.bindTextureRECT(gl2, "ColorTex", colorBlenderTextureId[0], 0);
-        gl2.glCallList(quadDisplayList);
-        shaderFinal.unbind(gl2);
+//        gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+//        gl2.glDrawBuffer(GL2.GL_BACK);
+//        gl2.glDisable(GL2.GL_DEPTH_TEST);
+//
+//        shaderFinal.bind(gl2);
+//        shaderFinal.setUniform(gl2, "BackgroundColor", backgroundColor, 3);
+//        shaderFinal.bindTextureRECT(gl2, "ColorTex", colorBlenderTextureId[0], 0);
+//        gl2.glCallList(quadDisplayList);
+//        shaderFinal.unbind(gl2);
     }
 
     private void drawModel(GL2 gl2) {
@@ -591,6 +593,19 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
 
     @Override
     public void keyPressed(KeyEvent e) {
+
+        switch (e.getKeyCode()) {
+
+            case KeyEvent.VK_Y:
+                passesNumber--;
+                break;
+
+            case KeyEvent.VK_X:
+                passesNumber++;
+                break;
+        }
+        
+        gLCanvas.display();
     }
 
     @Override
