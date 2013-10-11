@@ -1,4 +1,4 @@
-package depthPeeling;
+package depthPeeling.depthpeelingGL2;
 
 // Translated from C++ Version see below:
 //

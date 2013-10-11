@@ -11,16 +11,18 @@ import javax.media.opengl.GL3;
  *
  * @author gbarbieri
  */
-public class ProgramMVPmatrix extends GLSLProgramObject{
+public class Program extends GLSLProgramObject{
     
-    public ProgramMVPmatrix(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int mvpMatrixBlockIndex){
+    private int alphaUnLoc;
+    
+    public Program(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int mvpMatrixBlockIndex){
         
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
         
         init(gl3, mvpMatrixBlockIndex);
     }
     
-    public ProgramMVPmatrix(GL3 gl3, String shadersFilepath, String[] vertexShaders, String[] fragmentShaders, int mvpMatrixBlockIndex){
+    public Program(GL3 gl3, String shadersFilepath, String[] vertexShaders, String[] fragmentShaders, int mvpMatrixBlockIndex){
         
         super(gl3, shadersFilepath, vertexShaders, fragmentShaders);
         
@@ -31,5 +33,11 @@ public class ProgramMVPmatrix extends GLSLProgramObject{
         
         int mvpMatrixUBI = gl3.glGetUniformBlockIndex(getProgramId(), "mvpMatrixes");
         gl3.glUniformBlockBinding(getProgramId(), mvpMatrixUBI, mvpMatrixBlockIndex);
+        
+        alphaUnLoc = gl3.glGetUniformLocation(getProgramId(), "Alpha");
+    }
+
+    public int getAlphaUnLoc() {
+        return alphaUnLoc;
     }
 }

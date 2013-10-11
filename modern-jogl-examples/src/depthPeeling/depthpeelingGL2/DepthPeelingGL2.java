@@ -5,7 +5,6 @@
 package depthPeeling.depthpeelingGL2;
 
 import com.jogamp.opengl.util.GLBuffers;
-import depthPeeling.GLSLProgramObject;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
