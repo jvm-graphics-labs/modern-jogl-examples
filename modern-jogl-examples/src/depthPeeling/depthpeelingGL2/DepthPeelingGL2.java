@@ -433,6 +433,7 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
          * (1) Initialize min depth buffer.
          */
         gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, colorBlenderFboId[0]);
+//        gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
         gl2.glDrawBuffer(drawnBuffers[0]);
 
         gl2.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -452,13 +453,13 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
          */
         int layersNumber = (passesNumber - 1) * 2;
 //        System.out.println("layersNumber: " + layersNumber);
-        for (int layer = 1; layer < 2; layer++) {
+        for (int layer = 1; layer < layersNumber; layer++) {
             
             int currentId = layer % 2;
             int previousId = 1 - currentId;
 
-//            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[currentId]);
-            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[currentId]);
+//            gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
             gl2.glDrawBuffer(drawnBuffers[0]);
 
             gl2.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -499,15 +500,15 @@ public class DepthPeelingGL2 implements GLEventListener, KeyListener, MouseListe
         /**
          * (3) Final pass.
          */
-//        gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-//        gl2.glDrawBuffer(GL2.GL_BACK);
-//        gl2.glDisable(GL2.GL_DEPTH_TEST);
-//
-//        shaderFinal.bind(gl2);
-//        shaderFinal.setUniform(gl2, "BackgroundColor", backgroundColor, 3);
-//        shaderFinal.bindTextureRECT(gl2, "ColorTex", colorBlenderTextureId[0], 0);
-//        gl2.glCallList(quadDisplayList);
-//        shaderFinal.unbind(gl2);
+        gl2.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+        gl2.glDrawBuffer(GL2.GL_BACK);
+        gl2.glDisable(GL2.GL_DEPTH_TEST);
+
+        shaderFinal.bind(gl2);
+        shaderFinal.setUniform(gl2, "BackgroundColor", backgroundColor, 3);
+        shaderFinal.bindTextureRECT(gl2, "ColorTex", colorBlenderTextureId[0], 0);
+        gl2.glCallList(quadDisplayList);
+        shaderFinal.unbind(gl2);
     }
 
     private void drawModel(GL2 gl2) {

@@ -15,6 +15,7 @@ out vec4 outputColor;
 
 void main(void)
 {
-	vec4 color = ShadeFragment();
-	outputColor = vec4(color.rgb * color.a, 1.0 - color.a);
+    vec4 color = ShadeFragment();
+
+    outputColor = vec4(color.rgb * color.a, 1.0 - color.a);
 }

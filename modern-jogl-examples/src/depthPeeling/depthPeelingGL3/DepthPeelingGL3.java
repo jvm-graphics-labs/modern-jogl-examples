@@ -64,17 +64,17 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
 //    private String filename = "C:\\Users\\gbarbieri\\Documents\\Models\\ATLAS_RADLADER.stl";
 //    private String filename = "C:\\temp\\model.stl";
     private int geoPassesNumber;
-    private int passesNumber = 2;
+    private int passesNumber = 4;
     private ProgramInit dpInit;
     private ProgramPeel dpPeel;
-    private ProgramUBO dpBlend;
+    private ProgramBlend dpBlend;
     private ProgramFinal dpFinal;
     private int[] queryId = new int[1];
     private float[] pos = new float[]{0.0f, 0.0f, 2.0f};
     private float[] rot = new float[]{0.0f, 0.0f};
     private float[] transl = new float[]{0.0f, 0.0f, 0.0f};
     private float scale = 1.0f;
-    private float opacity = 0.6f;
+    private float opacity = 0.1f;
     private float[] backgroundColor = new float[]{1.0f, 1.0f, 1.0f};
     private int[] quadVBO;
     private int[] quadVAO;
@@ -173,13 +173,20 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
         initQuadVBO(gl3);
 
         initQuadVAO(gl3);
-
+        
+        Mat4 modelToClipMatrix = Jglm.orthographic2D(0, 1, 0, 1);
+        
         dpFinal.bind(gl3);
         {
-            Mat4 modelToClipMatrix = Jglm.orthographic2D(0, 1, 0, 1);
             gl3.glUniformMatrix4fv(dpFinal.getModelToClipMatrixUnLoc(), 1, false, modelToClipMatrix.toFloatArray(), 0);
         }
         dpFinal.unbind(gl3);
+        
+        dpBlend.bind(gl3);
+        {
+            gl3.glUniformMatrix4fv(dpBlend.getModelToClipMatrixUnLoc(), 1, false, modelToClipMatrix.toFloatArray(), 0);
+        }
+        dpBlend.unbind(gl3);
     }
 
     private void initQuadVAO(GL3 gl3) {
@@ -226,12 +233,13 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
         String shadersFilepath = "/depthPeeling/depthPeelingGL3/shaders/";
 
         dpInit = new ProgramInit(gl3, shadersFilepath, new String[]{"dpInit_VS.glsl"}, new String[]{"shade_FS.glsl", "dpInit_FS.glsl"}, projectionBlockIndex);
+//        dpInit = new ProgramInit(gl3, shadersFilepath, "dpInit_VS.glsl", "dpInit_FS.glsl", projectionBlockIndex);
 
         dpPeel = new ProgramPeel(gl3, shadersFilepath, new String[]{"dpPeel_VS.glsl"}, new String[]{"shade_FS.glsl", "dpPeel_FS.glsl"}, projectionBlockIndex);
 
-        dpBlend = new ProgramUBO(gl3, shadersFilepath, "dpBlend_VS.glsl", "dpBlend_FS.glsl", projectionBlockIndex);
+        dpBlend = new ProgramBlend(gl3, shadersFilepath, "dpBlend_VS.glsl", "dpBlend_FS.glsl");
 
-        dpFinal = new ProgramFinal(gl3, shadersFilepath, "dpFinal_VS.glsl", "dpFinal_FS.glsl", projectionBlockIndex);
+        dpFinal = new ProgramFinal(gl3, shadersFilepath, "dpFinal_VS.glsl", "dpFinal_FS.glsl");
 
         System.out.println("ok");
     }
@@ -482,6 +490,7 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
          * (1) Initialize min depth buffer.
          */
         gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, colorBlenderFboId[0]);
+//        gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
         gl3.glDrawBuffer(GL3.GL_COLOR_ATTACHMENT0);
 
         gl3.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -502,13 +511,13 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
          */
         int layersNumber = (passesNumber - 1) * 2;
 //        System.out.println("layersNumber: " + layersNumber);
-        for (int layer = 1; layer < 2; layer++) {
+        for (int layer = 1; layer < layersNumber; layer++) {
 
             int currentId = layer % 2;
             int previousId = 1 - currentId;
 
-//            gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboId[currentId]);
-            gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+            gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboId[currentId]);
+//            gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
             gl3.glDrawBuffer(GL3.GL_COLOR_ATTACHMENT0);
 
             gl3.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -542,7 +551,10 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
                 gl3.glBlendFuncSeparate(GL3.GL_DST_ALPHA, GL3.GL_ONE, GL3.GL_ZERO, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
                 dpBlend.bind(gl3);
-                dpBlend.bindTextureRECT(gl3, "TempTex", colorTextureId[currentId], 0);
+//                dpBlend.bindTextureRECT(gl3, "TempTex", colorTextureId[currentId], 0);
+                gl3.glActiveTexture(GL3.GL_TEXTURE0);
+                gl3.glBindTexture(GL3.GL_TEXTURE_RECTANGLE, colorTextureId[currentId]);
+                gl3.glUniform1i(dpBlend.getTempTexUnLoc(), 0);
                 {
 //                    gl3.glCallList(quadDisplayList);
                     drawFullScreenQuad(gl3);
@@ -555,25 +567,25 @@ public class DepthPeelingGL3 implements GLEventListener, KeyListener, MouseListe
         /**
          * (3) Final pass.
          */
-//        gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-//        gl3.glDrawBuffer(GL3.GL_BACK);
-//        gl3.glDisable(GL3.GL_DEPTH_TEST);
-//
-//        dpFinal.bind(gl3);
-//        {
-//            gl3.glUniform3f(dpFinal.getBackgroundColorUnLoc(), 1.0f, 1.0f, 1.0f);
-//
-////            dpFinal.bindTextureRECT(gl3, "ColorTex", colorBlenderTextureId[0], 0);
-//            gl3.glActiveTexture(GL3.GL_TEXTURE0);
-//            gl3.glBindTexture(GL3.GL_TEXTURE_RECTANGLE, colorBlenderTextureId[0]);
-//            gl3.glUniform1i(dpFinal.getColorTexUnLoc(), 0);
-//            {
-////                gl3.glCallList(quadDisplayList);
-//                drawFullScreenQuad(gl3);
-//            }
-//            gl3.glBindTexture(GL3.GL_TEXTURE_RECTANGLE, 0);
-//        }
-//        dpFinal.unbind(gl3);
+        gl3.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+        gl3.glDrawBuffer(GL3.GL_BACK);
+        gl3.glDisable(GL3.GL_DEPTH_TEST);
+
+        dpFinal.bind(gl3);
+        {
+            gl3.glUniform3f(dpFinal.getBackgroundColorUnLoc(), 1.0f, 1.0f, 1.0f);
+
+//            dpFinal.bindTextureRECT(gl3, "ColorTex", colorBlenderTextureId[0], 0);
+            gl3.glActiveTexture(GL3.GL_TEXTURE0);
+            gl3.glBindTexture(GL3.GL_TEXTURE_RECTANGLE, colorBlenderTextureId[0]);
+            gl3.glUniform1i(dpFinal.getColorTexUnLoc(), 0);
+            {
+//                gl3.glCallList(quadDisplayList);
+                drawFullScreenQuad(gl3);
+            }
+            gl3.glBindTexture(GL3.GL_TEXTURE_RECTANGLE, 0);
+        }
+        dpFinal.unbind(gl3);
     }
 
     private void drawModel(GL3 gl3) {

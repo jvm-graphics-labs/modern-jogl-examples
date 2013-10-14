@@ -11,13 +11,9 @@
 
 layout (location = 0) in vec4 position;
 
-layout(std140) uniform mvpMatrixes  {
-
-    mat4 projectionMatrix;
-    mat4 cameraMatrix;
-};
+uniform mat4 modelToClipMatrix;
 
 void main(void)
 {
-     gl_Position = cameraMatrix * position;
+     gl_Position = modelToClipMatrix * position;
 }
