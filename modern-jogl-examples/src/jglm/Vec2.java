@@ -14,6 +14,9 @@ public class Vec2 extends Vec {
     public float y;
 
     public Vec2() {
+
+        x = 0;
+        y = 0;
     }
 
     public Vec2(float[] floatArray) {

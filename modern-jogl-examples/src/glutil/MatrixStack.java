@@ -29,20 +29,21 @@ public class MatrixStack {
         Mat4 translationMat = new Mat4(1.0f);
         translationMat.c3 = new Vec4(offset, 1.0f);
 
-        Mat4 newMat = top().times(translationMat);
+        Mat4 newMat = top().mult(translationMat);
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
     }
 
     public void scale(Vec3 scaling) {
+        
         Mat4 scalingMat = new Mat4(1.0f);
 
         scalingMat.c0.x = scaling.x;
         scalingMat.c1.y = scaling.y;
         scalingMat.c2.z = scaling.z;
 
-        Mat4 newMat = top().times(scalingMat);
+        Mat4 newMat = top().mult(scalingMat);
         
 //        newMat.print("scaling mat");
 
@@ -54,7 +55,7 @@ public class MatrixStack {
 
         Mat4 rotationMat = new Mat4(Mat3.rotateX(fAngDeg));
 
-        Mat4 newMat = top().times(rotationMat);
+        Mat4 newMat = top().mult(rotationMat);
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
@@ -64,7 +65,7 @@ public class MatrixStack {
 
         Mat4 rotationMat = new Mat4(Mat3.rotateY(fAngDeg));
 
-        Mat4 newMat = top().times(rotationMat);
+        Mat4 newMat = top().mult(rotationMat);
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
@@ -74,7 +75,7 @@ public class MatrixStack {
 
         Mat4 rotationMat = new Mat4(Mat3.rotateZ(fAngDeg));
 
-        Mat4 newMat = top().times(rotationMat);
+        Mat4 newMat = top().mult(rotationMat);
 
 //        matrices.set(matrices.size() - 1, newMat);
         setTop(newMat);
@@ -82,8 +83,8 @@ public class MatrixStack {
 
     public void applyMat(Mat4 mat4) {
 
-//        setTop(mat4.times(top()));
-        setTop(top().times(mat4));
+//        setTop(mat4.mult(top()));
+        setTop(top().mult(mat4));
     }
 
     public static float calculatFrustumScale(float fFovDeg) {

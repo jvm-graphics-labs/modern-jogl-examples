@@ -28,12 +28,14 @@ public class ObjectPole {
     private Vec2 prevMousePos;
     private Vec2 startDragMousePos;
     private Quat startDragOrient;
+    private ViewPole viewPole;
 
-    public ObjectPole(ObjectData initialData, float rotateScale) {
+    public ObjectPole(ObjectData initialData, float rotateScale, ViewPole viewPole) {
 
         this.position = initialData;
         this.initialPosition = initialData;
         this.rotateScale = rotateScale;
+        this.viewPole = viewPole;
 
         isDragging = false;
     }
@@ -43,7 +45,7 @@ public class ObjectPole {
         Mat4 translateMat = new Mat4(1.0f);
         translateMat.c3 = new Vec4(position.getPosition(), 1.0f);
 
-        return translateMat.times(position.getOrientation().toMatrix());
+        return translateMat.mult(position.getOrientation().toMatrix());
     }
 
     public void mousePressed(MouseEvent mouseEvent) {
@@ -75,14 +77,16 @@ public class ObjectPole {
             }
         }
     }
-    
-    public void mouseReleased(MouseEvent mouseEvent){
-        
-        if(isDragging){
-            
-            if(SwingUtilities.isRightMouseButton(mouseEvent)){
-                
+
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+        if (isDragging) {
+
+            if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+
                 mouseMove(mouseEvent);
+                
+                isDragging = false;
             }
         }
     }
@@ -91,22 +95,39 @@ public class ObjectPole {
 
         if (isDragging) {
 
-            Vec2 diff = new Vec2(mouseEvent.getX(), mouseEvent.getY());
+            Vec2 positionVec2 = new Vec2(mouseEvent.getX(), mouseEvent.getY());
 
-            diff = diff.minus(startDragMousePos);
+            Vec2 diff = positionVec2.minus(prevMousePos);
 
             switch (rotatingMode) {
 
                 case DUAL_AXIS:
 
-                    Quat rotation = Jglm.angleAxis(new Vec3(0.0f, 1.0f, 0.0f), diff.x * rotateScale);
+                    Quat rotation = Jglm.angleAxis(diff.x * rotateScale, new Vec3(0.0f, 1.0f, 0.0f));
 
-                    rotation = Jglm.angleAxis(new Vec3(1.0f, 0.0f, 0.0f), diff.y * rotateScale).mult(rotation);
-                    
+                    rotation = Jglm.angleAxis(diff.y * rotateScale, new Vec3(1.0f, 0.0f, 0.0f)).mult(rotation);
+
                     rotation.normalize();
+                    
+                    rotateViewDegrees(rotation);
             }
+            
+            prevMousePos = positionVec2;
         }
     }
-    
-//    private rotateViewDegrees(Quat rotation)
+
+    private void rotateViewDegrees(Quat rotation) {
+
+        Quat viewQuat = viewPole.calcMatrix().toQuaternion();
+
+        viewQuat.print("viewQuat");
+        
+        Quat invViewQuat = viewQuat.conjugate();
+
+        Quat tmp = invViewQuat.mult(rotation);
+
+        tmp = tmp.mult(viewQuat);
+
+        position.setOrientation(tmp.mult(position.getOrientation()));
+    }
 }

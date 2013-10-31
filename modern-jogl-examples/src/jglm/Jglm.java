@@ -40,7 +40,7 @@ public class Jglm {
     }
 
     public static float clamp(float value, float min, float max) {
-        
+
         if (value < min) {
             return min;
         }
@@ -52,7 +52,7 @@ public class Jglm {
     }
 
     public static int clamp(int value, int min, int max) {
-        
+
         if (value < min) {
             return min;
         }
@@ -67,24 +67,24 @@ public class Jglm {
 
         Mat4 result = mat;
 
-        result.c3 = mat.times(new Vec4(vec3, 1.0f));
+        result.c3 = mat.mult(new Vec4(vec3, 1.0f));
 
         return result;
     }
 
-    public static Quat angleAxis(Vec3 vec3, float angle) {
+    public static Quat angleAxis(float angle, Vec3 axis) {
 
         Quat result = new Quat();
 
         float a = (float) Math.toRadians(angle);
 
         float s = (float) Math.sin(a * 0.5f);
-        
-        vec3.normalize();
 
-        result.x = vec3.x * s;
-        result.y = vec3.y * s;
-        result.z = vec3.z * s;
+        axis.normalize();
+
+        result.x = axis.x * s;
+        result.y = axis.y * s;
+        result.z = axis.z * s;
         result.w = (float) Math.cos(a * 0.5f);
 
         return result;
@@ -103,7 +103,7 @@ public class Jglm {
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
 //        matrices.set(matrices.size() - 1, perspectiveMatrix);
-//        setTop(top().times(perspectiveMatrix));
+//        setTop(top().mult(perspectiveMatrix));
 
         return perspectiveMatrix;
     }
@@ -121,7 +121,7 @@ public class Jglm {
         perspectiveMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
 
 //        matrices.set(matrices.size() - 1, perspectiveMatrix);
-//        setTop(top().times(perspectiveMatrix));
+//        setTop(top().mult(perspectiveMatrix));
 
         return perspectiveMatrix;
     }
@@ -141,12 +141,36 @@ public class Jglm {
         orthographicMatric.c3.y = -(top + bottom) / (top - bottom);
 
         orthographicMatric.c3.z = -(farVal + nearVal) / (farVal - nearVal);
-        
+
         return orthographicMatric;
     }
-    
+
     public static Mat4 orthographic2D(float left, float right, float bottom, float top) {
 
         return orthographic(left, right, bottom, top, -1.0f, 1.0f);
+    }
+
+    public static Vec3 unProject(Vec3 window, Mat4 modelview, Mat4 projection, Vec4 viewport) {
+
+        Mat4 pm = projection.mult(modelview);
+
+        Mat4 inverse = pm.inverse();
+
+        Vec4 tmp = new Vec4(window, 1.0f);
+        tmp.x = (tmp.x - viewport.x) / viewport.z;
+        tmp.y = (tmp.y - viewport.y) / viewport.w;
+        tmp = tmp.mult(2);
+        tmp = tmp.minus(1);
+        
+        Vec4 obj = inverse.mult(tmp);
+
+        obj = obj.divide(obj.w);
+        
+        return new Vec3(obj);
+    }
+
+    public static float dot(Vec4 v0, Vec4 v1) {
+
+        return (v0.x * v1.x + v0.y * v1.y + v0.z * v1.z + v0.w * v1.w);
     }
 }

@@ -9,11 +9,11 @@
 
 #version 330
 
-uniform samplerRect TempTex;
+layout (location = 0) in vec4 position;
 
-out vec4 outputColor;
+uniform mat4 modelToClipMatrix;
 
 void main(void)
 {
-	outputColor = texture(TempTex, gl_FragCoord.xy);
+     gl_Position = modelToClipMatrix * position;
 }

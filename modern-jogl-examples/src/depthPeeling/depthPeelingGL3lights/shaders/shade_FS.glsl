@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// Order Independent Transparency with Depth Peeling
+// Order Independent Transparency Fragment Shader
 //
 // Author: Louis Bavoil
 // Email: sdkfeedback@nvidia.com
@@ -9,11 +9,12 @@
 
 #version 330
 
-uniform samplerRect TempTex;
+uniform float Alpha;
 
-out vec4 outputColor;
-
-void main(void)
+vec4 ShadeFragment()
 {
-	outputColor = texture(TempTex, gl_FragCoord.xy);
+	vec4 color;
+	color.rgb = vec3(.4,.85,.0);
+	color.a = Alpha;
+	return color;
 }

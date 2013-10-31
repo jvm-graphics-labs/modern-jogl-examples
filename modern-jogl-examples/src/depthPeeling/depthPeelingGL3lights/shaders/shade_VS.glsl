@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// Order Independent Transparency with Depth Peeling
+// Order Independent Transparency Vertex Shader
 //
 // Author: Louis Bavoil
 // Email: sdkfeedback@nvidia.com
@@ -7,13 +7,10 @@
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-#version 330
 
-uniform samplerRect TempTex;
 
-out vec4 outputColor;
-
-void main(void)
+vec3 ShadeVertex()
 {
-	outputColor = texture(TempTex, gl_FragCoord.xy);
+	float diffuse = abs(normalize(gl_NormalMatrix * gl_Normal).z);
+	return vec3(gl_Vertex.xy, diffuse);
 }

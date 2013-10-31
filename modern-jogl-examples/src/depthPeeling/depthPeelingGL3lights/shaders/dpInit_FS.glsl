@@ -9,11 +9,18 @@
 
 #version 330
 
-uniform samplerRect TempTex;
+smooth in vec4 interpColor;
+
+uniform float alpha;
 
 out vec4 outputColor;
 
 void main(void)
 {
-	outputColor = texture(TempTex, gl_FragCoord.xy);
+    //outputColor.rgb = interpColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);
+    //outputColor.a = alpha;
+
+    outputColor = vec4(interpColor.rgb * alpha, alpha);
+
+    //outputColor = interpColor;
 }

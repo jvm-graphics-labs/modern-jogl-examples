@@ -9,11 +9,15 @@
 
 #version 330
 
-uniform samplerRect TempTex;
+layout (location = 0) in vec4 position;
 
-out vec4 outputColor;
+layout(std140) uniform mvpMatrixes  {
+
+    mat4 projectionMatrix;
+    mat4 cameraMatrix;
+};
 
 void main(void)
 {
-	outputColor = texture(TempTex, gl_FragCoord.xy);
+	gl_Position = projectionMatrix * cameraMatrix * position;
 }

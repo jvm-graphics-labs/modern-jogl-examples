@@ -561,7 +561,7 @@ public class WorldScene implements GLEventListener, KeyListener {
         Mat4 translationMat = new Mat4(1.0f);
         translationMat.c3 = new Vec4(cameraPt.negated(), 1.0f);
 
-        return rotationMat.times(translationMat);
+        return rotationMat.mult(translationMat);
     }
 
     @Override

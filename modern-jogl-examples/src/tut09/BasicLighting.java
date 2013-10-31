@@ -148,7 +148,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
         initialObjectData = new ObjectData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.0f, 0.0f, 0.0f, 1.0f));
 
-        objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f);
+        objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, viewPole);
 
         lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
 
@@ -177,7 +177,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
         modelMatrix.setTop(viewPole.calcMatrix());
 
-        Vec4 lightDirCameraSpace = modelMatrix.top().times(lightDirection);
+        Vec4 lightDirCameraSpace = modelMatrix.top().mult(lightDirection);
 
         whiteDiffuseColor.bind(gl3);
         {
@@ -228,6 +228,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
                         cylinder.render(gl3, "lit-color");
                     }
                     vertexDiffuseColor.unbind(gl3);
+
                 } else {
 
                     whiteDiffuseColor.bind(gl3);
@@ -376,7 +377,6 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        
 //        viewPole.
     }
 

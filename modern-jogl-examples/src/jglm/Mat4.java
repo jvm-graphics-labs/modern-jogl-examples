@@ -69,7 +69,14 @@ public class Mat4 extends Mat {
         c3 = new Vec4(floatArray, order * 3);
     }
 
-    public Mat4(Vec3 vec3) {
+    public Mat4(Vec4 v0, Vec4 v1, Vec4 v2, Vec4 v3) {
+        
+        order = 4;
+        
+        c0 = v0;        
+        c1 = v1;        
+        c2 = v2;        
+        c3 = v3;        
     }
 
     public float[] toFloatArray() {
@@ -86,7 +93,7 @@ public class Mat4 extends Mat {
         c2.z = vec3.z;
     }
 
-    public Mat4 times(Mat4 second) {
+    public Mat4 mult(Mat4 second) {
         float[] result = new float[16];
         float partial;
 
@@ -114,7 +121,7 @@ public class Mat4 extends Mat {
         return new Mat4(result);
     }
 
-    public Vec4 times(Vec4 second) {
+    public Vec4 mult(Vec4 second) {
 
         float[] result = new float[4];
         float partial;
@@ -283,7 +290,7 @@ public class Mat4 extends Mat {
         Mat4 translationMat = new Mat4(1.0f);
         translationMat.c3 = new Vec4(cameraPt.negated(), 1.0f);
 
-        return rotationMat.times(translationMat);
+        return rotationMat.mult(translationMat);
     }
 
     public void print() {
@@ -390,5 +397,96 @@ public class Mat4 extends Mat {
                 return c3.w;
         }
         return -1;
+    }
+    
+    public Mat4 inverse(){
+        
+        float coeff00 = c2.z * c3.w - c3.z * c2.w;
+        float coeff02 = c1.z * c3.w - c3.z * c1.w;
+        float coeff03 = c1.z * c2.w - c2.z * c1.w;
+        
+        float coeff04 = c2.y * c3.w - c3.y * c2.w;
+        float coeff06 = c1.y * c3.w - c3.y * c1.w;
+        float coeff07 = c1.y * c2.w - c2.y * c1.w;
+        
+        float coeff08 = c2.y * c3.z - c3.y * c2.z;
+        float coeff10 = c1.y * c3.z - c3.y * c1.z;
+        float coeff11 = c1.y * c2.z - c2.y * c1.z;
+        
+        float coeff12 = c2.x * c3.w - c3.x * c2.w;
+        float coeff14 = c1.x * c3.w - c3.x * c1.w;
+        float coeff15 = c1.x * c2.w - c2.x * c1.w;
+        
+        float coeff16 = c2.x * c3.z - c3.x * c2.z;
+        float coeff18 = c1.x * c3.z - c3.x * c1.z;
+        float coeff19 = c1.x * c2.z - c2.x * c1.z;
+        
+        float coeff20 = c2.x * c3.y - c3.x * c2.y;
+        float coeff22 = c1.x * c3.y - c3.x * c1.y;
+        float coeff23 = c1.x * c2.y - c2.x * c1.y;
+        
+        Vec4 signA = new Vec4(1.0f, -1.0f, 1.0f, -1.0f);
+        Vec4 signB = new Vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+        
+        Vec4 fac0 = new Vec4(coeff00, coeff00, coeff02, coeff03);
+        Vec4 fac1 = new Vec4(coeff04, coeff04, coeff06, coeff07);
+        Vec4 fac2 = new Vec4(coeff08, coeff08, coeff10, coeff11);
+        Vec4 fac3 = new Vec4(coeff12, coeff12, coeff14, coeff15);
+        Vec4 fac4 = new Vec4(coeff16, coeff16, coeff18, coeff19);
+        Vec4 fac5 = new Vec4(coeff20, coeff20, coeff22, coeff23);
+        
+        Vec4 vec0 = new Vec4(c1.x, c0.x, c0.x, c0.x);
+        Vec4 vec1 = new Vec4(c1.y, c0.y, c0.y, c0.y);
+        Vec4 vec2 = new Vec4(c1.z, c0.z, c0.z, c0.z);
+        Vec4 vec3 = new Vec4(c1.w, c0.w, c0.w, c0.w);
+        
+        Vec4 one = vec1.mult(fac0);
+        Vec4 two = vec2.mult(fac1);
+        Vec4 three = vec3.mult(fac2);
+        Vec4 inv0 = signA.mult(one.minus(two).plus(three));
+        
+        one = vec0.mult(fac0);
+        two = vec2.mult(fac3);
+        three = vec3.mult(fac4);
+        Vec4 inv1 = signB.mult(one.minus(two).plus(three));
+        
+        one = vec0.mult(fac1);
+        two = vec1.mult(fac3);
+        three = vec3.mult(fac5);
+        Vec4 inv2 = signA.mult(one.minus(two).plus(three));
+        
+        one = vec0.mult(fac2);
+        two = vec1.mult(fac4);
+        three = vec2.mult(fac5);
+        Vec4 inv3 = signB.mult(one.minus(two).plus(three));
+        
+//        inv0.print("inv0");
+//        inv1.print("inv1");
+//        inv2.print("inv2");
+//        inv3.print("inv3");
+        
+        Mat4 inverse = new Mat4(inv0, inv1, inv2, inv3);
+        
+//        inverse.print("inverse");
+        
+        Vec4 row0 = new Vec4(inverse.c0.x, inverse.c1.x, inverse.c2.x, inverse.c3.x);
+        
+//        row0.print("row0");
+        
+        float determinant = Jglm.dot(c0, row0);
+        
+//        System.out.println("det: "+determinant);
+        
+        return inverse.divide(determinant);
+    }
+    
+    public Mat4 divide(float s){
+        
+        Vec4 newC0 = new Vec4(c0.x/s, c0.y/s, c0.z/s, c0.w/s);
+        Vec4 newC1 = new Vec4(c1.x/s, c1.y/s, c1.z/s, c1.w/s);
+        Vec4 newC2 = new Vec4(c2.x/s, c2.y/s, c2.z/s, c2.w/s);
+        Vec4 newC3 = new Vec4(c3.x/s, c3.y/s, c3.z/s, c3.w/s);
+        
+        return new Mat4(newC0, newC1, newC2, newC3);
     }
 }

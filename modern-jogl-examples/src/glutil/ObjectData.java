@@ -29,4 +29,8 @@ public class ObjectData {
     public Quat getOrientation() {
         return orientation;
     }
+
+    public void setOrientation(Quat orientation) {
+        this.orientation = orientation;
+    }
 }

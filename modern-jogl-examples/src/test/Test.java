@@ -8,6 +8,9 @@ import glsl.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
+import glutil.ViewData;
+import glutil.ViewPole;
+import glutil.ViewScale;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -23,6 +26,9 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
+import jglm.Mat4;
+import jglm.Quat;
+import jglm.Vec3;
 
 /**
  *
@@ -89,6 +95,7 @@ public class Test implements GLEventListener {
 
     @Override
     public void init(GLAutoDrawable glad) {
+        test();
         System.out.println("init");
 
         canvas.setAutoSwapBufferMode(false);
@@ -209,5 +216,22 @@ public class Test implements GLEventListener {
 
     public void setCanvas(GLCanvas canvas) {
         this.canvas = canvas;
+    }
+    
+    private void test(){
+        
+        ViewData viewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(new Vec3(0.3826834f, 0.0f, 0.0f), 0.92387953f), 5.0f, 0.0f);
+        
+        ViewScale viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f/250.0f);
+        
+        ViewPole viewPole = new ViewPole(viewData, viewScale);
+        
+        Mat4 m = viewPole.calcMatrix();
+        
+//        m.print("m");
+        
+        Mat4 out = m.inverse();
+        
+        out.print("out");
     }
 }

@@ -46,10 +46,10 @@ public class ViewPole {
 //        System.out.println("currView.getRadius(): "+(-currView.getRadius()));
 //        mat.print("mat");
 
-        Quat fullRotation = Jglm.angleAxis(new Vec3(0.0f, 0.0f, 1.0f), currView.getDegSpinRotation());
+        Quat fullRotation = Jglm.angleAxis(currView.getDegSpinRotation(), new Vec3(0.0f, 0.0f, 1.0f));
         fullRotation = fullRotation.mult(currView.getOrient());
 
-        mat = mat.times(fullRotation.toMatrix());
+        mat = mat.mult(fullRotation.toMatrix());
 
         mat = Jglm.translate(mat, currView.getTargetPos().negated());
 
@@ -123,11 +123,11 @@ public class ViewPole {
 
         diff = diff.times(viewScale.getRotationScale());
 
-        Quat yWorldSpace = Jglm.angleAxis(new Vec3(0.0f, 1.0f, 0.0f), diff.x);
+        Quat yWorldSpace = Jglm.angleAxis(diff.x, new Vec3(0.0f, 1.0f, 0.0f));
 
         currView.setOrient(startDragOrient.mult(yWorldSpace));
 
-        Quat xLocalSpace = Jglm.angleAxis(new Vec3(1.0f, 0.0f, 0.0f), diff.y);
+        Quat xLocalSpace = Jglm.angleAxis(diff.y, new Vec3(1.0f, 0.0f, 0.0f));
 
         currView.setOrient(xLocalSpace.mult(currView.getOrient()));
     }
