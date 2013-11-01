@@ -34,18 +34,21 @@ import jglm.Jglm;
 import jglm.Mat3;
 import jglm.Vec4;
 import tut09.glsl.GLSLProgramObject_1;
+import tut09.glsl.GLSLProgramObject_2;
 
 /**
  *
  * @author gbarbieri
  */
-public class BasicLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class AmbientLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     private int imageWidth = 800;
     private int imageHeight = 600;
     private GLCanvas canvas;
     private GLSLProgramObject_1 whiteDiffuseColor;
     private GLSLProgramObject_1 vertexDiffuseColor;
+    private GLSLProgramObject_2 whiteAmbientDiffuseColor;
+    private GLSLProgramObject_2 vertexAmbientDiffuseColor;
     private String shadersFilepath = "/tut09/shaders/";
     private String dataFilepath = "/tut09/data/";
     private Mesh cylinder;
@@ -60,20 +63,21 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
     private ObjectPole objectPole;
     private ObjectData initialObjectData;
     private Vec4 lightDirection;
-    private boolean drawColoredCyl;
+    private boolean drawColoredCylinder;
+    private boolean ambientLighting;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        BasicLighting basicLighting = new BasicLighting();
+        AmbientLighting ambientLighting = new AmbientLighting();
 
-        Frame frame = new Frame("Tutorial 09 - Basic Lighting");
+        Frame frame = new Frame("Tutorial 09 - Ambient Lighting");
 
-        frame.add(basicLighting.getCanvas());
+        frame.add(ambientLighting.getCanvas());
 
-        frame.setSize(basicLighting.getCanvas().getWidth(), basicLighting.getCanvas().getHeight());
+        frame.setSize(ambientLighting.getCanvas().getWidth(), ambientLighting.getCanvas().getHeight());
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -85,7 +89,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
         frame.setVisible(true);
     }
 
-    public BasicLighting() {
+    public AmbientLighting() {
         initGL();
     }
 
@@ -154,7 +158,8 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
         zNear = 1.0f;
         zFar = 1000.0f;
 
-        drawColoredCyl = true;
+        drawColoredCylinder = true;
+        ambientLighting = false;
     }
 
     @Override
@@ -178,77 +183,156 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
         Vec4 lightDirCameraSpace = modelMatrix.top().mult(lightDirection);
 
-        whiteDiffuseColor.bind(gl3);
-        {
-            gl3.glUniform3fv(whiteDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
-        }
-        vertexDiffuseColor.bind(gl3);
-        {
-            gl3.glUniform3fv(vertexDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
-        }
-        vertexDiffuseColor.unbind(gl3);
+        setLights(gl3, lightDirCameraSpace);
 
         modelMatrix.push();
         {
-            //  Render the ground plane
             modelMatrix.push();
             {
-                whiteDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                    gl3.glUniformMatrix3fv(whiteDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
-
-                    gl3.glUniform4f(whiteDiffuseColor.getLightIntensityUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
-
-                    plane.render(gl3);
-                }
-                whiteDiffuseColor.unbind(gl3);
+                renderGroundPlane(gl3, modelMatrix);
             }
             modelMatrix.pop();
 
-            //  Render the Cylinder
             modelMatrix.push();
             {
-                modelMatrix.applyMat(objectPole.calcMatrix());
-
-                if (drawColoredCyl) {
-
-                    vertexDiffuseColor.bind(gl3);
-                    {
-                        gl3.glUniformMatrix4fv(vertexDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                        Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                        gl3.glUniformMatrix3fv(vertexDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
-
-                        gl3.glUniform4f(vertexDiffuseColor.getLightIntensityUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
-
-                        cylinder.render(gl3, "lit-color");
-                    }
-                    vertexDiffuseColor.unbind(gl3);
-
-                } else {
-
-                    whiteDiffuseColor.bind(gl3);
-                    {
-                        gl3.glUniformMatrix4fv(whiteDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                        Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                        gl3.glUniformMatrix3fv(whiteDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
-
-                        gl3.glUniform4f(whiteDiffuseColor.getLightIntensityUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
-
-                        cylinder.render(gl3, "lit");
-                    }
-                    whiteDiffuseColor.unbind(gl3);
-                }
+                renderCylinder(gl3, modelMatrix);
             }
             modelMatrix.pop();
         }
         modelMatrix.pop();
 
         glad.swapBuffers();
+    }
+
+    private void setLights(GL3 gl3, Vec4 lightDirCameraSpace) {
+
+        vertexAmbientDiffuseColor.bind(gl3);
+        {
+            gl3.glUniform4f(vertexAmbientDiffuseColor.getLightIntensityUnLoc(), 0.8f, 0.8f, 0.8f, 1.0f);
+
+            gl3.glUniform4f(vertexAmbientDiffuseColor.getUnLocAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+
+            gl3.glUniform3fv(vertexAmbientDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
+        }
+        vertexAmbientDiffuseColor.unbind(gl3);
+
+        whiteAmbientDiffuseColor.bind(gl3);
+        {
+            gl3.glUniform4f(whiteAmbientDiffuseColor.getLightIntensityUnLoc(), 0.8f, 0.8f, 0.8f, 1.0f);
+
+            gl3.glUniform4f(whiteAmbientDiffuseColor.getUnLocAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+
+            gl3.glUniform3fv(whiteAmbientDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
+        }
+        whiteAmbientDiffuseColor.unbind(gl3);
+
+        vertexDiffuseColor.bind(gl3);
+        {
+            gl3.glUniform4f(vertexDiffuseColor.getLightIntensityUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
+
+            gl3.glUniform3fv(vertexDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
+        }
+        vertexDiffuseColor.unbind(gl3);
+
+        whiteDiffuseColor.bind(gl3);
+        {
+            gl3.glUniform4f(whiteDiffuseColor.getLightIntensityUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
+
+            gl3.glUniform3fv(whiteDiffuseColor.getDirToLightUnLoc(), 1, lightDirCameraSpace.toFloatArray(), 0);
+        }
+        whiteDiffuseColor.unbind(gl3);
+    }
+
+    private void renderGroundPlane(GL3 gl3, MatrixStack modelMatrix) {
+
+        Mat3 normalMatrix = new Mat3(modelMatrix.top());
+
+        if (ambientLighting) {
+
+            whiteAmbientDiffuseColor.bind(gl3);
+            {
+                gl3.glUniformMatrix4fv(whiteAmbientDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                gl3.glUniformMatrix3fv(whiteAmbientDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                plane.render(gl3);
+            }
+            whiteAmbientDiffuseColor.unbind(gl3);
+
+        } else {
+
+            whiteDiffuseColor.bind(gl3);
+            {
+                gl3.glUniformMatrix4fv(whiteDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                gl3.glUniformMatrix3fv(whiteDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                plane.render(gl3);
+            }
+            whiteDiffuseColor.unbind(gl3);
+        }
+    }
+
+    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix) {
+
+        modelMatrix.applyMat(objectPole.calcMatrix());
+
+        Mat3 normalMatrix = new Mat3(modelMatrix.top());
+
+        if (drawColoredCylinder) {
+
+            if (ambientLighting) {
+
+                vertexAmbientDiffuseColor.bind(gl3);
+                {
+                    gl3.glUniformMatrix4fv(vertexAmbientDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                    gl3.glUniformMatrix3fv(vertexAmbientDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                    cylinder.render(gl3, "lit-color");
+                }
+                vertexAmbientDiffuseColor.unbind(gl3);
+
+            } else {
+
+                vertexDiffuseColor.bind(gl3);
+                {
+                    gl3.glUniformMatrix4fv(vertexDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                    gl3.glUniformMatrix3fv(vertexDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                    cylinder.render(gl3, "lit-color");
+                }
+                vertexDiffuseColor.unbind(gl3);
+            }
+
+        } else {
+
+            if (ambientLighting) {
+
+                whiteAmbientDiffuseColor.bind(gl3);
+                {
+                    gl3.glUniformMatrix4fv(whiteAmbientDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                    gl3.glUniformMatrix3fv(whiteAmbientDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                    cylinder.render(gl3, "lit");
+                }
+                whiteAmbientDiffuseColor.unbind(gl3);
+
+            } else {
+
+                whiteDiffuseColor.bind(gl3);
+                {
+                    gl3.glUniformMatrix4fv(whiteDiffuseColor.getModelToCameraMatUnLoc(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+                    gl3.glUniformMatrix3fv(whiteDiffuseColor.getNormalModelToCameraMatUnLoc(), 1, false, normalMatrix.toFloatArray(), 0);
+
+                    cylinder.render(gl3, "lit");
+                }
+                whiteDiffuseColor.unbind(gl3);
+            }
+        }
     }
 
     @Override
@@ -285,6 +369,8 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
         whiteDiffuseColor = new GLSLProgramObject_1(gl3, shadersFilepath, "DirVertexLighting_PN_VS.glsl", "ColorPassthrough_FS.glsl", projectionBlockIndex);
         vertexDiffuseColor = new GLSLProgramObject_1(gl3, shadersFilepath, "DirVertexLighting_PCN_VS.glsl", "ColorPassthrough_FS.glsl", projectionBlockIndex);
+        whiteAmbientDiffuseColor = new GLSLProgramObject_2(gl3, shadersFilepath, "DirAmbientVertexLighting_PN_VS.glsl", "ColorPassthrough_FS.glsl", projectionBlockIndex);
+        vertexAmbientDiffuseColor = new GLSLProgramObject_2(gl3, shadersFilepath, "DirAmbientVertexLighting_PCN_VS.glsl", "ColorPassthrough_FS.glsl", projectionBlockIndex);
     }
 
     public GLCanvas getCanvas() {
@@ -335,9 +421,15 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_SPACE:
-                drawColoredCyl = !drawColoredCyl;
+                drawColoredCylinder = !drawColoredCylinder;
+                break;
+
+            case KeyEvent.VK_T:
+                ambientLighting = !ambientLighting;
                 break;
         }
+
+        System.out.println("ambientLighting: " + ambientLighting);
 
         canvas.display();
     }
@@ -361,7 +453,7 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        
+
         viewPole.mouseWheel(e);
         
         canvas.display();

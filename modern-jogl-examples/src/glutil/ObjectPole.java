@@ -4,6 +4,7 @@
  */
 package glutil;
 
+import glutil.ViewPole.RotatingMode;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 import jglm.Jglm;
@@ -12,7 +13,6 @@ import jglm.Quat;
 import jglm.Vec2;
 import jglm.Vec3;
 import jglm.Vec4;
-import tut09.BasicLighting.RotatingMode;
 
 /**
  *
@@ -24,7 +24,7 @@ public class ObjectPole {
     private ObjectData initialPosition;
     private float rotateScale;
     private boolean isDragging;
-    private RotatingMode rotatingMode;
+    private ViewPole.RotatingMode rotatingMode;
     private Vec2 prevMousePos;
     private Vec2 startDragMousePos;
     private Quat startDragOrient;

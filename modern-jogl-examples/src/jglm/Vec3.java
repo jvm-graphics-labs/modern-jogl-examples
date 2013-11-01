@@ -99,4 +99,9 @@ public class Vec3 extends Vec {
     public void print(String title) {
         System.out.println(title + " (" + x + ", " + y + ", " + z + ")");
     }
+    
+    public float[] toFloatArray(){
+        
+        return new float[]{x, y, z};
+    }
 }

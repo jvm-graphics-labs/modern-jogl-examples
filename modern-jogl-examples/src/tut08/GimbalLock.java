@@ -48,7 +48,7 @@ public class GimbalLock implements GLEventListener, KeyListener {
     private boolean drawLookAtPoint;
     private Mesh[] gimbals;
     private Mesh ship;
-    private float frustumScale = MatrixStack.calculatFrustumScale(20.0f);
+    private float frustumScale = MatrixStack.calculateFrustumScale(20.0f);
     private GimbalAngles gimbalAngles;
     private boolean drawGimbals;
 

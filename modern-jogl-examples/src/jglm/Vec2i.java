@@ -63,4 +63,9 @@ public class Vec2i extends Veci {
     public void print(String title) {
         System.out.println(title + " (" + x + ", " + y + ")");
     }
+    
+    public int[] toIntArray(){
+        
+        return new int[]{x, y};
+    }
 }

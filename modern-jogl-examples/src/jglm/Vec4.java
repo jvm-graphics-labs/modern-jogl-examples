@@ -99,4 +99,9 @@ public class Vec4 extends Vec {
 
         return new Vec4(x / scalar, y / scalar, z / scalar, w / scalar);
     }
+    
+    public float[] toFloatArray(){
+        
+        return new float[]{x, y, z, w};
+    }
 }

@@ -4,7 +4,7 @@
  */
 package jglm;
 
-import static glutil.MatrixStack.calculatFrustumScale;
+import static glutil.MatrixStack.calculateFrustumScale;
 
 /**
  *
@@ -16,28 +16,28 @@ public class Jglm {
         return (start + lerp * (end - start));
     }
 
-    public static Vec normalize(Vec vec) {
-
-        float length = 0;
-
-        for (int i = 0; i < vec.order; i++) {
-            length += vec.toFloatArray()[i] * vec.toFloatArray()[i];
-        }
-
-        length = (float) Math.sqrt(length);
-
-        float[] result = new float[vec.order];
-
-        for (int i = 0; i < vec.order; i++) {
-            result[i] = vec.toFloatArray()[i] / length;
-        }
-
-        return new Vec3(result);
-
-//        float length = ((float) Math.sqrt((vec3[0] * vec3[0]) + (vec3[1] * vec3[1]) + (vec3[2] * vec3[2])));
+//    public static Vec normalize(Vec vec) {
 //
-//        return new float[]{vec3[0] / length, vec3[1] / length, vec3[2] / length};
-    }
+//        float length = 0;
+//
+//        for (int i = 0; i < vec.order; i++) {
+//            length += vec.toFloatArray()[i] * vec.toFloatArray()[i];
+//        }
+//
+//        length = (float) Math.sqrt(length);
+//
+//        float[] result = new float[vec.order];
+//
+//        for (int i = 0; i < vec.order; i++) {
+//            result[i] = vec.toFloatArray()[i] / length;
+//        }
+//
+//        return new Vec3(result);
+//
+////        float length = ((float) Math.sqrt((vec3[0] * vec3[0]) + (vec3[1] * vec3[1]) + (vec3[2] * vec3[2])));
+////
+////        return new float[]{vec3[0] / length, vec3[1] / length, vec3[2] / length};
+//    }
 
     public static float clamp(float value, float min, float max) {
 
@@ -92,7 +92,7 @@ public class Jglm {
 
     public static Mat4 perspective(float fovDeg, float aspect, float zNear, float zFar) {
 
-        float frustumScale = calculatFrustumScale(fovDeg);
+        float frustumScale = calculateFrustumScale(fovDeg);
 
         Mat4 perspectiveMatrix = new Mat4();
 
@@ -110,7 +110,7 @@ public class Jglm {
 
     public static Mat4 perspective(float fovDeg, float zNear, float zFar) {
 
-        float frustumScale = calculatFrustumScale(fovDeg);
+        float frustumScale = calculateFrustumScale(fovDeg);
 
         Mat4 perspectiveMatrix = new Mat4();
 

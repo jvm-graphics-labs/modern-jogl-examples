@@ -12,8 +12,4 @@ public class Vec {
 
     protected float[] vector;
     protected int order;
-
-    public float[] toFloatArray() {
-        return vector;
-    }
 }

@@ -12,7 +12,6 @@ import jglm.Mat4;
 import jglm.Quat;
 import jglm.Vec2;
 import jglm.Vec3;
-import tut09.BasicLighting.RotatingMode;
 
 /**
  *
@@ -158,5 +157,26 @@ public class ViewPole {
         onDragRotate(mouseEvent);
 
         isDragging = false;
+    }
+
+    public void mouseWheel(MouseWheelEvent mouseWheelEvent) {
+
+        if (mouseWheelEvent.isShiftDown()) {
+
+            currView.setRadius(currView.getRadius() + mouseWheelEvent.getWheelRotation() * viewScale.getLargeRadiusDelta());
+
+        } else {
+
+            currView.setRadius(currView.getRadius() + mouseWheelEvent.getWheelRotation() * viewScale.getSmallRadiusDelta());
+        }
+
+        currView.setRadius(Jglm.clamp(currView.getRadius(), viewScale.getMinRadius(), viewScale.getMaxRadius()));
+    }
+    
+    public enum RotatingMode {
+
+        SPIN,
+        BIAXIAL,
+        DUAL_AXIS
     }
 }

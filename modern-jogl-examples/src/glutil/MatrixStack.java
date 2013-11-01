@@ -87,10 +87,10 @@ public class MatrixStack {
         setTop(top().mult(mat4));
     }
 
-    public static float calculatFrustumScale(float fFovDeg) {
+    public static float calculateFrustumScale(float fFovDeg) {
 
-        float degToRad = 3.14159f * 2.0f / 360.0f;
-        float fFovRad = fFovDeg * degToRad;
+//        float degToRad = (float) (Math.PI * 2.0f / 360.0f);
+        float fFovRad = (float) Math.toRadians(fFovDeg);
         return (float) (1.0f / Math.tan(fFovRad / 2.0f));
     }
 

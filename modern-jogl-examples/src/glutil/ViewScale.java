@@ -32,4 +32,20 @@ public class ViewScale {
     public float getRotationScale() {
         return rotationScale;
     }
+
+    public float getLargeRadiusDelta() {
+        return largeRadiusDelta;
+    }
+
+    public float getSmallRadiusDelta() {
+        return smallRadiusDelta;
+    }
+
+    public float getMinRadius() {
+        return minRadius;
+    }
+
+    public float getMaxRadius() {
+        return maxRadius;
+    }
 }

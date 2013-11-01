@@ -12,8 +12,4 @@ public class Veci {
 
     protected int[] vector;
     protected int order;
-
-    public int[] toIntArray() {
-        return vector;
-    }
 }

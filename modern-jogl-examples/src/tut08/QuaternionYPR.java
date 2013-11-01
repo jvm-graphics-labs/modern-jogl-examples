@@ -99,7 +99,7 @@ public class QuaternionYPR implements GLEventListener, KeyListener {
 
         GL3 gl3 = glad.getGL().getGL3();
 
-        frustumScale = MatrixStack.calculatFrustumScale(20.0f);
+        frustumScale = MatrixStack.calculateFrustumScale(20.0f);
 
         initializePrograms(gl3);
 

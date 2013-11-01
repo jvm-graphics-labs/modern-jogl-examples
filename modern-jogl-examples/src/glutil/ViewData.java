@@ -49,4 +49,8 @@ public class ViewData {
     public void setDegSpinRotation(float degSpinRotation) {
         this.degSpinRotation = degSpinRotation;
     }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
 }

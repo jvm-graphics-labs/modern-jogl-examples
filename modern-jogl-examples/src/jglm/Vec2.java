@@ -78,4 +78,9 @@ public class Vec2 extends Vec {
     public void print(String title) {
         System.out.println(title + " (" + x + ", " + y + ")");
     }
+    
+    public float[] toFloatArray(){
+        
+        return new float[]{x, y};
+    }
 }
