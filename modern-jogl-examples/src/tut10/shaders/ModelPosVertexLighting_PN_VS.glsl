@@ -5,12 +5,11 @@ layout(location = 2) in vec3 normal;
 
 smooth out vec4 interpColor;
 
-uniform vec3 lightPosition;
+uniform vec3 lightPositionModelSpace;
 uniform vec4 lightDiffuseIntensity;
 uniform vec4 lightAmbientIntensity;
 
 uniform mat4 modelToCameraMatrix;
-uniform mat3 normalModelToCameraMatrix;
 
 uniform Projection
 {
@@ -19,14 +18,11 @@ uniform Projection
 
 void main()
 {
-    vec4 cameraPosition = (modelToCameraMatrix * vec4(position, 1.0));
-    gl_Position = cameraToClipMatrix * cameraPosition;
+    gl_Position = cameraToClipMatrix * (modelToCameraMatrix * vec4(position, 1.0));
 
-    vec3 normalCameraSpace = normalize(normalModelToCameraMatrix * normal);
+    vec3 directionToLight = normalize(lightPositionModelSpace - position);
 
-    vec3 dirToLight = normalize(lightPosition - vec3(cameraPosition));
-
-    float cosAngleIncidence = dot(normalCameraSpace, dirToLight);
+    float cosAngleIncidence = dot(normal, directionToLight);
     cosAngleIncidence = clamp(cosAngleIncidence, 0, 1);
 
     interpColor = (lightDiffuseIntensity * cosAngleIncidence) + lightAmbientIntensity;
