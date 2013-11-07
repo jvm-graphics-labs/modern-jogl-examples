@@ -32,25 +32,24 @@ import javax.media.opengl.awt.GLCanvas;
 import jglm.Jglm;
 import jglm.Mat4;
 import jglm.Quat;
+import jglm.Vec2i;
 import jglm.Vec3;
 import jglm.Vec4;
 import mesh.Mesh;
-import tut10.glsl.LitProgram2;
+import tut10.glsl.LitProgram3;
 import tut10.glsl.UnlitProgram;
 
 /**
  *
  * @author gbarbieri
  */
-public class FragmentPointLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class FragmentAttenuation implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     private GLCanvas canvas;
     private int imageWidth;
     private int imageHeight;
-    private LitProgram2 whiteDiffuseColor;
-    private LitProgram2 vertexDiffuseColor;
-    private LitProgram2 fragWhiteDiffuseColor;
-    private LitProgram2 fragVertexDiffuseColor;
+    private LitProgram3 fragWhiteDiffuseColor;
+    private LitProgram3 fragVertexDiffuseColor;
     private UnlitProgram unlitProgram;
     private ViewPole viewPole;
     private ObjectPole objectPole;
@@ -58,27 +57,29 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
     private Mesh plane;
     private Mesh cube;
     private int[] projectionUBO;
+    private int[] unProjectionUBO;
     private Timer lightTimer;
     private float lightHeight;
     private float lightRadius;
-    private boolean fragmentLighting;
     private boolean coloredCylinder;
     private boolean drawLight;
+    private boolean rSquare;
+    private float lightAttenuation;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        FragmentPointLighting fragmentPointLighting = new FragmentPointLighting();
+        FragmentAttenuation fragmentAttenuation = new FragmentAttenuation();
 
-        Frame frame = new Frame("Tutorial 10 - Fragment Point Lighting");
+        Frame frame = new Frame("Tutorial 10 - Fragment Attenuation");
 
-        frame.add(fragmentPointLighting.getCanvas());
+        frame.add(fragmentAttenuation.getCanvas());
 
-        frame.setSize(fragmentPointLighting.getCanvas().getWidth(), fragmentPointLighting.getCanvas().getHeight());
+        frame.setSize(fragmentAttenuation.getCanvas().getWidth(), fragmentAttenuation.getCanvas().getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(fragmentPointLighting.canvas, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(fragmentAttenuation.canvas, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -93,7 +94,7 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         frame.setVisible(true);
     }
 
-    public FragmentPointLighting() {
+    public FragmentAttenuation() {
         initGL();
     }
 
@@ -122,11 +123,12 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
         GL3 gl3 = drawable.getGL().getGL3();
         int projectionUBB = 0;
+        int unProjectionUBB = 1;
         String shadersFilepath = "/tut10/shaders/";
 
         canvas.setAutoSwapBufferMode(false);
 
-        initializePrograms(gl3, shadersFilepath, projectionUBB);
+        initializePrograms(gl3, shadersFilepath, projectionUBB, unProjectionUBB);
 
         ViewData initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
 
@@ -150,27 +152,25 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         gl3.glDepthRangef(0.0f, 1.0f);
         gl3.glEnable(GL3.GL_DEPTH_CLAMP);
 
-        initUBO(gl3, projectionUBB);
+        initUBO(gl3, projectionUBB, unProjectionUBB);
 
         lightHeight = 1.5f;
         lightRadius = 1.0f;
 
         lightTimer = new Timer(Timer.Type.Loop, 5.0f);
-        
-        fragmentLighting = true;
+
         coloredCylinder = false;
         drawLight = false;
+        rSquare = false;
+
+        lightAttenuation = 1.0f;
     }
 
-    private void initializePrograms(GL3 gl3, String shadersFilepath, int projectionUBB) {
+    private void initializePrograms(GL3 gl3, String shadersFilepath, int projectionUBB, int unProjectionUBB) {
 
-        whiteDiffuseColor = new LitProgram2(gl3, shadersFilepath, "ModelPosVertexLighting_PN_VS.glsl", "ColorPassthrough_FS.glsl", projectionUBB);
+        fragWhiteDiffuseColor = new LitProgram3(gl3, shadersFilepath, "FragLightAtten_PN_VS.glsl", "FragLightAtten_FS.glsl", projectionUBB, unProjectionUBB);
 
-        vertexDiffuseColor = new LitProgram2(gl3, shadersFilepath, "ModelPosVertexLighting_PCN_VS.glsl", "ColorPassthrough_FS.glsl", projectionUBB);
-
-        fragWhiteDiffuseColor = new LitProgram2(gl3, shadersFilepath, "FragmentLighting_PN_VS.glsl", "FragmentLighting_FS.glsl", projectionUBB);
-
-        fragVertexDiffuseColor = new LitProgram2(gl3, shadersFilepath, "FragmentLighting_PCN_VS.glsl", "FragmentLighting_FS.glsl", projectionUBB);
+        fragVertexDiffuseColor = new LitProgram3(gl3, shadersFilepath, "FragLightAtten_PCN_VS.glsl", "FragLightAtten_FS.glsl", projectionUBB, unProjectionUBB);
 
         unlitProgram = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
     }
@@ -186,9 +186,10 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
     }
 
-    private void initUBO(GL3 gl3, int projectionUBB) {
+    private void initUBO(GL3 gl3, int projectionUBB, int unProjectionUBB) {
 
         int size = 16 * 4;
+
         projectionUBO = new int[1];
 
         gl3.glGenBuffers(1, projectionUBO, 0);
@@ -197,6 +198,19 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
             gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size, null, GL3.GL_DYNAMIC_DRAW);
 
             gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, projectionUBB, projectionUBO[0], 0, size);
+        }
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+
+        size = (16 + 2) * 4;
+
+        unProjectionUBO = new int[1];
+
+        gl3.glGenBuffers(1, unProjectionUBO, 0);
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, unProjectionUBO[0]);
+        {
+            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size, null, GL3.GL_DYNAMIC_DRAW);
+
+            gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, unProjectionUBB, unProjectionUBO[0], 0, size);
         }
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
     }
@@ -225,17 +239,17 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
         Vec4 lightPositionCameraSpace = modelMatrix.top().mult(lightPositionWorldSpace);
 
-        setLights(gl3);
+        setLights(gl3, lightPositionCameraSpace);
 
         modelMatrix.push();
         {
-            renderGround(gl3, modelMatrix, lightPositionCameraSpace);
+            renderGround(gl3, modelMatrix);
         }
         modelMatrix.pop();
 
         modelMatrix.push();
         {
-            renderCylinder(gl3, modelMatrix, lightPositionCameraSpace);
+//            renderCylinder(gl3, modelMatrix, lightPositionCameraSpace);
         }
         modelMatrix.pop();
 
@@ -243,7 +257,7 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
             modelMatrix.push();
             {
-                renderLight(gl3, modelMatrix, lightPositionWorldSpace);
+//                renderLight(gl3, modelMatrix, lightPositionWorldSpace);
             }
             modelMatrix.pop();
         }
@@ -263,136 +277,123 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         return ret;
     }
 
-    private void setLights(GL3 gl3) {
+    private void setLights(GL3 gl3, Vec4 lightPositionCameraSpace) {
 
-        if (fragmentLighting) {
+        if (coloredCylinder) {
 
-            fragWhiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
-
-                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
             fragVertexDiffuseColor.bind(gl3);
             {
                 gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
 
                 gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+
+                gl3.glUniform3fv(fragVertexDiffuseColor.getUnLocLightPositionCameraSpace(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+
+                gl3.glUniform1f(fragVertexDiffuseColor.getUnLocLightAttenuation(), lightAttenuation);
+
+                gl3.glUniform1i(fragVertexDiffuseColor.getUnLocRsquare(), rSquare ? 1 : 0);
             }
             fragVertexDiffuseColor.unbind(gl3);
+
         } else {
-
-            whiteDiffuseColor.bind(gl3);
+            
+            fragWhiteDiffuseColor.bind(gl3);
             {
-                gl3.glUniform4f(whiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
 
-                gl3.glUniform4f(whiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
-            vertexDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(vertexDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
 
-                gl3.glUniform4f(vertexDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+                gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPositionCameraSpace(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+
+                gl3.glUniform1f(fragWhiteDiffuseColor.getUnLocLightAttenuation(), lightAttenuation);
+
+                gl3.glUniform1i(fragWhiteDiffuseColor.getUnLocRsquare(), rSquare ? 1 : 0);
             }
-            vertexDiffuseColor.unbind(gl3);
+            fragWhiteDiffuseColor.unbind(gl3);
         }
     }
 
-    private void renderGround(GL3 gl3, MatrixStack modelMatrix, Vec4 lightPositionCameraSpace) {
+    private void renderGround(GL3 gl3, MatrixStack modelMatrix) {
 
-        Mat4 inverseTransform = modelMatrix.top().inverse();
-        Vec4 lightPositionModelSpace = inverseTransform.mult(lightPositionCameraSpace);
-        
-        if (fragmentLighting) {
+        Mat4 normalMatrix = modelMatrix.top();
 
-            fragWhiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+        normalMatrix = normalMatrix.inverse();
 
-                gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+        normalMatrix = normalMatrix.transpose();
 
-                plane.render(gl3);
-            }
-            fragWhiteDiffuseColor.unbind(gl3);
+        fragWhiteDiffuseColor.bind(gl3);
+        {
+            gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
 
-        } else {
-
-            whiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniformMatrix4fv(whiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                gl3.glUniform3fv(whiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                plane.render(gl3);
-            }
-            whiteDiffuseColor.unbind(gl3);
+            gl3.glUniformMatrix3fv(fragWhiteDiffuseColor.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
         }
+        fragWhiteDiffuseColor.unbind(gl3);
     }
 
     private void renderCylinder(GL3 gl3, MatrixStack modelMatrix, Vec4 lightPositionCameraSpace) {
 
         modelMatrix.applyMat(objectPole.calcMatrix());
-        
+
         Mat4 inverseTransform = modelMatrix.top().inverse();
         Vec4 lightPositionModelSpace = inverseTransform.mult(lightPositionCameraSpace);
 
-        if (fragmentLighting) {
-
-            if (coloredCylinder) {
-
-                fragVertexDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(fragVertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(fragVertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit-color");
-                }
-                fragVertexDiffuseColor.unbind(gl3);
-
-            } else {
-
-                fragWhiteDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit");
-                }
-                fragWhiteDiffuseColor.unbind(gl3);
-            }
-        } else {
-
-            if (coloredCylinder) {
-
-                vertexDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(vertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(vertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit-color");
-                }
-                vertexDiffuseColor.unbind(gl3);
-
-            } else {
-
-                whiteDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(whiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit");
-                }
-                whiteDiffuseColor.unbind(gl3);
-            }
-        }
+//        if (fragmentLighting) {
+//
+//            if (coloredCylinder) {
+//
+//                fragVertexDiffuseColor.bind(gl3);
+//                {
+//                    gl3.glUniformMatrix4fv(fragVertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+//
+//                    gl3.glUniform3fv(fragVertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+//
+//                    cylinder.render(gl3, "lit-color");
+//                }
+//                fragVertexDiffuseColor.unbind(gl3);
+//
+//            } else {
+//
+//                fragWhiteDiffuseColor.bind(gl3);
+//                {
+//                    gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+//
+//                    gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+//
+//                    cylinder.render(gl3, "lit");
+//                }
+//                fragWhiteDiffuseColor.unbind(gl3);
+//            }
+//        } else {
+//
+//            if (coloredCylinder) {
+//
+//                vertexDiffuseColor.bind(gl3);
+//                {
+//                    gl3.glUniformMatrix4fv(vertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+//
+//                    gl3.glUniform3fv(vertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+//
+//                    cylinder.render(gl3, "lit-color");
+//                }
+//                vertexDiffuseColor.unbind(gl3);
+//
+//            } else {
+//
+//                whiteDiffuseColor.bind(gl3);
+//                {
+//                    gl3.glUniformMatrix4fv(whiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+//
+//                    gl3.glUniform3fv(whiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+//
+//                    cylinder.render(gl3, "lit");
+//                }
+//                whiteDiffuseColor.unbind(gl3);
+//            }
+//        }
     }
 
-    private void renderLight(GL3 gl3, MatrixStack modelStack, Vec4 lightPositionWorldSpace) {        
-        
+    private void renderLight(GL3 gl3, MatrixStack modelStack, Vec4 lightPositionWorldSpace) {
+
         modelStack.translate(new Vec3(lightPositionWorldSpace));
         modelStack.scale(new Vec3(0.1f, 0.1f, 0.1f));
 
@@ -414,12 +415,25 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         float zFar = 1000.0f;
         GL3 gl3 = drawable.getGL().getGL3();
 
+        int size = 16 * 4;
+
         MatrixStack perspectiveMatrix = new MatrixStack();
         perspectiveMatrix.setTop(Jglm.perspective(45.0f, (float) width / (float) height, zNear, zFar));
 
+        Mat4 clipToCameraMatrix = perspectiveMatrix.top().inverse();
+        Vec2i windowSize = new Vec2i(width, height);
+
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
         {
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
+            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
+        }
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+
+        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, unProjectionUBO[0]);
+        {
+            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(clipToCameraMatrix.toFloatArray()));
+
+            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, size, 2 * 4, GLBuffers.newDirectIntBuffer(windowSize.toIntArray()));
         }
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
@@ -452,10 +466,6 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
             case KeyEvent.VK_Y:
                 drawLight = !drawLight;
-                break;
-
-            case KeyEvent.VK_H:
-                fragmentLighting = !fragmentLighting;
                 break;
 
             case KeyEvent.VK_I:

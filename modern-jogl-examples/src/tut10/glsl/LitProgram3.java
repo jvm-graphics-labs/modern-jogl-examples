@@ -1,0 +1,79 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package tut10.glsl;
+
+import javax.media.opengl.GL3;
+
+/**
+ *
+ * @author gbarbieri
+ */
+public class LitProgram3 extends glsl.GLSLProgramObject{
+    
+    private int unLocModelToCameraMatrix;
+    private int unLocNormalModelToCameraMatrix;
+    
+    private int unLocLightPositionCameraSpace;
+    private int unLocLightDiffuseIntensity;
+    private int unLocLightAmbientIntensity;
+    
+    private int unLocWindowSize;
+    private int unLocLightAttenuation;
+    private int unLocRsquare;
+    
+    public LitProgram3 (GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int projectionUBB, int unProjectionUBB){
+        
+        super(gl3, shadersFilepath, vertexShader, fragmentShader);
+        
+        unLocModelToCameraMatrix = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");        
+        unLocNormalModelToCameraMatrix = gl3.glGetUniformLocation(getProgramId(), "normalModelToCameraMatrix");
+        
+        unLocLightPositionCameraSpace = gl3.glGetUniformLocation(getProgramId(), "lightPositionCameraSpace");        
+        unLocLightDiffuseIntensity = gl3.glGetUniformLocation(getProgramId(), "lightDiffuseIntensity");        
+        unLocLightAmbientIntensity = gl3.glGetUniformLocation(getProgramId(), "lightAmbientIntensity");
+        
+        unLocWindowSize = gl3.glGetUniformLocation(getProgramId(), "windowSize");
+        unLocLightAttenuation = gl3.glGetUniformLocation(getProgramId(), "lightAttenuation");
+        unLocRsquare = gl3.glGetUniformLocation(getProgramId(), "rSquare");
+        
+        int projectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "Projection");
+        gl3.glUniformBlockBinding(getProgramId(), projectionUBI, projectionUBB);
+        
+        int unProjectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "UnProjection");
+        gl3.glUniformBlockBinding(getProgramId(), unProjectionUBI, unProjectionUBB);
+    }
+
+    public int getUnLocModelToCameraMatrix() {
+        return unLocModelToCameraMatrix;
+    }
+
+    public int getUnLocLightPositionCameraSpace() {
+        return unLocLightPositionCameraSpace;
+    }
+
+    public int getUnLocLightDiffuseIntensity() {
+        return unLocLightDiffuseIntensity;
+    }
+
+    public int getUnLocLightAmbientIntensity() {
+        return unLocLightAmbientIntensity;
+    }
+
+    public int getUnLocNormalModelToCameraMatrix() {
+        return unLocNormalModelToCameraMatrix;
+    }
+
+    public int getUnLocWindowSize() {
+        return unLocWindowSize;
+    }
+
+    public int getUnLocLightAttenuation() {
+        return unLocLightAttenuation;
+    }
+
+    public int getUnLocRsquare() {
+        return unLocRsquare;
+    }
+}
