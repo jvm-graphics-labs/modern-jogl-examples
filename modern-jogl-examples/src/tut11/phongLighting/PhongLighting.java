@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut10;
+package tut11.phongLighting;
 
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
@@ -30,28 +30,32 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import jglm.Jglm;
-import jglm.Mat4;
+import jglm.Mat3;
 import jglm.Quat;
 import jglm.Vec3;
 import jglm.Vec4;
 import mesh.Mesh;
-import tut10.glsl.LitProgram2;
 import tut10.glsl.UnlitProgram;
+import tut11.phongLighting.glslProgram.LitProgram;
 
 /**
  *
  * @author gbarbieri
  */
-public class FragmentPointLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class PhongLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     private GLCanvas canvas;
     private int imageWidth;
     private int imageHeight;
-    private LitProgram2 whiteDiffuseColor;
-    private LitProgram2 vertexDiffuseColor;
-    private LitProgram2 fragWhiteDiffuseColor;
-    private LitProgram2 fragVertexDiffuseColor;
-    private UnlitProgram unlitProgram;
+    private LitProgram whiteNoPhong;
+    private LitProgram colorNoPhong;
+    private LitProgram whitePhong;
+    private LitProgram colorPhong;
+    private LitProgram whitePhongOnly;
+    private LitProgram colorPhongOnly;
+    private LitProgram whiteProgram;
+    private LitProgram colorProgram;
+    private UnlitProgram unlit;
     private ViewPole viewPole;
     private ObjectPole objectPole;
     private Mesh cylinder;
@@ -61,25 +65,30 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
     private Timer lightTimer;
     private float lightHeight;
     private float lightRadius;
-    private boolean fragmentLighting;
     private boolean coloredCylinder;
     private boolean drawLight;
     private boolean scaleCylinder;
+    private boolean drawDark;
+    private float lightAttenuation;
+    private float shininessFactor;
+    private Vec4 darkColor;
+    private Vec4 lightColor;
+    private LightingModel lightingModel;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        FragmentPointLighting fragmentPointLighting = new FragmentPointLighting();
+        PhongLighting phongLighting = new PhongLighting();
 
-        Frame frame = new Frame("Tutorial 10 - Fragment Point Lighting");
+        Frame frame = new Frame("Tutorial 10 - Phong Lighting");
 
-        frame.add(fragmentPointLighting.getCanvas());
+        frame.add(phongLighting.getCanvas());
 
-        frame.setSize(fragmentPointLighting.getCanvas().getWidth(), fragmentPointLighting.getCanvas().getHeight());
+        frame.setSize(phongLighting.getCanvas().getWidth(), phongLighting.getCanvas().getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(fragmentPointLighting.canvas, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(phongLighting.canvas, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -94,7 +103,7 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         frame.setVisible(true);
     }
 
-    public FragmentPointLighting() {
+    public PhongLighting() {
         initGL();
     }
 
@@ -122,8 +131,8 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
     public void init(GLAutoDrawable drawable) {
 
         GL3 gl3 = drawable.getGL().getGL3();
-        int projectionUBB = 0;
-        String shadersFilepath = "/tut10/shaders/";
+        int projectionUBB = 2;
+        String shadersFilepath = "/tut11/phongLighting/shaders/";
 
         canvas.setAutoSwapBufferMode(false);
 
@@ -158,23 +167,34 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
         lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
-        fragmentLighting = true;
+        lightingModel = LightingModel.DiffuseAndSpecular;
+
         coloredCylinder = false;
         drawLight = false;
+
         scaleCylinder = false;
+
+        drawDark = false;
+
+        lightAttenuation = 1.2f;
+        shininessFactor = 4.0f;
+
+        darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f);
+        lightColor = new Vec4(1.0f);
     }
 
     private void initializePrograms(GL3 gl3, String shadersFilepath, int projectionUBB) {
 
-        whiteDiffuseColor = new LitProgram2(gl3, shadersFilepath, "ModelPosVertexLighting_PN_VS.glsl", "ColorPassthrough_FS.glsl", projectionUBB);
+        whiteNoPhong = new LitProgram(gl3, shadersFilepath, "PN_VS.glsl", "NoPhong_FS.glsl", projectionUBB);
+        colorNoPhong = new LitProgram(gl3, shadersFilepath, "PCN_VS.glsl", "NoPhong_FS.glsl", projectionUBB);
 
-        vertexDiffuseColor = new LitProgram2(gl3, shadersFilepath, "ModelPosVertexLighting_PCN_VS.glsl", "ColorPassthrough_FS.glsl", projectionUBB);
+        whitePhong = new LitProgram(gl3, shadersFilepath, "PN_VS.glsl", "Phong_FS.glsl", projectionUBB);
+        colorPhong = new LitProgram(gl3, shadersFilepath, "PCN_VS.glsl", "Phong_FS.glsl", projectionUBB);
 
-        fragWhiteDiffuseColor = new LitProgram2(gl3, shadersFilepath, "FragmentLighting_PN_VS.glsl", "FragmentLighting_FS.glsl", projectionUBB);
+        whitePhongOnly = new LitProgram(gl3, shadersFilepath, "PN_VS.glsl", "PhongOnly_FS.glsl", projectionUBB);
+        colorPhongOnly = new LitProgram(gl3, shadersFilepath, "PCN_VS.glsl", "PhongOnly_FS.glsl", projectionUBB);
 
-        fragVertexDiffuseColor = new LitProgram2(gl3, shadersFilepath, "FragmentLighting_PCN_VS.glsl", "FragmentLighting_FS.glsl", projectionUBB);
-
-        unlitProgram = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
+        unlit = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
     }
 
     private void initializeMeshes(GL3 gl3) {
@@ -191,6 +211,7 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
     private void initUBO(GL3 gl3, int projectionUBB) {
 
         int size = 16 * 4;
+
         projectionUBO = new int[1];
 
         gl3.glGenBuffers(1, projectionUBO, 0);
@@ -227,17 +248,19 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
         Vec4 lightPositionCameraSpace = modelMatrix.top().mult(lightPositionWorldSpace);
 
-        setLights(gl3);
+        setPrograms();
+
+        setLights(gl3, lightPositionCameraSpace);
 
         modelMatrix.push();
         {
-            renderGround(gl3, modelMatrix, lightPositionCameraSpace);
+            renderGround(gl3, modelMatrix);
         }
         modelMatrix.pop();
 
         modelMatrix.push();
         {
-            renderCylinder(gl3, modelMatrix, lightPositionCameraSpace);
+            renderCylinder(gl3, modelMatrix);
         }
         modelMatrix.pop();
 
@@ -262,78 +285,84 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         ret.x = (float) (Math.cos(currentTimeThroughLoop * (Math.PI * 2.0f)) * lightRadius);
         ret.z = (float) (Math.sin(currentTimeThroughLoop * (Math.PI * 2.0f)) * lightRadius);
 
-        System.out.println("currentTimeThroughLoop: "+currentTimeThroughLoop+" x: "+ret.x+" lightRadius: "+lightRadius);
-        
         return ret;
     }
 
-    private void setLights(GL3 gl3) {
+    private void setPrograms() {
 
-        if (fragmentLighting) {
+        switch (lightingModel) {
 
-            fragWhiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+            case DiffuseOnly:
+                whiteProgram = whiteNoPhong;
+                colorProgram = colorNoPhong;
+                break;
 
-                gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
-            fragVertexDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+            case DiffuseAndSpecular:
+                whiteProgram = whitePhong;
+                colorProgram = colorPhong;
+                break;
 
-                gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
-            fragVertexDiffuseColor.unbind(gl3);
-        } else {
-
-            whiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(whiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
-
-                gl3.glUniform4f(whiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
-            vertexDiffuseColor.bind(gl3);
-            {
-                gl3.glUniform4f(vertexDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
-
-                gl3.glUniform4f(vertexDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-            }
-            vertexDiffuseColor.unbind(gl3);
+            case SpecularOnly:
+                whiteProgram = whitePhongOnly;
+                colorProgram = colorPhongOnly;
+                break;
         }
     }
 
-    private void renderGround(GL3 gl3, MatrixStack modelMatrix, Vec4 lightPositionCameraSpace) {
+    private void setLights(GL3 gl3, Vec4 lightPositionCameraSpace) {
 
-        Mat4 inverseTransform = modelMatrix.top().inverse();
-        Vec4 lightPositionModelSpace = inverseTransform.mult(lightPositionCameraSpace);
-
-        if (fragmentLighting) {
-
-            fragWhiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                plane.render(gl3);
-            }
-            fragWhiteDiffuseColor.unbind(gl3);
-
-        } else {
-
-            whiteDiffuseColor.bind(gl3);
-            {
-                gl3.glUniformMatrix4fv(whiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                gl3.glUniform3fv(whiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                plane.render(gl3);
-            }
-            whiteDiffuseColor.unbind(gl3);
+        whiteProgram.bind(gl3);
+        {
+            gl3.glUniform4f(whiteProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+            
+            gl3.glUniform4f(whiteProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+            
+            gl3.glUniform3fv(whiteProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+            
+            gl3.glUniform1f(whiteProgram.getUnLocLightAttenuation(), lightAttenuation);
+            
+            gl3.glUniform1f(whiteProgram.getUnLocShininessFactor(), shininessFactor);
+            
+            gl3.glUniform4fv(whiteProgram.getUnLocBaseDiffuseColor(), 1, (drawDark ? darkColor : lightColor).toFloatArray(), 0);
+            
         }
+        whiteProgram.unbind(gl3);
+
+        colorProgram.bind(gl3);
+        {
+            gl3.glUniform4f(colorProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+
+            gl3.glUniform4f(colorProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+
+            gl3.glUniform3fv(colorProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+
+            gl3.glUniform1f(colorProgram.getUnLocLightAttenuation(), lightAttenuation);
+
+            gl3.glUniform1f(colorProgram.getUnLocShininessFactor(), shininessFactor);
+        }
+        colorProgram.unbind(gl3);
     }
 
-    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix, Vec4 lightPositionCameraSpace) {
+    private void renderGround(GL3 gl3, MatrixStack modelMatrix) {
+
+        Mat3 normalMatrix = new Mat3(modelMatrix.top());
+
+        normalMatrix = normalMatrix.inverse();
+
+        normalMatrix = normalMatrix.transpose();
+
+        whiteProgram.bind(gl3);
+        {
+            gl3.glUniformMatrix4fv(whiteProgram.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+
+            gl3.glUniformMatrix3fv(whiteProgram.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
+
+            plane.render(gl3);
+        }
+        whiteProgram.unbind(gl3);
+    }
+
+    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix) {
 
         modelMatrix.applyMat(objectPole.calcMatrix());
 
@@ -341,78 +370,42 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
             modelMatrix.scale(new Vec3(1.0f, 1.0f, 0.2f));
         }
 
-        Mat4 inverseTransform = modelMatrix.top().inverse();
-        Vec4 lightPositionModelSpace = inverseTransform.mult(lightPositionCameraSpace);
+        Mat3 normalMatrix = new Mat3(modelMatrix.top());
 
-        if (fragmentLighting) {
+        normalMatrix = normalMatrix.inverse();
 
-            if (coloredCylinder) {
+        normalMatrix = normalMatrix.transpose();
 
-                fragVertexDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(fragVertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+        LitProgram program = coloredCylinder ? colorProgram : whiteProgram;
 
-                    gl3.glUniform3fv(fragVertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
+        program.bind(gl3);
+        {
+            gl3.glUniformMatrix4fv(program.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
 
-                    cylinder.render(gl3, "lit-color");
-                }
-                fragVertexDiffuseColor.unbind(gl3);
-
-            } else {
-
-                fragWhiteDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit");
-                }
-                fragWhiteDiffuseColor.unbind(gl3);
-            }
-        } else {
+            gl3.glUniformMatrix3fv(program.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
 
             if (coloredCylinder) {
-
-                vertexDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(vertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(vertexDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit-color");
-                }
-                vertexDiffuseColor.unbind(gl3);
-
+                cylinder.render(gl3, "lit-color");
             } else {
-
-                whiteDiffuseColor.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                    gl3.glUniform3fv(whiteDiffuseColor.getUnLocLightPosition(), 1, lightPositionModelSpace.toFloatArray(), 0);
-
-                    cylinder.render(gl3, "lit");
-                }
-                whiteDiffuseColor.unbind(gl3);
+                cylinder.render(gl3, "lit");
             }
         }
+        program.unbind(gl3);
     }
 
     private void renderLight(GL3 gl3, MatrixStack modelStack, Vec4 lightPositionWorldSpace) {
-
         modelStack.translate(new Vec3(lightPositionWorldSpace));
         modelStack.scale(new Vec3(0.1f, 0.1f, 0.1f));
 
-        unlitProgram.bind(gl3);
+        unlit.bind(gl3);
         {
-            gl3.glUniformMatrix4fv(unlitProgram.getUnLocModelToCameraMatrix(), 1, false, modelStack.top().toFloatArray(), 0);
+            gl3.glUniformMatrix4fv(unlit.getUnLocModelToCameraMatrix(), 1, false, modelStack.top().toFloatArray(), 0);
 
-            gl3.glUniform4f(unlitProgram.getUnLocObjectColor(), 0.8078f, 0.8078f, 0.9922f, 1.0f);
+            gl3.glUniform4f(unlit.getUnLocObjectColor(), 0.8078f, 0.8078f, 0.9922f, 1.0f);
 
             cube.render(gl3, "flat");
         }
-        unlitProgram.unbind(gl3);
+        unlit.unbind(gl3);
     }
 
     @Override
@@ -422,12 +415,14 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
         float zFar = 1000.0f;
         GL3 gl3 = drawable.getGL().getGL3();
 
+        int size = 16 * 4;
+
         MatrixStack perspectiveMatrix = new MatrixStack();
         perspectiveMatrix.setTop(Jglm.perspective(45.0f, (float) width / (float) height, zNear, zFar));
 
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
         {
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, 16 * 4, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
+            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
         }
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
@@ -462,10 +457,6 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
                 drawLight = !drawLight;
                 break;
 
-            case KeyEvent.VK_H:
-                fragmentLighting = !fragmentLighting;
-                break;
-
             case KeyEvent.VK_I:
                 lightHeight += offset;
                 break;
@@ -480,21 +471,73 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
             case KeyEvent.VK_J:
                 lightRadius -= offset;
+                if (lightRadius < 0.2f) {
+                    lightRadius = 0.2f;
+                }
+                break;
+
+            case KeyEvent.VK_O:
+                float delta;
+                if (e.isShiftDown()) {
+                    delta = 0.1f;
+                } else {
+                    delta = 0.5f;
+                }
+                shininessFactor += delta;
+                System.out.println("shininessFactor: " + shininessFactor);
+                break;
+
+            case KeyEvent.VK_U:
+                if (e.isShiftDown()) {
+                    delta = 1.1f;
+                } else {
+                    delta = 1.5f;
+                }
+                shininessFactor -= delta;
+                if (shininessFactor <= 0.0f) {
+                    shininessFactor = 0.0001f;
+                }
+                System.out.println("shininessFactor: " + shininessFactor);
                 break;
 
             case KeyEvent.VK_B:
                 lightTimer.togglePause();
                 break;
 
+            case KeyEvent.VK_H:
+                if (e.isShiftDown()) {
+                    if (lightingModel == LightingModel.DiffuseOnly) {
+                        lightingModel = LightingModel.DiffuseAndSpecular;
+                        System.out.println("DiffuseAndSpecular");
+                    } else {
+                        lightingModel = LightingModel.DiffuseOnly;
+                        System.out.println("DiffuseOnly");
+                    }
+                } else {
+                    switch (lightingModel) {
+                        case DiffuseAndSpecular:
+                            lightingModel = LightingModel.SpecularOnly;
+                            System.out.println("SpecularOnly");
+                            break;
+                        case SpecularOnly:
+                            lightingModel = LightingModel.DiffuseOnly;
+                            System.out.println("DiffuseOnly");
+                            break;
+                        case DiffuseOnly:
+                            lightingModel = LightingModel.DiffuseAndSpecular;
+                            System.out.println("DiffuseAndSpecular");
+                            break;
+                    }
+                }
+                break;
+
             case KeyEvent.VK_T:
                 scaleCylinder = !scaleCylinder;
                 break;
-        }
 
-        System.out.println("drawLight: " + drawLight);
-
-        if (lightRadius < 0.2f) {
-            lightRadius = 0.2f;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
         }
     }
 
@@ -543,5 +586,14 @@ public class FragmentPointLighting implements GLEventListener, KeyListener, Mous
 
     public GLCanvas getCanvas() {
         return canvas;
+
+
+    }
+
+    private enum LightingModel {
+
+        DiffuseOnly,
+        DiffuseAndSpecular,
+        SpecularOnly;
     }
 }

@@ -10,37 +10,43 @@ import javax.media.opengl.GL3;
  *
  * @author gbarbieri
  */
-public class LitProgram3 extends glsl.GLSLProgramObject{
-    
+public class LitProgram3 extends glsl.GLSLProgramObject {
+
     private int unLocModelToCameraMatrix;
     private int unLocNormalModelToCameraMatrix;
-    
     private int unLocLightPositionCameraSpace;
     private int unLocLightDiffuseIntensity;
     private int unLocLightAmbientIntensity;
-    
-    private int unLocWindowSize;
     private int unLocLightAttenuation;
     private int unLocRsquare;
-    
-    public LitProgram3 (GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int projectionUBB, int unProjectionUBB){
-        
+
+    public LitProgram3(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int projectionUBB, int unProjectionUBB) {
+
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
-        
-        unLocModelToCameraMatrix = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");        
+
+        unLocModelToCameraMatrix = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");
         unLocNormalModelToCameraMatrix = gl3.glGetUniformLocation(getProgramId(), "normalModelToCameraMatrix");
-        
-        unLocLightPositionCameraSpace = gl3.glGetUniformLocation(getProgramId(), "lightPositionCameraSpace");        
-        unLocLightDiffuseIntensity = gl3.glGetUniformLocation(getProgramId(), "lightDiffuseIntensity");        
+
+//        System.out.println("unLocModelToCameraMatrix: " + unLocModelToCameraMatrix);
+//        System.out.println("unLocNormalModelToCameraMatrix: " + unLocNormalModelToCameraMatrix);
+
+        unLocLightPositionCameraSpace = gl3.glGetUniformLocation(getProgramId(), "lightPositionCameraSpace");
+        unLocLightDiffuseIntensity = gl3.glGetUniformLocation(getProgramId(), "lightDiffuseIntensity");
         unLocLightAmbientIntensity = gl3.glGetUniformLocation(getProgramId(), "lightAmbientIntensity");
-        
-        unLocWindowSize = gl3.glGetUniformLocation(getProgramId(), "windowSize");
+
+//        System.out.println("unLocLightPositionCameraSpace: " + unLocLightPositionCameraSpace);
+//        System.out.println("unLocLightDiffuseIntensity: " + unLocLightDiffuseIntensity);
+//        System.out.println("unLocLightAmbientIntensity: " + unLocLightAmbientIntensity);
+
         unLocLightAttenuation = gl3.glGetUniformLocation(getProgramId(), "lightAttenuation");
         unLocRsquare = gl3.glGetUniformLocation(getProgramId(), "rSquare");
-        
+
+//        System.out.println("unLocLightAttenuation: " + unLocLightAttenuation);
+//        System.out.println("unLocRsquare: " + unLocRsquare);
+
         int projectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "Projection");
         gl3.glUniformBlockBinding(getProgramId(), projectionUBI, projectionUBB);
-        
+
         int unProjectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "UnProjection");
         gl3.glUniformBlockBinding(getProgramId(), unProjectionUBI, unProjectionUBB);
     }
@@ -63,10 +69,6 @@ public class LitProgram3 extends glsl.GLSLProgramObject{
 
     public int getUnLocNormalModelToCameraMatrix() {
         return unLocNormalModelToCameraMatrix;
-    }
-
-    public int getUnLocWindowSize() {
-        return unLocWindowSize;
     }
 
     public int getUnLocLightAttenuation() {

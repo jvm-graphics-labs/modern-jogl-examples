@@ -244,6 +244,8 @@ public class VertexPointLighting implements GLEventListener, KeyListener, MouseL
 
         ret.z = (float) (Math.sin(currentTimeThroughLoop * (Math.PI * 2.0f)) * lightRadius);
 
+        System.out.println("currentTimeThroughLoop: "+currentTimeThroughLoop+" x: "+ret.x+" lightRadius: "+lightRadius);
+        
         return ret;
     }
 
@@ -323,7 +325,7 @@ public class VertexPointLighting implements GLEventListener, KeyListener, MouseL
         modelMatrix.translate(new Vec3(worldLightPosition));
         modelMatrix.scale(new Vec3(0.1f, 0.1f, 0.1f));
 
-        System.out.println("unlit.getUnLocModelToCameraMatrix(): " + unlit.getUnLocModelToCameraMatrix());
+//        System.out.println("unlit.getUnLocModelToCameraMatrix(): " + unlit.getUnLocModelToCameraMatrix());
 
         unlit.bind(gl3);
         {

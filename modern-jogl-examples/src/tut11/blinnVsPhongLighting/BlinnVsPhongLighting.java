@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut10;
+package tut11.blinnVsPhongLighting;
 
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
@@ -31,57 +31,59 @@ import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import jglm.Jglm;
 import jglm.Mat3;
-import jglm.Mat4;
 import jglm.Quat;
-import jglm.Vec2i;
 import jglm.Vec3;
 import jglm.Vec4;
 import mesh.Mesh;
-import tut10.glsl.LitProgram3;
 import tut10.glsl.UnlitProgram;
+import tut11.phongLighting.glslProgram.LitProgram;
 
 /**
  *
  * @author gbarbieri
  */
-public class FragmentAttenuation implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class BlinnVsPhongLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
     private GLCanvas canvas;
     private int imageWidth;
     private int imageHeight;
-    private LitProgram3 fragWhiteDiffuseColor;
-    private LitProgram3 fragVertexDiffuseColor;
-    private UnlitProgram unlitProgram;
+    private LitProgram whiteProgram;
+    private LitProgram colorProgram;
+    private UnlitProgram unlit;
     private ViewPole viewPole;
     private ObjectPole objectPole;
     private Mesh cylinder;
     private Mesh plane;
     private Mesh cube;
     private int[] projectionUBO;
-    private int[] unProjectionUBO;
     private Timer lightTimer;
     private float lightHeight;
     private float lightRadius;
     private boolean coloredCylinder;
     private boolean drawLight;
-    private boolean rSquare;
-    private float lightAttenuation;
     private boolean scaleCylinder;
+    private boolean drawDark;
+    private float lightAttenuation;
+    private MaterialParameters materialParameters;
+    private Vec4 darkColor;
+    private Vec4 lightColor;
+    private LightingModel lightingModel;
+    private ProgramPairs[] programs;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        FragmentAttenuation fragmentAttenuation = new FragmentAttenuation();
+        BlinnVsPhongLighting blinnVsPhongLighting = new BlinnVsPhongLighting();
 
-        Frame frame = new Frame("Tutorial 10 - Fragment Attenuation");
+        Frame frame = new Frame("Tutorial 10 - Blinn vs Phong Lighting");
 
-        frame.add(fragmentAttenuation.getCanvas());
+        frame.add(blinnVsPhongLighting.getCanvas());
 
-        frame.setSize(fragmentAttenuation.getCanvas().getWidth(), fragmentAttenuation.getCanvas().getHeight());
+        frame.setSize(blinnVsPhongLighting.getCanvas().getWidth(), blinnVsPhongLighting.getCanvas().getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(fragmentAttenuation.canvas, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(blinnVsPhongLighting.canvas, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -96,7 +98,7 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
         frame.setVisible(true);
     }
 
-    public FragmentAttenuation() {
+    public BlinnVsPhongLighting() {
         initGL();
     }
 
@@ -124,13 +126,12 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
     public void init(GLAutoDrawable drawable) {
 
         GL3 gl3 = drawable.getGL().getGL3();
+
         int projectionUBB = 2;
-        int unProjectionUBB = 1;
-        String shadersFilepath = "/tut10/shaders/";
 
         canvas.setAutoSwapBufferMode(false);
 
-        initializePrograms(gl3, shadersFilepath, projectionUBB, unProjectionUBB);
+        initializePrograms(gl3, projectionUBB);
 
         ViewData initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
 
@@ -154,29 +155,52 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
         gl3.glDepthRangef(0.0f, 1.0f);
         gl3.glEnable(GL3.GL_DEPTH_CLAMP);
 
-        initUBO(gl3, projectionUBB, unProjectionUBB);
+        initUBO(gl3, projectionUBB);
 
         lightHeight = 1.5f;
         lightRadius = 1.0f;
 
         lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
+        lightingModel = LightingModel.DiffuseAndBlinn;
+
         coloredCylinder = false;
         drawLight = false;
-        rSquare = false;
-
-        lightAttenuation = 1.0f;
 
         scaleCylinder = false;
+
+        drawDark = false;
+
+        lightAttenuation = 1.2f;
+
+        darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f);
+        lightColor = new Vec4(1.0f);
+
+        materialParameters = new MaterialParameters();
     }
 
-    private void initializePrograms(GL3 gl3, String shadersFilepath, int projectionUBB, int unProjectionUBB) {
+    private void initializePrograms(GL3 gl3, int projectionUBB) {
 
-        fragWhiteDiffuseColor = new LitProgram3(gl3, shadersFilepath, "FragLightAtten_PN_VS.glsl", "FragLightAtten_FS.glsl", projectionUBB, unProjectionUBB);
+        String shadersFilepath = "/tut11/blinnVsPhongLighting/shaders/";        
+        programs = new ProgramPairs[4];
 
-        fragVertexDiffuseColor = new LitProgram3(gl3, shadersFilepath, "FragLightAtten_PCN_VS.glsl", "FragLightAtten_FS.glsl", projectionUBB, unProjectionUBB);
+        ShaderPairs[] shadersFiles = new ShaderPairs[]{
+            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "DiffusePhong_FS.glsl"),
+            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "Phong_FS.glsl"),
+            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "DiffuseBlinn_FS.glsl"),
+            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "Blinn_FS.glsl")};
 
-        unlitProgram = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
+        for (int i = 0; i < 4; i++) {
+
+            ProgramPairs programPair = new ProgramPairs();
+
+            programPair.whiteProgram = new LitProgram(gl3, shadersFilepath, shadersFiles[i].whiteVS, shadersFiles[i].fS, projectionUBB);
+            programPair.colorProgram = new LitProgram(gl3, shadersFilepath, shadersFiles[i].colorVS, shadersFiles[i].fS, projectionUBB);
+
+            programs[i] = programPair;
+        }
+
+        unlit = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
     }
 
     private void initializeMeshes(GL3 gl3) {
@@ -190,7 +214,7 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
         cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
     }
 
-    private void initUBO(GL3 gl3, int projectionUBB, int unProjectionUBB) {
+    private void initUBO(GL3 gl3, int projectionUBB) {
 
         int size = 16 * 4;
 
@@ -204,19 +228,6 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
             gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, projectionUBB, projectionUBO[0], 0, size);
         }
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-
-        size = (16 + 2) * 4;
-
-        unProjectionUBO = new int[1];
-
-        gl3.glGenBuffers(1, unProjectionUBO, 0);
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, unProjectionUBO[0]);
-        {
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size, null, GL3.GL_DYNAMIC_DRAW);
-
-            gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, unProjectionUBB, unProjectionUBO[0], 0, size);
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
     }
 
     @Override
@@ -225,7 +236,7 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        System.out.println("display");
+//        System.out.println("display");
 
         GL3 gl3 = drawable.getGL().getGL3();
 
@@ -243,6 +254,9 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
         Vec4 lightPositionCameraSpace = modelMatrix.top().mult(lightPositionWorldSpace);
 
+        whiteProgram = programs[lightingModel.ordinal()].whiteProgram;
+        colorProgram = programs[lightingModel.ordinal()].colorProgram;
+
         setLights(gl3, lightPositionCameraSpace);
 
         modelMatrix.push();
@@ -253,7 +267,7 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
         modelMatrix.push();
         {
-            renderCylinder(gl3, modelMatrix, lightPositionCameraSpace);
+            renderCylinder(gl3, modelMatrix);
         }
         modelMatrix.pop();
 
@@ -283,33 +297,36 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
     private void setLights(GL3 gl3, Vec4 lightPositionCameraSpace) {
 
-        fragVertexDiffuseColor.bind(gl3);
+        whiteProgram.bind(gl3);
         {
-            gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+            gl3.glUniform4f(whiteProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
 
-            gl3.glUniform4f(fragVertexDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+            gl3.glUniform4f(whiteProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
 
-            gl3.glUniform3fv(fragVertexDiffuseColor.getUnLocLightPositionCameraSpace(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+            gl3.glUniform3fv(whiteProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
 
-            gl3.glUniform1f(fragVertexDiffuseColor.getUnLocLightAttenuation(), lightAttenuation);
+            gl3.glUniform1f(whiteProgram.getUnLocLightAttenuation(), lightAttenuation);
 
-            gl3.glUniform1i(fragVertexDiffuseColor.getUnLocRsquare(), rSquare ? 1 : 0);
+            gl3.glUniform1f(whiteProgram.getUnLocShininessFactor(), materialParameters.getSpecularValue());
+
+            gl3.glUniform4fv(whiteProgram.getUnLocBaseDiffuseColor(), 1, (drawDark ? darkColor : lightColor).toFloatArray(), 0);
+
         }
-        fragVertexDiffuseColor.unbind(gl3);
+        whiteProgram.unbind(gl3);
 
-        fragWhiteDiffuseColor.bind(gl3);
+        colorProgram.bind(gl3);
         {
-            gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
+            gl3.glUniform4f(colorProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
 
-            gl3.glUniform4f(fragWhiteDiffuseColor.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
+            gl3.glUniform4f(colorProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
 
-            gl3.glUniform3fv(fragWhiteDiffuseColor.getUnLocLightPositionCameraSpace(), 1, lightPositionCameraSpace.toFloatArray(), 0);
+            gl3.glUniform3fv(colorProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
 
-            gl3.glUniform1f(fragWhiteDiffuseColor.getUnLocLightAttenuation(), lightAttenuation);
+            gl3.glUniform1f(colorProgram.getUnLocLightAttenuation(), lightAttenuation);
 
-            gl3.glUniform1i(fragWhiteDiffuseColor.getUnLocRsquare(), rSquare ? 1 : 0);
+            gl3.glUniform1f(colorProgram.getUnLocShininessFactor(), materialParameters.getSpecularValue());
         }
-        fragWhiteDiffuseColor.unbind(gl3);
+        colorProgram.unbind(gl3);
     }
 
     private void renderGround(GL3 gl3, MatrixStack modelMatrix) {
@@ -320,18 +337,18 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
         normalMatrix = normalMatrix.transpose();
 
-        fragWhiteDiffuseColor.bind(gl3);
+        whiteProgram.bind(gl3);
         {
-            gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+            gl3.glUniformMatrix4fv(whiteProgram.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
 
-            gl3.glUniformMatrix3fv(fragWhiteDiffuseColor.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
+            gl3.glUniformMatrix3fv(whiteProgram.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
 
             plane.render(gl3);
         }
-        fragWhiteDiffuseColor.unbind(gl3);
+        whiteProgram.unbind(gl3);
     }
 
-    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix, Vec4 lightPositionCameraSpace) {
+    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix) {
 
         modelMatrix.applyMat(objectPole.calcMatrix());
 
@@ -340,52 +357,39 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
         }
 
         Mat3 normalMatrix = new Mat3(modelMatrix.top());
-
         normalMatrix = normalMatrix.inverse();
-
         normalMatrix = normalMatrix.transpose();
 
-        if (coloredCylinder) {
+        LitProgram program = coloredCylinder ? colorProgram : whiteProgram;
 
-            fragVertexDiffuseColor.bind(gl3);
-            {
-                gl3.glUniformMatrix4fv(fragVertexDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
+        program.bind(gl3);
+        {
+            gl3.glUniformMatrix4fv(program.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
 
-                gl3.glUniformMatrix3fv(fragVertexDiffuseColor.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
+            gl3.glUniformMatrix3fv(program.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
 
+            if (coloredCylinder) {
                 cylinder.render(gl3, "lit-color");
-            }
-            fragVertexDiffuseColor.unbind(gl3);
-
-        } else {
-
-            fragWhiteDiffuseColor.bind(gl3);
-            {
-
-                gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-                gl3.glUniformMatrix3fv(fragWhiteDiffuseColor.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
-
+            } else {
                 cylinder.render(gl3, "lit");
             }
-            fragWhiteDiffuseColor.unbind(gl3);
         }
+        program.unbind(gl3);
     }
 
     private void renderLight(GL3 gl3, MatrixStack modelStack, Vec4 lightPositionWorldSpace) {
-
         modelStack.translate(new Vec3(lightPositionWorldSpace));
         modelStack.scale(new Vec3(0.1f, 0.1f, 0.1f));
 
-        unlitProgram.bind(gl3);
+        unlit.bind(gl3);
         {
-            gl3.glUniformMatrix4fv(unlitProgram.getUnLocModelToCameraMatrix(), 1, false, modelStack.top().toFloatArray(), 0);
+            gl3.glUniformMatrix4fv(unlit.getUnLocModelToCameraMatrix(), 1, false, modelStack.top().toFloatArray(), 0);
 
-            gl3.glUniform4f(unlitProgram.getUnLocObjectColor(), 0.8078f, 0.8078f, 0.9922f, 1.0f);
+            gl3.glUniform4f(unlit.getUnLocObjectColor(), 0.8078f, 0.8078f, 0.9922f, 1.0f);
 
             cube.render(gl3, "flat");
         }
-        unlitProgram.unbind(gl3);
+        unlit.unbind(gl3);
     }
 
     @Override
@@ -400,20 +404,9 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
         MatrixStack perspectiveMatrix = new MatrixStack();
         perspectiveMatrix.setTop(Jglm.perspective(45.0f, (float) width / (float) height, zNear, zFar));
 
-        Mat4 clipToCameraMatrix = perspectiveMatrix.top().inverse();
-        Vec2i windowSize = new Vec2i(width, height);
-
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
         {
             gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, unProjectionUBO[0]);
-        {
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(clipToCameraMatrix.toFloatArray()));
-
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, size, 2 * 4, GLBuffers.newDirectIntBuffer(windowSize.toIntArray()));
         }
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
@@ -462,27 +455,17 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
             case KeyEvent.VK_J:
                 lightRadius -= offset;
+                if (lightRadius < 0.2f) {
+                    lightRadius = 0.2f;
+                }
                 break;
 
             case KeyEvent.VK_O:
-                float delta;
-                if (e.isShiftDown()) {
-                    delta = 1.1f;
-                } else {
-                    delta = 1.5f;
-                }
-                lightAttenuation *= delta;
-                System.out.println("lightAttenuation: " + lightAttenuation);
+                materialParameters.increment(e.isShiftDown());
                 break;
 
             case KeyEvent.VK_U:
-                if (e.isShiftDown()) {
-                    delta = 1.1f;
-                } else {
-                    delta = 1.5f;
-                }
-                lightAttenuation /= delta;
-                System.out.println("lightAttenuation: " + lightAttenuation);
+                materialParameters.decrement(e.isShiftDown());
                 break;
 
             case KeyEvent.VK_B:
@@ -490,25 +473,54 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
                 break;
 
             case KeyEvent.VK_H:
-                rSquare = !rSquare;
-                if (rSquare) {
-                    System.out.println("Inverse Squared Attenuation");
+                if (e.isShiftDown()) {
+                    switch(lightingModel){
+                        case Blinn:
+                            lightingModel = LightingModel.DiffuseAndBlinn;
+                            System.out.println("DiffuseAndBlinn");
+                            break;
+                        case DiffuseAndBlinn:
+                            lightingModel = LightingModel.Blinn;
+                            System.out.println("Blinn");
+                            break;
+                        case Phong:
+                            lightingModel = LightingModel.DiffuseAndPhong;
+                            System.out.println("DiffuseAndPhong");
+                            break;
+                        case DiffuseAndPhong:
+                            lightingModel = LightingModel.Phong;
+                            System.out.println("Phong");
+                            break;
+                    }
                 } else {
-                    System.out.println("Plain Inverse Attentuation");
+                    switch (lightingModel) {
+                        case Blinn:
+                            lightingModel = LightingModel.Phong;
+                            System.out.println("Phong");
+                            break;
+                        case Phong:
+                            lightingModel = LightingModel.Blinn;
+                            System.out.println("Blinn");
+                            break;
+                        case DiffuseAndBlinn:
+                            lightingModel = LightingModel.DiffuseAndPhong;
+                            System.out.println("DiffuseAndPhong");
+                            break;
+                        case DiffuseAndPhong:
+                            lightingModel = LightingModel.DiffuseAndBlinn;
+                            System.out.println("DiffuseAndBlinn");
+                            break;
+                    }
                 }
                 break;
 
             case KeyEvent.VK_T:
                 scaleCylinder = !scaleCylinder;
                 break;
-        }
 
-        if (lightRadius < 0.2f) {
-            lightRadius = 0.2f;
-        }
-
-        if (lightAttenuation < 0.1f) {
-            lightAttenuation = 0.1f;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
         }
     }
 
@@ -557,5 +569,110 @@ public class FragmentAttenuation implements GLEventListener, KeyListener, MouseL
 
     public GLCanvas getCanvas() {
         return canvas;
+
+
+    }
+
+    private enum LightingModel {
+
+        DiffuseAndPhong,
+        Phong,
+        DiffuseAndBlinn,
+        Blinn;
+    }
+
+    private class ProgramPairs {
+
+        public LitProgram whiteProgram;
+        public LitProgram colorProgram;
+    }
+
+    private class ShaderPairs {
+
+        public String whiteVS;
+        public String colorVS;
+        public String fS;
+
+        public ShaderPairs(String whiteVS, String colorVS, String fS) {
+
+            this.whiteVS = whiteVS;
+            this.colorVS = colorVS;
+            this.fS = fS;
+        }
+    }
+
+    private class MaterialParameters {
+
+        private float shininessFactorPhong;
+        private float shininessFactorBlinn;
+
+        public MaterialParameters() {
+
+            shininessFactorPhong = 4.0f;
+            shininessFactorBlinn = 4.0f;
+        }
+
+        public float getSpecularValue() {
+
+            switch (lightingModel) {
+
+                case DiffuseAndBlinn:
+                case Blinn:
+                    return shininessFactorBlinn;
+
+                default:
+                    return shininessFactorPhong;
+            }
+        }
+
+        public void increment(boolean small) {
+
+            float increment;
+
+            if (small) {
+                increment = 0.1f;
+            } else {
+                increment = 0.5f;
+            }
+
+            switch (lightingModel) {
+
+                case Blinn:
+                case DiffuseAndBlinn:
+                    shininessFactorBlinn += increment;
+                    System.out.println("shininessFactorBlinn: " + shininessFactorBlinn);
+                    break;
+                default:
+                    shininessFactorPhong += increment;
+                    System.out.println("shininessFactorPhong: " + shininessFactorPhong);
+                    break;
+            }
+        }
+
+        public void decrement(boolean small) {
+
+            float decrement;
+
+            if (small) {
+                decrement = 0.1f;
+            } else {
+                decrement = 0.5f;
+            }
+
+            switch (lightingModel) {
+
+                case Blinn:
+                case DiffuseAndBlinn:
+                    shininessFactorBlinn -= decrement;
+                    shininessFactorBlinn = Jglm.clamp(shininessFactorBlinn, 0.0001f, shininessFactorBlinn);
+                    System.out.println("shininessFactorBlinn: " + shininessFactorBlinn);
+                    break;
+                default:
+                    shininessFactorPhong -= decrement;
+                    shininessFactorPhong = Jglm.clamp(shininessFactorPhong, 0.0001f, shininessFactorPhong);
+                    System.out.println("shininessFactorPhong: " + shininessFactorPhong);
+                    break;
+            }
+        }
     }
 }

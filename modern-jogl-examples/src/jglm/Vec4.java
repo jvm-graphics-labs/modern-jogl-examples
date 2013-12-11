@@ -28,6 +28,14 @@ public class Vec4 extends Vec {
         w = vector[3];
     }
     
+    public Vec4(float value) {
+        vector = new float[]{value, value, value, value};
+        x = vector[0];
+        y = vector[1];
+        z = vector[2];
+        w = vector[3];
+    }
+    
      public Vec4(int[] floatArray) {
         
         x = floatArray[0];

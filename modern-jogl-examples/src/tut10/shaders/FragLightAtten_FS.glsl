@@ -57,4 +57,5 @@ void main()
     cosAngleIncidence = clamp(cosAngleIncidence, 0, 1);
 
     outputColor = (diffuseColor * attenuationIntensity * cosAngleIncidence) + (diffuseColor * lightAmbientIntensity);
+    //outputColor = vec4(1.0, 0.0, 1.0, 1.0);
 }
