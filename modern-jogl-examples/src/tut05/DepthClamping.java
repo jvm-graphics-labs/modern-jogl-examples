@@ -253,7 +253,7 @@ public class DepthClamping implements GLEventListener, KeyListener {
 
                 programObject.setUniform(gl3, "offset", new float[]{0.0f, 0.0f, -1.0f}, 3);
 
-                gl3.glDrawElementsBaseVertex(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, null, 18);
+                gl3.glDrawElementsBaseVertex(GL3.GL_TRIANGLES, indexData.length, GL3.GL_UNSIGNED_INT, IBO[0], 18);
             }
             gl3.glBindVertexArray(0);
         }

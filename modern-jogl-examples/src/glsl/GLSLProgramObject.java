@@ -131,6 +131,7 @@ public class GLSLProgramObject {
     }
 
     public final void attachVertexShader(GL3 gl3, String filename) {
+//        System.out.println("\nfilename " + filename);
 //        URL fileURL = getClass().getClassLoader().getResource(
 //                File.separator + "depthPeeling"
 //                + File.separator + "shaders" + File.separator + filename);
@@ -228,7 +229,6 @@ public class GLSLProgramObject {
                     System.out.println("Problem closing the BufferedReader, " + filename);
                 }
             }
-
 
             int iID = gl3.glCreateShader(GL3.GL_FRAGMENT_SHADER);
 

@@ -167,7 +167,7 @@ public class Test implements GLEventListener {
         programObject.attachFragmentShader(gl3, shadersFilepath + "StandardColor_FS.glsl");
         programObject.initializeProgram(gl3, true);
 
-        textureUnLoc = gl3.glGetUniformLocation(programObject.getProgId(), "myTexture");
+        textureUnLoc = gl3.glGetUniformLocation(programObject.getProgramId(), "myTexture");
 
         System.out.println("ok");
     }
