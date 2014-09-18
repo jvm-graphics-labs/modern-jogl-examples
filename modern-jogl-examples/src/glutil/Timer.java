@@ -75,6 +75,21 @@ public class Timer {
         isPaused = !isPaused;
     }
 
+    public void rewind(float secRewind) {
+        
+        secAccumTime -= secRewind;
+        
+        if(secAccumTime < 0) {
+            
+            secAccumTime = 0;
+        }
+    }
+    
+    public void fastForward(float secFF) {
+        
+        secAccumTime += secFF;
+    }
+    
     public enum Type {
 
         Loop,

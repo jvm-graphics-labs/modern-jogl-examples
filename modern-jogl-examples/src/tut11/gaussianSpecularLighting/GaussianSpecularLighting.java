@@ -77,7 +77,7 @@ public class GaussianSpecularLighting implements GLEventListener, KeyListener, M
 
         GaussianSpecularLighting gaussianSpecularLighting = new GaussianSpecularLighting();
 
-        Frame frame = new Frame("Tutorial 10 - Gaussian Specular Lighting");
+        Frame frame = new Frame("Tutorial 11 - Gaussian Specular Lighting");
 
         frame.add(gaussianSpecularLighting.getCanvas());
 

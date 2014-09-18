@@ -1,4 +1,4 @@
-package test;
+package test.basicTexturing1;
 
 /*
  * To change this template, choose Tools | Templates
@@ -141,12 +141,12 @@ public class Test implements GLEventListener {
                 texture.enable(gl3);
                 texture.bind(gl3);
                 gl3.glUniform1i(textureUnLoc, 0);
-                
+
                 gl3.glVertexAttribPointer(0, 4, GL3.GL_FLOAT, false, 0, 0);
                 gl3.glVertexAttribPointer(1, 2, GL3.GL_FLOAT, false, 0, 4 * 4 * 4);
 
                 gl3.glDrawArrays(GL3.GL_QUADS, 0, 4);
-                
+
                 texture.disable(gl3);
             }
             gl3.glDisableVertexAttribArray(0);
@@ -217,21 +217,20 @@ public class Test implements GLEventListener {
     public void setCanvas(GLCanvas canvas) {
         this.canvas = canvas;
     }
-    
-    private void test(){
-        
+
+    private void test() {
+
         ViewData viewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(new Vec3(0.3826834f, 0.0f, 0.0f), 0.92387953f), 5.0f, 0.0f);
-        
-        ViewScale viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f/250.0f);
-        
+
+        ViewScale viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f / 250.0f);
+
         ViewPole viewPole = new ViewPole(viewData, viewScale);
-        
+
         Mat4 m = viewPole.calcMatrix();
-        
+
 //        m.print("m");
-        
         Mat4 out = m.inverse();
-        
+
         out.print("out");
     }
 }

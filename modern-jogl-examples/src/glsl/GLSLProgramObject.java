@@ -137,6 +137,7 @@ public class GLSLProgramObject {
 //                + File.separator + "shaders" + File.separator + filename);
 //        String resourcePath = shadersPath + filename;
         String resourcePath = filename;
+//        System.out.println("filename "+filename);
         URL fileURL = getClass().getResource(resourcePath);
 
         if (fileURL != null) {

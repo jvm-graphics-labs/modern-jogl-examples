@@ -55,12 +55,42 @@ public class ViewPole {
         return mat;
     }
 
+    /**
+     * @deprecated 
+     * @param mouseEvent 
+     */
     public void mousePressed(MouseEvent mouseEvent) {
 
         if (!isDragging) {
 
             if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
 
+                Vec2 position = new Vec2(mouseEvent.getX(), mouseEvent.getY());
+
+                if (mouseEvent.isControlDown()) {
+
+                    beginDragRotate(position, RotatingMode.BIAXIAL);
+
+                } else if (mouseEvent.isAltDown()) {
+
+                    beginDragRotate(position, RotatingMode.SPIN);
+
+                } else {
+
+                    beginDragRotate(position, RotatingMode.DUAL_AXIS);
+                }
+            }
+        }
+    }
+    
+    public void mousePressed(com.jogamp.newt.event.MouseEvent mouseEvent) {
+
+        if (!isDragging) {
+
+//            System.out.println("mouseEvent.getButton() "+mouseEvent.getButton());
+//            System.out.println("com.jogamp.newt.event.MouseEvent.BUTTON1 "+com.jogamp.newt.event.MouseEvent.BUTTON1);
+            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON1) {
+//                System.out.println("in");
                 Vec2 position = new Vec2(mouseEvent.getX(), mouseEvent.getY());
 
                 if (mouseEvent.isControlDown()) {
@@ -92,6 +122,10 @@ public class ViewPole {
         isDragging = true;
     }
 
+    /**
+     * @deprecated 
+     * @param mouseEvent 
+     */
     public void mouseMove(MouseEvent mouseEvent) {
 
         if (isDragging) {
@@ -99,8 +133,38 @@ public class ViewPole {
             onDragRotate(mouseEvent);
         }
     }
+    
+    public void mouseMove(com.jogamp.newt.event.MouseEvent mouseEvent) {
 
+        if (isDragging) {
+
+            onDragRotate(mouseEvent);
+        }
+    }
+
+    /**
+     * @deprecated 
+     * @param mouseEvent 
+     */
     private void onDragRotate(MouseEvent mouseEvent) {
+
+        Vec2 current = new Vec2(mouseEvent.getX(), mouseEvent.getY());
+
+        current = current.minus(startDragMouseLoc);
+
+        switch (rotatingMode) {
+
+            case DUAL_AXIS:
+                processXYchange(current);
+                break;
+
+            case SPIN:
+                processSpinAxis(current);
+                break;
+        }
+    }
+    
+    private void onDragRotate(com.jogamp.newt.event.MouseEvent mouseEvent) {
 
         Vec2 current = new Vec2(mouseEvent.getX(), mouseEvent.getY());
 
@@ -138,6 +202,10 @@ public class ViewPole {
         currView.setDegSpinRotation(degSpinDiff + degStartDragSpin);
     }
 
+    /**
+     * @deprecated 
+     * @param mouseEvent 
+     */
     public void mouseReleased(MouseEvent mouseEvent) {
 
         if (isDragging) {
@@ -152,13 +220,40 @@ public class ViewPole {
         }
     }
 
+    public void mouseReleased(com.jogamp.newt.event.MouseEvent mouseEvent) {
+
+        if (isDragging) {
+
+            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON1) {
+
+                if (rotatingMode == RotatingMode.DUAL_AXIS || 
+                        rotatingMode == RotatingMode.BIAXIAL || 
+                        rotatingMode == RotatingMode.SPIN) {
+
+                    endDragRotate(mouseEvent);
+                }
+            }
+        }
+    }
+
     private void endDragRotate(MouseEvent mouseEvent) {
 
         onDragRotate(mouseEvent);
 
         isDragging = false;
     }
+    
+    private void endDragRotate(com.jogamp.newt.event.MouseEvent mouseEvent) {
 
+        onDragRotate(mouseEvent);
+
+        isDragging = false;
+    }
+
+    /**
+     * @deprecated 
+     * @param mouseWheelEvent 
+     */
     public void mouseWheel(MouseWheelEvent mouseWheelEvent) {
 
         if (mouseWheelEvent.isShiftDown()) {
@@ -171,6 +266,24 @@ public class ViewPole {
         }
 
         currView.setRadius(Jglm.clamp(currView.getRadius(), viewScale.getMinRadius(), viewScale.getMaxRadius()));
+    }
+    
+    public void mouseWheel(com.jogamp.newt.event.MouseEvent mouseEvent) {
+
+        if (mouseEvent.isShiftDown()) {
+
+            currView.setRadius(currView.getRadius() + mouseEvent.getRotation()[0] * viewScale.getLargeRadiusDelta());
+
+        } else {
+
+            currView.setRadius(currView.getRadius() + mouseEvent.getRotation()[1] * viewScale.getSmallRadiusDelta());
+        }
+
+        currView.setRadius(Jglm.clamp(currView.getRadius(), viewScale.getMinRadius(), viewScale.getMaxRadius()));
+    }
+
+    public ViewData getCurrView() {
+        return currView;
     }
     
     public enum RotatingMode {

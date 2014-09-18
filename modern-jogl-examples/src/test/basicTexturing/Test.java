@@ -1,8 +1,9 @@
-package tut14;
+package test.basicTexturing;
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 import glsl.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderUtil;
@@ -134,12 +135,12 @@ public class Test implements GLEventListener {
                 texture.enable(gl3);
                 texture.bind(gl3);
                 gl3.glUniform1i(textureUnLoc, 0);
-               
+
                 gl3.glVertexAttribPointer(0, 4, GL3.GL_FLOAT, false, 0, 0);
                 gl3.glVertexAttribPointer(1, 2, GL3.GL_FLOAT, false, 0, 4 * 4 * 4);
 
                 gl3.glDrawArrays(GL3.GL_QUADS, 0, 4);
-               
+
                 texture.disable(gl3);
             }
             gl3.glDisableVertexAttribArray(0);
@@ -211,4 +212,3 @@ public class Test implements GLEventListener {
         this.canvas = canvas;
     }
 }
-
