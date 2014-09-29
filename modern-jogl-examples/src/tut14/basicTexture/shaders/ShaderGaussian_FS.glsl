@@ -33,7 +33,7 @@ float CalcAttenuation(in vec3 cameraSpacePosition, in vec3 cameraSpaceLightPos, 
 
     vec3 lightDifference = cameraSpaceLightPos - cameraSpacePosition;
     float lightDistanceSqr = dot(lightDifference, lightDifference);
-    lightDirection = lightDifference + inversesqrt(lightDistanceSqr);
+    lightDirection = lightDifference * inversesqrt(lightDistanceSqr);
 
     return (1 / (1.0 + Lgt.lightAttenuation * lightDistanceSqr));
 }
