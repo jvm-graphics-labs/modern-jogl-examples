@@ -279,7 +279,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 
     private int calcCosAngleResolution(int level) {
 
-        int cosAngleStart = 64;
+        int cosAngleStart = 1;
 
         return cosAngleStart * ((int) Math.pow(2f, level));
     }
@@ -287,7 +287,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     private int createGaussianTexture(GL3 gl3, int cosAngleResolution, int shininessResolution) {
 
         byte[] textureData = buildGaussianData(cosAngleResolution, shininessResolution);
-
+        System.out.println("textureData.length " + textureData.length);
 //        for (int i = 0; i < textureData.length; i++) {
 //
 //            System.out.println("textureData[" + i + "] " + String.format("%02x", textureData[i]));
@@ -297,8 +297,11 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 
         gl3.glBindTexture(GL3.GL_TEXTURE_2D, gaussTexture[0]);
         {
+            ByteBuffer byteBuffer = GLBuffers.newDirectByteBuffer(textureData);
+            System.out.println("byteBuffer " + byteBuffer.toString());
+            System.out.println("cosAngleResolution " + cosAngleResolution + " shininessResolution " + shininessResolution);
             gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_R8, cosAngleResolution, shininessResolution,
-                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, GLBuffers.newDirectByteBuffer(textureData));
+                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, byteBuffer);
             gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
             gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
         }
@@ -316,7 +319,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
         for (int iShin = 1; iShin <= shininessResolution; iShin++) {
 
             float shininess = iShin / (float) shininessResolution;
-            
+
             for (int iCosAng = 0; iCosAng < cosAngleResolution; iCosAng++) {
 
                 float cosAng = iCosAng / (float) (cosAngleResolution - 1);
@@ -324,7 +327,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
                 float exponent = angle / shininess;
                 exponent = -(exponent * exponent);
                 float gaussianTerm = (float) Math.exp(exponent);
-                
+
                 textureData[index] = (byte) (gaussianTerm * 255f);
 //                System.out.println("textureData[" + index + "] " + String.format("%02x", textureData[index]));
                 index++;
@@ -349,15 +352,15 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
             Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
         }
         gl3.glGenTextures(1, shineTexture, 0);
-
-        TextureData textureData = null;
-        try {
-            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.DDS);
-        } catch (IOException ex) {
-            Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        Buffer buffer = textureData.getBuffer();
-        buffer.rewind();
+//
+//        TextureData textureData = null;
+//        try {
+//            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.DDS);
+//        } catch (IOException ex) {
+//            Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        Buffer buffer = textureData.getBuffer();
+//        buffer.rewind();
 
 //        while(buffer.hasRemaining()){
 //            System.out.println("["+buffer.position()+"] = "+buffer.get());
@@ -368,7 +371,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 //                    + " ddsImage.getHeight() " + ddsImage.getHeight() + " ");
 //            ddsImage.debugPrint();
             gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_R8, ddsImage.getWidth(), ddsImage.getHeight(),
-                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, buffer);
+                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, ddsImage.getMipMap(0).getData());
 
             gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
             gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
@@ -607,22 +610,26 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 
             case KeyEvent.VK_1:
                 currentTexture = 0;
-                System.out.println("currentTexture " + currentTexture);
+                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
+//                System.out.println("currentTexture " + currentTexture);
                 break;
 
             case KeyEvent.VK_2:
                 currentTexture = 1;
-                System.out.println("currentTexture " + currentTexture);
+                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
+//                System.out.println("currentTexture " + currentTexture);
                 break;
 
             case KeyEvent.VK_3:
                 currentTexture = 2;
-                System.out.println("currentTexture " + currentTexture);
+                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
+//                System.out.println("currentTexture " + currentTexture);
                 break;
 
             case KeyEvent.VK_4:
                 currentTexture = 3;
-                System.out.println("currentTexture " + currentTexture);
+                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
+//                System.out.println("currentTexture " + currentTexture);
                 break;
 
             case KeyEvent.VK_8:

@@ -49,22 +49,22 @@ public class ManyImages implements GLEventListener, KeyListener {
      */
     public static void main(String[] args) {
 
-        final ManyImages basicTexture = new ManyImages();
-        basicTexture.initGL();
+        final ManyImages manyImages = new ManyImages();
+        manyImages.initGL();
 
-        Frame frame = new Frame("Tutorial 14 - Material Texture");
+        Frame frame = new Frame("Tutorial 15 - Many Images");
 
-        frame.add(basicTexture.newtCanvasAWT);
+        frame.add(manyImages.newtCanvasAWT);
 
-        frame.setSize(basicTexture.glWindow.getWidth(), basicTexture.glWindow.getHeight());
+        frame.setSize(manyImages.glWindow.getWidth(), manyImages.glWindow.getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(basicTexture.glWindow, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(manyImages.glWindow, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 fPSAnimator.stop();
-                basicTexture.glWindow.destroy();
+                manyImages.glWindow.destroy();
                 System.exit(0);
             }
         });
