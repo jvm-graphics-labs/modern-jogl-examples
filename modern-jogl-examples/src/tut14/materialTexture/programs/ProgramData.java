@@ -19,7 +19,7 @@ public class ProgramData extends glsl.GLSLProgramObject {
     private int gaussianTextureUL;
     private int shininessTextureUL;
 
-    public ProgramData(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader, int[] textUnit) {
+    public ProgramData(GL3 gl3, String shadersFilepath, String vertexShader, String fragmentShader) {
 
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
 
@@ -43,8 +43,8 @@ public class ProgramData extends glsl.GLSLProgramObject {
 //        System.out.println("gaussianTextureUL "+gaussianTextureUL);
         bind(gl3);
         {
-            gl3.glUniform1i(gaussianTextureUL, textUnit[MaterialTexture.TexUnit.gaussian.ordinal()]);
-            gl3.glUniform1i(shininessTextureUL, textUnit[MaterialTexture.TexUnit.shininess.ordinal()]);
+            gl3.glUniform1i(gaussianTextureUL, MaterialTexture.TexUnit.gaussian.ordinal());
+            gl3.glUniform1i(shininessTextureUL, MaterialTexture.TexUnit.shininess.ordinal());
         }
         unbind(gl3);
     }

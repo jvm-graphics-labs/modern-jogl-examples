@@ -89,7 +89,6 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     NewtCanvasAWT newtCanvasAWT;
     ProgramData[] programs = new ProgramData[ShaderMode.NUM_SHADER_MODES.ordinal()];
     UnlitProgData unlit;
-    int[] textUnits = new int[TexUnit.size.ordinal()];
     Mesh objectMesh;
     Mesh cubeMesh;
     Mesh planeMesh;
@@ -252,8 +251,8 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 
         for (int prog = 0; prog < ShaderMode.NUM_SHADER_MODES.ordinal(); prog++) {
 
-            programs[prog] = new ProgramData(gl3, shadersPath, shaderPairs[prog].vertShader,
-                    shaderPairs[prog].fragShader, textUnits);
+            programs[prog] = new ProgramData(gl3, shadersPath, shaderPairs[prog].vertShader, 
+                    shaderPairs[prog].fragShader);
         }
 
         unlit = new UnlitProgData(gl3, shadersPath, "Unlit_VS.glsl", "Unlit_FS.glsl",
@@ -279,7 +278,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
 
     private int calcCosAngleResolution(int level) {
 
-        int cosAngleStart = 1;
+        int cosAngleStart = 64;
 
         return cosAngleStart * ((int) Math.pow(2f, level));
     }
@@ -287,7 +286,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     private int createGaussianTexture(GL3 gl3, int cosAngleResolution, int shininessResolution) {
 
         byte[] textureData = buildGaussianData(cosAngleResolution, shininessResolution);
-        System.out.println("textureData.length " + textureData.length);
+//        System.out.println("textureData.length " + textureData.length);
 //        for (int i = 0; i < textureData.length; i++) {
 //
 //            System.out.println("textureData[" + i + "] " + String.format("%02x", textureData[i]));
@@ -298,8 +297,18 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
         gl3.glBindTexture(GL3.GL_TEXTURE_2D, gaussTexture[0]);
         {
             ByteBuffer byteBuffer = GLBuffers.newDirectByteBuffer(textureData);
-            System.out.println("byteBuffer " + byteBuffer.toString());
-            System.out.println("cosAngleResolution " + cosAngleResolution + " shininessResolution " + shininessResolution);
+
+//            System.out.println("byteBuffer " + byteBuffer.toString());
+//            System.out.println("cosAngleResolution " + cosAngleResolution + " shininessResolution " + shininessResolution);
+//            System.out.println("GLBuffer.sizeof() " + GLBuffers.sizeof(gl3, new int[1], GL3.GL_RED,
+//                    GL3.GL_UNSIGNED_BYTE, cosAngleResolution, shininessResolution, 1, true));
+//            System.out.println("bytes per pixel " + GLBuffers.bytesPerPixel(GL3.GL_RED, GL3.GL_UNSIGNED_BYTE));
+//
+//            int[] alignment = new int[1];
+//            gl3.glGetIntegerv(GL3.GL_PACK_ALIGNMENT, alignment, 0);
+//            System.out.println("alignment " + alignment[0]);
+            gl3.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 1);
+
             gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_R8, cosAngleResolution, shininessResolution,
                     0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, byteBuffer);
             gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
@@ -319,7 +328,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
         for (int iShin = 1; iShin <= shininessResolution; iShin++) {
 
             float shininess = iShin / (float) shininessResolution;
-
+//            System.out.println("shininess " + shininess);
             for (int iCosAng = 0; iCosAng < cosAngleResolution; iCosAng++) {
 
                 float cosAng = iCosAng / (float) (cosAngleResolution - 1);
@@ -418,6 +427,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
                 gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, lightData.toFloatArray().length * 4, lightFB);
             }
             gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+
             {
                 Mesh mesh = useInfinity ? objectMesh : planeMesh;
 
@@ -445,14 +455,14 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
                         gl3.glUniformMatrix3fv(prog.getNormalModelToCameraMatrixUL(), 1, false,
                                 normalMatrix.toFloatArray(), 0);
 
-                        gl3.glActiveTexture(GL3.GL_TEXTURE0 + textUnits[TexUnit.gaussian.ordinal()]);
+                        gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.gaussian.ordinal());
                         gl3.glBindTexture(GL3.GL_TEXTURE_2D, gaussianTextures[currentTexture]);
                         {
-                            gl3.glBindSampler(textUnits[TexUnit.gaussian.ordinal()], textureSampler[0]);
+                            gl3.glBindSampler(TexUnit.gaussian.ordinal(), textureSampler[0]);
                             {
-                                gl3.glActiveTexture(GL3.GL_TEXTURE0 + textUnits[TexUnit.shininess.ordinal()]);
+                                gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.shininess.ordinal());
                                 gl3.glBindTexture(GL3.GL_TEXTURE_2D, shineTexture[0]);
-                                gl3.glBindSampler(textUnits[TexUnit.shininess.ordinal()], textureSampler[0]);
+                                gl3.glBindSampler(TexUnit.shininess.ordinal(), textureSampler[0]);
                                 {
                                     if (eMode != ShaderMode.MODE_FIXED) {
 
@@ -464,7 +474,7 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
                                     }
                                 }
                             }
-                            gl3.glBindSampler(textUnits[TexUnit.gaussian.ordinal()], 0);
+                            gl3.glBindSampler(TexUnit.gaussian.ordinal(), 0);
                         }
                         gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
                     }
@@ -783,7 +793,6 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     public enum TexUnit {
 
         gaussian,
-        shininess,
-        size
+        shininess
     }
 }
