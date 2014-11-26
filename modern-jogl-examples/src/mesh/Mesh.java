@@ -109,7 +109,7 @@ public class Mesh {
                 gl3.glBindVertexArray(VAO[i]);
                 {
                     for (ElementsDrawer elementsDrawer : indicesList) {
-
+                        
                         mode = elementsDrawer.getCmd();
 
                         count = elementsDrawer.getIndices().length;

@@ -21,12 +21,13 @@ public class ProgramData extends glsl.GLSLProgramObject {
 
         super(gl3, shadersFilepath, vertexShader, fragmentShader);
 
-        modelToCameraUL = gl3.glGetUniformLocation(getProgramId(), "modelToCamera");
-
+        modelToCameraUL = gl3.glGetUniformLocation(getProgramId(), "modelToCameraMatrix");
+        
         int projectionUBI = gl3.glGetUniformBlockIndex(getProgramId(), "Projection");
         gl3.glUniformBlockBinding(getProgramId(), projectionUBI, UniformBlockBuffers.projection.ordinal());
 
         int colorTextureUL = gl3.glGetUniformLocation(getProgramId(), "colorTexture");
+        
         gl3.glUseProgram(getProgramId());
         {
             gl3.glUniform1i(colorTextureUL, TexUnit.color.ordinal());

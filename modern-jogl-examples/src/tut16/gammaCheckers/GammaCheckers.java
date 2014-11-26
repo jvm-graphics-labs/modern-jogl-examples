@@ -6,6 +6,8 @@
 package tut16.gammaCheckers;
 
 import com.jogamp.newt.awt.NewtCanvasAWT;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
@@ -37,7 +39,7 @@ import tut16.gammaCheckers.program.ProgramData;
  *
  * @author gbarbieri
  */
-public class GammaCheckers implements GLEventListener {
+public class GammaCheckers implements GLEventListener, KeyListener {
 
     /**
      * @param args the command line arguments
@@ -98,7 +100,7 @@ public class GammaCheckers implements GLEventListener {
         glWindow.setSize(1024, 768);
 
         glWindow.addGLEventListener(this);
-//        glWindow.addKeyListener(this);
+        glWindow.addKeyListener(this);
 //        glWindow.addMouseListener(this);
         /*
          *  We combine NEWT GLWindow inside existing AWT application (the main JFrame) 
@@ -141,6 +143,8 @@ public class GammaCheckers implements GLEventListener {
 
         loadCheckerTextures(gl3);
         createSamplers(gl3);
+        
+//        camTimer.togglePause();
     }
 
     private void initializePrograms(GL3 gl3) {
@@ -156,7 +160,6 @@ public class GammaCheckers implements GLEventListener {
     private void loadCheckerTextures(GL3 gl3) {
 
         textures = new int[Textures.size.ordinal()];
-
         gl3.glGenTextures(Textures.size.ordinal(), textures, 0);
 
         gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.linear.ordinal()]);
@@ -173,10 +176,10 @@ public class GammaCheckers implements GLEventListener {
 
                     gl3.glTexImage2D(GL3.GL_TEXTURE_2D, mipmapLevel, GL3.GL_SRGB8, mipmap.getWidth(),
                             mipmap.getHeight(), 0, GL3.GL_BGRA, GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.getData());
-
-                    gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
-                    gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
                 }
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
+
             } catch (IOException ex) {
                 Logger.getLogger(GammaCheckers.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -195,10 +198,10 @@ public class GammaCheckers implements GLEventListener {
 
                     gl3.glTexImage2D(GL3.GL_TEXTURE_2D, mipmapLevel, GL3.GL_SRGB8, mipmap.getWidth(),
                             mipmap.getHeight(), 0, GL3.GL_BGRA, GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.getData());
-
-                    gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
-                    gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
                 }
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
+
             } catch (IOException ex) {
                 Logger.getLogger(GammaCheckers.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -209,7 +212,6 @@ public class GammaCheckers implements GLEventListener {
     private void createSamplers(GL3 gl3) {
 
         samplers = new int[Samplers.size.ordinal()];
-
         gl3.glGenSamplers(Samplers.size.ordinal(), samplers, 0);
 
         for (int samplerIx = 0; samplerIx < Samplers.size.ordinal(); samplerIx++) {
@@ -247,9 +249,9 @@ public class GammaCheckers implements GLEventListener {
         gl3.glClearColor(.75f, .75f, 1f, 1f);
         gl3.glClearDepthf(1f);
         gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-
+        
         if (plane != null && corridor != null) {
-
+            
             camTimer.update();
 
             float cyclicAngle = camTimer.getAlpha() * 6.28f;
@@ -261,6 +263,7 @@ public class GammaCheckers implements GLEventListener {
                     new Vec3(hOffset, -5f + vOffset, -44f), new Vec3(0f, 1f, 0f));
 
             modelMatrix.setTop(worldToCamMat);
+//            modelMatrix.top().print("modelMatrix");
 
             ProgramData prog = programs[drawGammaProgram ? Programs.gamma.ordinal() : Programs.noGamma.ordinal()];
 
@@ -269,18 +272,20 @@ public class GammaCheckers implements GLEventListener {
                 gl3.glUniformMatrix4fv(prog.getModelToCameraUL(), 1, false, modelMatrix.top().toFloatArray(), 0);
 
                 gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.color.ordinal());
-                gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[drawGammaTexture ? Textures.gamma.ordinal()
-                        : Textures.linear.ordinal()]);
+                gl3.glBindTexture(GL3.GL_TEXTURE_2D,
+                        textures[drawGammaTexture ? Textures.gamma.ordinal() : Textures.linear.ordinal()]);
                 {
                     gl3.glBindSampler(TexUnit.color.ordinal(), samplers[currSampler]);
                     {
                         if (drawCorridor) {
 
-                            corridor.render(gl3, "tex");
+//                            corridor.render(gl3, "tex");
+                            corridor.render(gl3, "flat");
 
                         } else {
 
-                            plane.render(gl3, "tex");
+//                            plane.render(gl3, "tex");
+                            plane.render(gl3, "flat");
                         }
                     }
                     gl3.glBindSampler(TexUnit.color.ordinal(), 0);
@@ -296,7 +301,9 @@ public class GammaCheckers implements GLEventListener {
 
         GL3 gl3 = glad.getGL().getGL3();
 
-        Mat4 cameraToClipMatrix = Jglm.perspective(90f, w / (float) h, 1, 1000);
+        Mat4 cameraToClipMatrix = Jglm.perspective(90f, (w / (float) h), 1, 1000);
+//        System.out.println("aspect "+((w / (float) h)));
+//        cameraToClipMatrix.print("cameraToClipMatrix");
 
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBuffers.projection.ordinal()]);
         {
@@ -307,6 +314,50 @@ public class GammaCheckers implements GLEventListener {
         gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
         gl3.glViewport(x, y, w, h);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent ke) {
+
+        switch (ke.getKeyCode()) {
+
+            case KeyEvent.VK_A:
+                drawGammaProgram = !drawGammaProgram;
+                break;
+
+            case KeyEvent.VK_G:
+                drawGammaTexture = !drawGammaTexture;
+                break;
+
+            case KeyEvent.VK_SPACE:
+                drawGammaProgram = !drawGammaProgram;
+                drawGammaTexture = !drawGammaTexture;
+                break;
+
+            case KeyEvent.VK_Y:
+                drawCorridor = !drawCorridor;
+                break;
+
+            case KeyEvent.VK_P:
+                camTimer.togglePause();
+                break;
+                
+            case KeyEvent.VK_1:
+                currSampler = 0;
+                break;
+                
+            case KeyEvent.VK_2:
+                currSampler = 1;
+                break;
+        }
+        System.out.println("----");
+        System.out.println("Rendering: " + (drawGammaProgram ? "Gamma" : "Linear"));
+        System.out.println("Mipmap generation: " + (drawGammaTexture ? "Gamma" : "Linear"));
+    }
+
+    @Override
+    public void keyReleased(KeyEvent ke) {
+
     }
 
     private enum Samplers {
