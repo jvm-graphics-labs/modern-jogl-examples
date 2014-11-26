@@ -279,13 +279,13 @@ public class GammaCheckers implements GLEventListener, KeyListener {
                     {
                         if (drawCorridor) {
 
-//                            corridor.render(gl3, "tex");
-                            corridor.render(gl3, "flat");
+                            corridor.render(gl3, "tex");
+//                            corridor.render(gl3, "flat");
 
                         } else {
 
-//                            plane.render(gl3, "tex");
-                            plane.render(gl3, "flat");
+                            plane.render(gl3, "tex");
+//                            plane.render(gl3, "flat");
                         }
                     }
                     gl3.glBindSampler(TexUnit.color.ordinal(), 0);

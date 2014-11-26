@@ -325,9 +325,8 @@ public class ManyImages implements GLEventListener, KeyListener {
                             modelMatrix.top().toFloatArray(), 0);
 
                     gl3.glActiveTexture(GL3.GL_TEXTURE0);
-                    int texture = useMipmapTexture ? textures[Textures.mipmapTest.ordinal()]
-                            : textures[Textures.checker.ordinal()];
-                    gl3.glBindTexture(GL3.GL_TEXTURE_2D, texture);
+                    gl3.glBindTexture(GL3.GL_TEXTURE_2D,
+                            textures[useMipmapTexture ? Textures.mipmapTest.ordinal() : Textures.checker.ordinal()]);
                     {
                         gl3.glBindSampler(TexUnit.color.ordinal(), samplers[currSampler]);
                         {
@@ -369,42 +368,42 @@ public class ManyImages implements GLEventListener, KeyListener {
     }
 
     @Override
-    public void keyPressed(KeyEvent ke) {    
-    
-        switch(ke.getKeyCode()){
-            
+    public void keyPressed(KeyEvent ke) {
+
+        switch (ke.getKeyCode()) {
+
             case KeyEvent.VK_SPACE:
                 useMipmapTexture = !useMipmapTexture;
                 break;
-                
+
             case KeyEvent.VK_Y:
                 drawCorridor = !drawCorridor;
                 break;
-                
+
             case KeyEvent.VK_P:
                 camTimer.togglePause();
                 break;
-                
+
             case KeyEvent.VK_1:
                 currSampler = 0;
                 break;
-                
+
             case KeyEvent.VK_2:
                 currSampler = 1;
                 break;
-                
+
             case KeyEvent.VK_3:
                 currSampler = 2;
                 break;
-                
+
             case KeyEvent.VK_4:
                 currSampler = 5;
                 break;
-                
+
             case KeyEvent.VK_5:
                 currSampler = 4;
                 break;
-                
+
             case KeyEvent.VK_6:
                 currSampler = 5;
                 break;
@@ -413,7 +412,7 @@ public class ManyImages implements GLEventListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent ke) {
-   
+
     }
 
     public enum UniformBlockBinding {
