@@ -4,8 +4,8 @@
  */
 package mesh;
 
+import com.jogamp.opengl.GL3;
 import java.util.StringTokenizer;
-import javax.media.opengl.GL3;
 import org.w3c.dom.Element;
 
 /**

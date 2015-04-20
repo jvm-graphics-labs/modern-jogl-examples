@@ -5,7 +5,7 @@
  */
 package tut15.manyImages.program;
 
-import javax.media.opengl.GL3;
+import com.jogamp.opengl.GL3;
 import tut15.manyImages.ManyImages;
 
 /**

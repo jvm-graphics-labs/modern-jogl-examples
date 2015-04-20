@@ -4,8 +4,8 @@
  */
 package depthPeeling.depthPeelingGL3lights;
 
+import com.jogamp.opengl.GL3;
 import glsl.GLSLProgramObject;
-import javax.media.opengl.GL3;
 
 /**
  *

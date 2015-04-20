@@ -9,6 +9,7 @@ package glsl;
 //
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 ////////////////////////////////////////////////////////////////////////////////
+import com.jogamp.opengl.GL3;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.util.ArrayList;
-import javax.media.opengl.GL3;
 
 public class GLSLProgramObject {
 

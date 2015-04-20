@@ -5,7 +5,7 @@
  */
 package tut14.materialTexture.programs;
 
-import javax.media.opengl.GL3;
+import com.jogamp.opengl.GL3;
 import tut14.materialTexture.MaterialTexture;
 
 /**

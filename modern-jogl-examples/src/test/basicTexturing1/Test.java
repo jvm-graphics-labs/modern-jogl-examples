@@ -4,6 +4,13 @@ package test.basicTexturing1;
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.awt.GLCanvas;
 import glsl.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
@@ -19,13 +26,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.GL3;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.GLCanvas;
 import jglm.Mat4;
 import jglm.Quat;
 import jglm.Vec3;
@@ -51,7 +51,7 @@ public class Test implements GLEventListener {
         1.0f, 0.0f,
         0.0f, 0.0f,
         0.0f, 1.0f};
-    private String shadersFilepath = "/test/shaders/";
+    private String shadersFilepath = "/test/basicTexturing1/shaders/";
     private Texture texture;
     private int textureUnLoc;
 

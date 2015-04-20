@@ -9,10 +9,13 @@ import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.texture.TextureData;
-import com.jogamp.opengl.util.texture.TextureIO;
 import com.jogamp.opengl.util.texture.spi.DDSImage;
 import com.jogamp.opengl.util.texture.spi.DDSImage.ImageInfo;
 import glutil.MatrixStack;
@@ -27,11 +30,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.GL3;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLProfile;
 import jglm.Jglm;
 import jglm.Mat4;
 import jglm.Vec3;
@@ -162,29 +160,28 @@ public class ManyImages implements GLEventListener, KeyListener {
         URL url = getClass().getResource(dataPath + "checker.dds");
         File file = new File(url.getPath());
 
-        DDSImage ddsImage = null;
-
         try {
-            ddsImage = DDSImage.read(file);
+            DDSImage ddsImage = DDSImage.read(file);
+
+            gl3.glGenTextures(1, textures, Textures.checker.ordinal());
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.checker.ordinal()]);
+            {
+                for (int mipmapLevel = 0; mipmapLevel < ddsImage.getNumMipMaps(); mipmapLevel++) {
+
+                    ImageInfo mipmap = ddsImage.getMipMap(mipmapLevel);
+
+                    gl3.glTexImage2D(GL3.GL_TEXTURE_2D, mipmapLevel, GL3.GL_RGB8, mipmap.getWidth(), mipmap.getHeight(),
+                            0, GL3.GL_BGRA, GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.getData());
+                }
+
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
+            }
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
         } catch (IOException ex) {
             Logger.getLogger(ManyImages.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        gl3.glGenTextures(1, textures, Textures.checker.ordinal());
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.checker.ordinal()]);
-        {
-            for (int mipmapLevel = 0; mipmapLevel < ddsImage.getNumMipMaps(); mipmapLevel++) {
-
-                ImageInfo mipmap = ddsImage.getMipMap(mipmapLevel);
-
-                gl3.glTexImage2D(GL3.GL_TEXTURE_2D, mipmapLevel, GL3.GL_RGB8, mipmap.getWidth(), mipmap.getHeight(),
-                        0, GL3.GL_BGRA, GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.getData());
-            }
-
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, ddsImage.getNumMipMaps() - 1);
-        }
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
 
     private void loadMipmapTexture(GL3 gl3) {
@@ -423,8 +420,7 @@ public class ManyImages implements GLEventListener, KeyListener {
 
     public enum TexUnit {
 
-        color,
-        size
+        color
     }
 
     public enum Textures {

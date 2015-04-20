@@ -4,9 +4,15 @@ package test.basicTexturing;
  * and open the template in the editor.
  */
 
+import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.awt.GLCanvas;
 import glsl.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderUtil;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import java.awt.Frame;
@@ -17,13 +23,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.GL3;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.GLCanvas;
 
 /**
  *
@@ -46,7 +45,7 @@ public class Test implements GLEventListener {
         1.0f, 0.0f,
         0.0f, 0.0f,
         0.0f, 1.0f};
-    private String shadersFilepath = "/tut14/shaders/";
+    private String shadersFilepath = "/test/basicTexturing/shaders/";
     private Texture texture;
     private int textureUnLoc;
 
@@ -108,6 +107,19 @@ public class Test implements GLEventListener {
         gl3.glEnable(GL3.GL_CULL_FACE);
         gl3.glCullFace(GL3.GL_BACK);
         gl3.glFrontFace(GL3.GL_CW);
+
+//        float[] results = new float[6];
+//        gl3.glGetFloatv(GL3.GL_DEPTH_CLEAR_VALUE, results, 0);
+//        gl3.glGetFloatv(GL3.GL_DEPTH_RANGE, results, 1);
+//        gl3.glGetFloatv(GL3.GL_DEPTH_FUNC, results, 3);
+//        gl3.glGetFloatv(GL3.GL_DEPTH_WRITEMASK, results, 4);
+//        results[5] = gl3.glIsEnabled(GL3.GL_DEPTH_TEST) ? 1 : 0;
+//
+//        gl3.glDepthFunc(GL3.GL_LESS);
+//        
+//        for (int i = 0; i < results.length; i++) {
+//            System.out.println("results [" + i + "] " + results[i]);
+//        }
     }
 
     @Override

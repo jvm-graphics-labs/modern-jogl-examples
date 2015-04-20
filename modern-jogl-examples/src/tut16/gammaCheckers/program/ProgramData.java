@@ -5,7 +5,7 @@
  */
 package tut16.gammaCheckers.program;
 
-import javax.media.opengl.GL3;
+import com.jogamp.opengl.GL3;
 import tut16.gammaCheckers.GammaCheckers.TexUnit;
 import tut16.gammaCheckers.GammaCheckers.UniformBlockBuffers;
 

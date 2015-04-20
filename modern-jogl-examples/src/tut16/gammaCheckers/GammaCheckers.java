@@ -9,6 +9,11 @@ import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.spi.DDSImage;
@@ -24,11 +29,6 @@ import java.net.URL;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.GL3;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLProfile;
 import jglm.Jglm;
 import jglm.Mat4;
 import jglm.Vec3;
@@ -225,7 +225,7 @@ public class GammaCheckers implements GLEventListener, KeyListener {
         gl3.glSamplerParameteri(samplers[Samplers.linearMipmapLinear.ordinal()], GL3.GL_TEXTURE_MIN_FILTER,
                 GL3.GL_LINEAR_MIPMAP_LINEAR);
         //Max anisotropic
-        float[] maxAniso = new float[]{0f};
+        float[] maxAniso = new float[0];
         gl3.glGetFloatv(GL3.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso, 0);
 
         gl3.glSamplerParameteri(samplers[Samplers.maxAnisotropic.ordinal()], GL3.GL_TEXTURE_MAG_FILTER,

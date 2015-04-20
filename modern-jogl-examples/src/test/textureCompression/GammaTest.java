@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut16.gammaRamp;
+package test.textureCompression;
 
 import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.KeyEvent;
@@ -12,6 +12,7 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLES2;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
@@ -36,17 +37,17 @@ import jglm.Vec3;
  *
  * @author gbarbieri
  */
-public class GammaRamp implements GLEventListener, KeyListener {
+public class GammaTest implements GLEventListener, KeyListener {
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        final GammaRamp gammaRamp = new GammaRamp();
+        final GammaTest gammaRamp = new GammaTest();
         gammaRamp.initGL();
 
-        Frame frame = new Frame("Tutorial 14 - Material Texture");
+        Frame frame = new Frame("Gamma correction and texture compression");
 
         frame.add(gammaRamp.newtCanvasAWT);
 
@@ -76,7 +77,7 @@ public class GammaRamp implements GLEventListener, KeyListener {
     private int[] samplerObj;
     private boolean[] useGammaCorrect = new boolean[]{false, false};
 
-    public GammaRamp() {
+    public GammaTest() {
 
     }
 
@@ -153,7 +154,7 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
         programs = new int[Programs.size.ordinal()];
 
-        String filepath = "/tut16/gammaRamp/shaders/";
+        String filepath = "/test/textureCompression/shaders/";
 
         GLSLProgramObject noGammaProgram = new GLSLProgramObject(gl3, filepath, "screenCoords_VS.glsl",
                 "textureNoGamma_FS.glsl");
@@ -196,7 +197,15 @@ public class GammaRamp implements GLEventListener, KeyListener {
             90, 176, 0, 0,
             90, 112, 0, 1,
             410, 176, 1, 0,
-            410, 112, 1, 1};
+            410, 112, 1, 1,
+            90, 272, 0, 0,
+            90, 208, 0, 1,
+            410, 272, 1, 0,
+            410, 208, 1, 1,
+            90, 368, 0, 0,
+            90, 304, 0, 1,
+            410, 368, 1, 0,
+            410, 304, 1, 1};
 
         objects = new int[Objects.size.ordinal()];
 
@@ -230,18 +239,19 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
     private void loadTextures(GL3 gl3) {
 
-        textures = new int[2];
+        textures = new int[Textures.size.ordinal()];
+        gl3.glGenTextures(Textures.size.ordinal(), textures, 0);
 
-        gl3.glGenTextures(2, textures, 0);
-
-        String filePath = "/tut16/gammaRamp/data/gamma_ramp.png";
-        URL url = getClass().getResource(filePath);
+        String gammaRampfilePath = "/test/textureCompression/data/gamma_ramp.png";
+        URL url = getClass().getResource(gammaRampfilePath);
         File file = new File(url.getPath());
 
         try {
             TextureData textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.PNG);
-
-            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Programs.noGamma.ordinal()]);
+            /**
+             * LRGB color space.
+             */
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.lrgb.ordinal()]);
             {
                 gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGB8, textureData.getWidth(), textureData.getHeight(),
                         0, textureData.getPixelFormat(), textureData.getPixelType(), textureData.getBuffer());
@@ -249,7 +259,10 @@ public class GammaRamp implements GLEventListener, KeyListener {
                 gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
                 gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
             }
-            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Programs.gamma.ordinal()]);
+            /**
+             * SRGB color space.
+             */
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.srgb.ordinal()]);
             {
                 gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_SRGB8, textureData.getWidth(), textureData.getHeight(),
                         0, textureData.getPixelFormat(), textureData.getPixelType(), textureData.getBuffer());
@@ -258,18 +271,84 @@ public class GammaRamp implements GLEventListener, KeyListener {
                 gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
             }
             gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+            /**
+             * DXT3 texture compression.
+             */
+            file = new File(getClass().getResource("/test/textureCompression/data/gamma_ramp.dds").getPath());
+            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.DDS);
 
-            
-//            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, true, TextureIO.PNG);
-//            
-//            System.out.println("textureData.getMipmap() "+textureData.getMipmap());
-//            System.out.println("textureData.getMipmapData().length "+textureData.getMipmapData().length);
-//            
-            
-            
-            
-            
-            
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.toCompress.ordinal()]);
+            {
+                int internalFormat = GLES2.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_NV;
+                gl3.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, 0, internalFormat,
+                        textureData.getWidth(), textureData.getHeight(), textureData.getBorder(),
+                        textureData.getBuffer().capacity(), textureData.getBuffer());
+
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
+//                gl3.glGenerateMipmap(GL3.GL_TEXTURE_2D);                
+//                int[] maxLevel = new int[1];
+//                gl3.glGetTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, maxLevel, 0);
+//                System.out.println("maxLevel " + maxLevel[0]);
+//                int maxMipmap = -1;
+//                for (int j = 0; j < maxLevel[0]; ++j) {
+//                    int[] width = new int[1];
+//                    gl3.glGetTexLevelParameteriv(GL3.GL_TEXTURE_2D, j, GL3.GL_TEXTURE_WIDTH, width, 0);
+//                    System.out.println("mipmap " + j + " textureWidth " + width[0]);
+//                    if (0 == width[0]) {
+//                        maxMipmap = j - 1;
+//                        break;
+//                    }
+//                }
+//                System.out.println("maxMipmap " + maxMipmap);
+            }
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+            /**
+             * Automatic DXT3 texture compression and mipmapping.
+             */
+            file = new File(getClass().getResource("/test/textureCompression/data/gamma_ramp.png").getPath());
+            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.PNG);
+
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.compressedDXT3.ordinal()]);
+            {
+                gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GLES2.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_NV,
+                        textureData.getWidth(), textureData.getHeight(), textureData.getBorder(),
+                        textureData.getPixelFormat(), textureData.getPixelType(), textureData.getBuffer());
+
+                gl3.glGenerateMipmap(GL3.GL_TEXTURE_2D);
+
+                int[] maxLevel = new int[1];
+                gl3.glGetTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, maxLevel, 0);
+//                System.out.println("maxLevel " + maxLevel[0]);
+                int maxMipmap = -1;
+                for (int j = 0; j < maxLevel[0]; ++j) {
+                    int[] width = new int[1];
+                    gl3.glGetTexLevelParameteriv(GL3.GL_TEXTURE_2D, j, GL3.GL_TEXTURE_WIDTH, width, 0);
+//                    System.out.println("mipmap " + j + " textureWidth " + width[0]);
+                    if (0 == width[0]) {
+                        maxMipmap = j - 1;
+                        break;
+                    }
+                }
+//                System.out.println("maxMipmap " + maxMipmap);
+
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
+                gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, maxMipmap);
+                
+//                int[] parameter = new int[1];
+//                gl3.glGetTexLevelParameteriv(GL3.GL_TEXTURE_2D, 0, GL3.GL_TEXTURE_INTERNAL_FORMAT, parameter, 0);
+//                System.out.println("internalFormat " + (parameter[0] == GLES2.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_NV
+//                        ? "SRGB DXT3" : parameter[0]));
+//                gl3.glGetTexLevelParameteriv(GL3.GL_TEXTURE_2D, 0, GL3.GL_TEXTURE_COMPRESSED, parameter, 0);
+//                System.out.println("compressed " + (parameter[0] == GL3.GL_TRUE));
+//                gl3.glGetTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, parameter, 0);
+//                System.out.println("base level " + parameter[0]);
+//                gl3.glGetTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, parameter, 0);
+//                System.out.println("max level " + parameter[0]);
+            }
+            gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
             samplerObj = new int[1];
 
             gl3.glGenSamplers(1, samplerObj, 0);
@@ -279,7 +358,7 @@ public class GammaRamp implements GLEventListener, KeyListener {
             gl3.glSamplerParameteri(samplerObj[0], GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_NEAREST);
 
         } catch (IOException ex) {
-            Logger.getLogger(GammaRamp.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GammaTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -297,7 +376,7 @@ public class GammaRamp implements GLEventListener, KeyListener {
         gl3.glClear(GL3.GL_COLOR_BUFFER_BIT);
 
         gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.gammaRamp.ordinal());
-        int texUnit = useGammaCorrect[0] ? Programs.gamma.ordinal() : Programs.noGamma.ordinal();
+        int texUnit = useGammaCorrect[0] ? Textures.srgb.ordinal() : Textures.lrgb.ordinal();
         gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[texUnit]);
         {
             gl3.glBindSampler(textures[TexUnit.gammaRamp.ordinal()], samplerObj[0]);
@@ -311,12 +390,26 @@ public class GammaRamp implements GLEventListener, KeyListener {
                 }
             }
         }
-        texUnit = useGammaCorrect[1] ? Programs.gamma.ordinal() : Programs.noGamma.ordinal();
+        texUnit = useGammaCorrect[1] ? Textures.srgb.ordinal() : Textures.lrgb.ordinal();
         gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[texUnit]);
         {
             gl3.glUseProgram(programs[Programs.gamma.ordinal()]);
             {
                 gl3.glDrawArrays(GL3.GL_TRIANGLE_STRIP, 4, 4);
+            }
+        }
+        gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.compressedDXT3.ordinal()]);
+        {
+            gl3.glUseProgram(programs[Programs.gamma.ordinal()]);
+            {
+                gl3.glDrawArrays(GL3.GL_TRIANGLE_STRIP, 8, 4);
+            }
+        }
+        gl3.glBindTexture(GL3.GL_TEXTURE_2D, textures[Textures.toCompress.ordinal()]);
+        {
+            gl3.glUseProgram(programs[Programs.gamma.ordinal()]);
+            {
+                gl3.glDrawArrays(GL3.GL_TRIANGLE_STRIP, 12, 4);
             }
             gl3.glBindVertexArray(0);
             gl3.glUseProgram(0);
@@ -391,6 +484,15 @@ public class GammaRamp implements GLEventListener, KeyListener {
     public enum TexUnit {
 
         gammaRamp,
+        size
+    }
+
+    public enum Textures {
+
+        lrgb,
+        srgb,
+        compressedDXT3,
+        toCompress,
         size
     }
 
