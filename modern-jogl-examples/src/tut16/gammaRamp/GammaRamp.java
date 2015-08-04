@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jglm.Vec3;
@@ -188,15 +188,15 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
     private void initializeVertexData(GL3 gl3) {
 
-        int[] vertexData = new int[]{
+        short[] vertexData = new short[]{
             90, 80, 0, 0,
-            90, 16, 0, 1,
-            410, 80, 1, 0,
-            410, 16, 1, 1,
+            90, 16, 0, Short.MAX_VALUE,
+            410, 80, Short.MAX_VALUE, 0,
+            410, 16, Short.MAX_VALUE, Short.MAX_VALUE,
             90, 176, 0, 0,
-            90, 112, 0, 1,
-            410, 176, 1, 0,
-            410, 112, 1, 1};
+            90, 112, 0, Short.MAX_VALUE,
+            410, 176, Short.MAX_VALUE, 0,
+            410, 112, Short.MAX_VALUE, Short.MAX_VALUE};
 
         objects = new int[Objects.size.ordinal()];
 
@@ -204,23 +204,24 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
         gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, objects[Objects.dataBuffer.ordinal()]);
         {
-            IntBuffer intBuffer = GLBuffers.newDirectIntBuffer(vertexData);
-            gl3.glBufferData(GL3.GL_ARRAY_BUFFER, vertexData.length * 4, intBuffer, GL3.GL_STATIC_DRAW);
+            ShortBuffer shortBuffer = GLBuffers.newDirectShortBuffer(vertexData);
+            gl3.glBufferData(GL3.GL_ARRAY_BUFFER, vertexData.length * GLBuffers.SIZEOF_SHORT, 
+                    shortBuffer, GL3.GL_STATIC_DRAW);
 
             gl3.glGenVertexArrays(1, objects, Objects.vao.ordinal());
 
             gl3.glBindVertexArray(objects[Objects.vao.ordinal()]);
             {
-                int stride = 4 * 4;
+                int stride = 4 * GLBuffers.SIZEOF_SHORT;
                 int offset = 0;
                 gl3.glEnableVertexAttribArray(0);
                 {
-                    gl3.glVertexAttribPointer(0, 2, GL3.GL_UNSIGNED_INT, false, stride, offset);
+                    gl3.glVertexAttribPointer(0, 2, GL3.GL_SHORT, false, stride, offset);
                 }
-                offset = 2 * 4;
+                offset = 2 * GLBuffers.SIZEOF_SHORT;
                 gl3.glEnableVertexAttribArray(5);
                 {
-                    gl3.glVertexAttribPointer(5, 2, GL3.GL_UNSIGNED_INT, false, stride, offset);
+                    gl3.glVertexAttribPointer(5, 2, GL3.GL_SHORT, true, stride, offset);
                 }
             }
             gl3.glBindVertexArray(0);
