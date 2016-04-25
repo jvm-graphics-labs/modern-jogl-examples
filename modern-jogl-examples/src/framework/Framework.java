@@ -14,23 +14,27 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.Animator;
+import com.jogamp.opengl.util.GLBuffers;
 import glm.vec._2.i.Vec2i;
+import java.nio.FloatBuffer;
 
 /**
  *
  * @author elect
  */
-public class Test implements GLEventListener, KeyListener {
+public class Framework implements GLEventListener, KeyListener {
 
-    private final boolean DEBUG = true;
-    private GLWindow glWindow;
-    private Animator animator;
-    private Vec2i windowSize = new Vec2i(500);
+    private final boolean DEBUG = false;
+    protected GLWindow glWindow;
+    protected Animator animator;
+    protected Vec2i windowSize = new Vec2i(500);
+    protected FloatBuffer clearColor = GLBuffers.newDirectFloatBuffer(4), clearDepth = GLBuffers.newDirectFloatBuffer(1);
 
-    public Test(String title) {
+    public Framework(String title) {
         initGL(title);
     }
 
@@ -44,11 +48,8 @@ public class Test implements GLEventListener, KeyListener {
         glWindow = GLWindow.create(screen, glCapabilities);
 
         if (DEBUG) {
-//            glWindow.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);
-            System.out.println("" + glWindow.getContextCreationFlags());
+            glWindow.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);
         }
-
-        assert glWindow != null;
 
         glWindow.setUndecorated(false);
         glWindow.setAlwaysOnTop(false);
@@ -61,9 +62,7 @@ public class Test implements GLEventListener, KeyListener {
         glWindow.setVisible(true);
 
         if (DEBUG) {
-//            glWindow.getContext().addGLDebugListener(new GlDebugOutput());
-//            glWindow.getContext().makeCurrent();
-//            glWindow.getContext().enableGLDebugMessage(false);
+            glWindow.getContext().addGLDebugListener(new GlDebugOutput());
         }
 
         glWindow.addGLEventListener(this);
@@ -71,8 +70,6 @@ public class Test implements GLEventListener, KeyListener {
 
         animator = new Animator();
         animator.add(glWindow);
-        animator.setRunAsFastAsPossible(false);
-        animator.setExclusiveContext(true);
         animator.start();
     }
 
@@ -120,7 +117,12 @@ public class Test implements GLEventListener, KeyListener {
 
         end(gl3);
 
-        animator.stop();
+        BufferUtils.destroyDirectBuffer(clearColor);
+        BufferUtils.destroyDirectBuffer(clearDepth);
+
+        if (animator.isAnimating()) {
+            animator.stop();
+        }
         System.exit(0);
     }
 
@@ -134,13 +136,6 @@ public class Test implements GLEventListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_ESCAPE:
-                animator.stop();
-                glWindow.destroy();
-                break;
-        }
 
         keyboard(e);
     }

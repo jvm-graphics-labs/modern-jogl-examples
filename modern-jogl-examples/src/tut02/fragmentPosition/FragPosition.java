@@ -2,22 +2,23 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut01;
+package tut02.fragmentPosition;
 
+import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
+import framework.Framework;
 import framework.Semantic;
-import framework.Test;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -25,23 +26,22 @@ import java.nio.IntBuffer;
  *
  * @author gbarbieri
  */
-public class Tut01 extends Test {
+public class FragPosition extends Framework {
+
+    private final String SHADERS_ROOT = "src/tut02/fragmentPosition/shaders";
+    private final String SHADERS_SOURCE = "frag-position";
 
     public static void main(String[] args) {
-        Tut01 tut01 = new Tut01("Tutorial 01 - Main");
+        FragPosition fragPosition = new FragPosition("Tutorial 02 - Fragment Position");
     }
 
-    public Tut01(String title) {
+    public FragPosition(String title) {
         super(title);
     }
 
-    private final String SHADERS_ROOT = "src/tut01/shaders";
-    private final String VERT_SHADER_SOURCE = "vertex-shader";
-    private final String FRAG_SHADER_SOURCE = "fragment-shader";
-
     private int theProgram;
-    private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
-    private float[] vertexPositions = new float[]{
+    private IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
+    private float[] vertexData = new float[]{
         +0.75f, +0.75f, 0.0f, 1.0f,
         +0.75f, -0.75f, 0.0f, 1.0f,
         -0.75f, -0.75f, 0.0f, 1.0f};
@@ -50,7 +50,6 @@ public class Tut01 extends Test {
     public void init(GL3 gl3) {
 
         initializeProgram(gl3);
-
         initializeVertexBuffer(gl3);
 
         gl3.glGenVertexArrays(1, vao);
@@ -62,9 +61,9 @@ public class Tut01 extends Test {
         ShaderProgram shaderProgram = new ShaderProgram();
 
         ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
+                SHADERS_SOURCE, "vert", null, true);
         ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+                SHADERS_SOURCE, "frag", null, true);
 
         shaderProgram.add(vertShaderCode);
         shaderProgram.add(fragShaderCode);
@@ -79,11 +78,11 @@ public class Tut01 extends Test {
 
     private void initializeVertexBuffer(GL3 gl3) {
 
-        FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexPositions);
+        FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
 
-        gl3.glGenBuffers(1, positionBufferObject);
+        gl3.glGenBuffers(1, vertexBufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -93,24 +92,42 @@ public class Tut01 extends Test {
     @Override
     public void display(GL3 gl3) {
 
-        gl3.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        gl3.glClear(GL_COLOR_BUFFER_BIT);
+        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 1.0f));
 
         gl3.glUseProgram(theProgram);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, 0, 0);
 
         gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
 
         gl3.glDisableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glUseProgram(0);        
+        gl3.glUseProgram(0);
     }
 
     @Override
-    public void reshape(GL3 gl3, int width, int height) {
+    public void reshape(GL3 gl3, int w, int h) {
 
-        gl3.glViewport(0, 0, width, height);
+        gl3.glViewport(0, 0, w, h);
+    }
+
+    @Override
+    protected void end(GL3 gl3) {
+
+        gl3.glDeleteProgram(theProgram);
+        gl3.glDeleteBuffers(1, vertexBufferObject);
+        gl3.glDeleteVertexArrays(1, vao);
+    }
+
+    @Override
+    protected void keyboard(KeyEvent keyEvent) {
+
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_ESCAPE:
+                animator.stop();
+                glWindow.destroy();
+                break;
+        }
     }
 }
