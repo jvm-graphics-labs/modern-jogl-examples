@@ -60,7 +60,7 @@ public class VertexColor extends Framework {
         gl3.glBindVertexArray(vao.get(0));
     }
 
-     private void initializeProgram(GL3 gl3) {
+    private void initializeProgram(GL3 gl3) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
@@ -92,7 +92,7 @@ public class VertexColor extends Framework {
 
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
-    
+
     @Override
     public void display(GL3 gl3) {
 
@@ -103,8 +103,8 @@ public class VertexColor extends Framework {
         gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, 0, 0);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, 0, Vec4.SIZE * 3);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, Vec4.SIZE * 3);
 
         gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
 

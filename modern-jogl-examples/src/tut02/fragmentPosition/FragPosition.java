@@ -19,6 +19,7 @@ import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
+import glm.vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -98,7 +99,7 @@ public class FragPosition extends Framework {
 
         gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, 0, 0);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
 
         gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
 

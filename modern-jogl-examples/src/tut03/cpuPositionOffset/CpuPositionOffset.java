@@ -2,14 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut01.main;
+package tut03.cpuPositionOffset;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
@@ -18,8 +16,9 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
-import framework.Semantic;
 import framework.Framework;
+import framework.Semantic;
+import glm.vec._2.Vec2;
 import glm.vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -28,41 +27,37 @@ import java.nio.IntBuffer;
  *
  * @author gbarbieri
  */
-public class HelloTriangle extends Framework {
+public class CpuPositionOffset extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut01/main/shaders";
-    private final String VERT_SHADER_SOURCE = "vertex-shader";
-    private final String FRAG_SHADER_SOURCE = "fragment-shader";
+    private final String SHADERS_ROOT = "src/tut03/cpuPositionOffset/shaders";
+    private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        HelloTriangle helloTriangle = new HelloTriangle("Tutorial 01 - Hello Triangle");
+        CpuPositionOffset cpuPositionOffset = new CpuPositionOffset("Tutorial 03 - CPU Position Offset");
     }
 
-    public HelloTriangle(String title) {
+    public CpuPositionOffset(String title) {
         super(title);
     }
 
     private int theProgram;
     private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
     private float[] vertexPositions = new float[]{
-        +0.75f, +0.75f, 0.0f, 1.0f,
-        +0.75f, -0.75f, 0.0f, 1.0f,
-        -0.75f, -0.75f, 0.0f, 1.0f};
+        +0.25f, +0.25f, 0.0f, 1.0f,
+        +0.25f, -0.25f, 0.0f, 1.0f,
+        -0.25f, -0.25f, 0.0f, 1.0f};
+    private long startingTime;
 
-    /**
-     * Called after the window and OpenGL are initialized. Called exactly once, before the main loop.
-     *
-     * @param gl3
-     */
     @Override
     public void init(GL3 gl3) {
 
         initializeProgram(gl3);
-
         initializeVertexBuffer(gl3);
 
         gl3.glGenVertexArrays(1, vao);
         gl3.glBindVertexArray(vao.get(0));
+
+        startingTime = System.currentTimeMillis();
     }
 
     private void initializeProgram(GL3 gl3) {
@@ -70,9 +65,9 @@ public class HelloTriangle extends Framework {
         ShaderProgram shaderProgram = new ShaderProgram();
 
         ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
+                SHADERS_SOURCE, "vert", null, true);
         ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+                SHADERS_SOURCE, "frag", null, true);
 
         shaderProgram.add(vertShaderCode);
         shaderProgram.add(fragShaderCode);
@@ -98,15 +93,13 @@ public class HelloTriangle extends Framework {
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
 
-    /**
-     * Called to update the display.
-     * You don't need to swap the buffers after all of your rendering to display
-     * what you rendered, it is done automatically.
-     *
-     * @param gl3
-     */
     @Override
     public void display(GL3 gl3) {
+
+        Vec2 offset = new Vec2(0.0f);
+
+        computePositionOffsets(offset);
+        adjustVertexData(gl3, offset);
 
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 1.0f));
 
@@ -116,45 +109,59 @@ public class HelloTriangle extends Framework {
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
 
-        gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
+        gl3.glDrawArrays(GL3.GL_TRIANGLES, 0, 3);
 
         gl3.glDisableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glUseProgram(0);
     }
 
-    /**
-     * Called whenever the window is resized. The new window size is given, in pixels.
-     * This is an opportunity to call glViewport or glScissor to keep up with the change in size.
-     *
-     * @param gl3
-     * @param w
-     * @param h
-     */
+    private void computePositionOffsets(Vec2 offset) {
+
+        float loopDuration = 5.0f;
+        float scale = (float) (Math.PI * 2.0f / loopDuration);
+
+        float elapsedTime = (System.currentTimeMillis() - startingTime) / 1000.0f;
+
+        float fCurrTimeThroughLoop = elapsedTime % loopDuration;
+
+        offset.x = (float) (Math.cos(fCurrTimeThroughLoop * scale) * 0.5f);
+        offset.y = (float) (Math.sin(fCurrTimeThroughLoop * scale) * 0.5f);
+    }
+
+    private void adjustVertexData(GL3 gl3, Vec2 offset) {
+
+        float[] newData = new float[vertexPositions.length];
+        System.arraycopy(vertexPositions, 0, newData, 0, vertexPositions.length);
+
+        for (int iVertex = 0; iVertex < vertexPositions.length; iVertex += 4) {
+
+            newData[iVertex + 0] += offset.x;
+            newData[iVertex + 1] += offset.y;
+        }
+
+        FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(newData);
+
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl3.glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.capacity() * Float.BYTES, buffer);
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        BufferUtils.destroyDirectBuffer(buffer);
+    }
+
     @Override
     public void reshape(GL3 gl3, int w, int h) {
 
         gl3.glViewport(0, 0, w, h);
     }
     
-    /**
-     * Called at the end, here you want to clean all the resources.
-     * @param gl3 
-     */
     @Override
-    protected void end(GL3 gl3) {
+    public void end(GL3 gl3) {
 
         gl3.glDeleteProgram(theProgram);
         gl3.glDeleteBuffers(1, positionBufferObject);
         gl3.glDeleteVertexArrays(1, vao);
     }
-
-    /**
-     * Called whenever a key on the keyboard was pressed.
-     * The key is given by the KeyCode().
-     * It's often a good idea to have the escape key to exit the program.
-     *
-     * @param keyEvent
-     */
+    
     @Override
     protected void keyboard(KeyEvent keyEvent) {
 
