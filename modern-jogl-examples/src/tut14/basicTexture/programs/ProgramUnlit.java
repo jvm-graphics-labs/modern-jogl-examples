@@ -11,7 +11,7 @@ import com.jogamp.opengl.GL3;
  *
  * @author gbarbieri
  */
-public class ProgramUnlit extends glsl.GLSLProgramObject {
+public class ProgramUnlit extends framework.GLSLProgramObject {
 
     private int modelToCameraMatrixUL;
     private int objectColorUL;

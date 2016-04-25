@@ -5,7 +5,7 @@
 package tut11.phongLighting.glslProgram;
 
 import com.jogamp.opengl.GL3;
-import glsl.GLSLProgramObject;
+import framework.GLSLProgramObject;
 
 /**
  *

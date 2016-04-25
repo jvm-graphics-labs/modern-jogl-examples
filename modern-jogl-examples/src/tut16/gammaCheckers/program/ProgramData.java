@@ -13,7 +13,7 @@ import tut16.gammaCheckers.GammaCheckers.UniformBlockBuffers;
  *
  * @author gbarbieri
  */
-public class ProgramData extends glsl.GLSLProgramObject {
+public class ProgramData extends framework.GLSLProgramObject {
 
     private int modelToCameraUL;
 

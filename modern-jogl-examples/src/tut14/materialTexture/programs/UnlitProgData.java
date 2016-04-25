@@ -12,7 +12,7 @@ import com.jogamp.opengl.GL3;
  *
  * @author gbarbieri
  */
-public class UnlitProgData extends glsl.GLSLProgramObject {
+public class UnlitProgData extends framework.GLSLProgramObject {
 
     private int modelToCameraMatrixUL;
     private int objectColorUL;

@@ -10,7 +10,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-import glsl.GLSLProgramObject;
+import framework.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
@@ -18,10 +18,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.IntBuffer;
-import jglm.Jglm;
-import jglm.Mat4;
-import jglm.Vec3;
-import glutil.MatrixStack;
+import framework.jglm.Jglm;
+import framework.jglm.Mat4;
+import framework.jglm.Vec3;
+import framework.glutil.MatrixStack;
 
 /**
  *

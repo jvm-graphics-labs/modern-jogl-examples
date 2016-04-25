@@ -4,17 +4,20 @@
  */
 package tut01;
 
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
+import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TRIANGLES;
+import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
+import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
-import glsl.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
-import java.awt.Frame;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import com.jogamp.opengl.util.glsl.ShaderCode;
+import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
+import framework.Semantic;
+import framework.Test;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -22,142 +25,92 @@ import java.nio.IntBuffer;
  *
  * @author gbarbieri
  */
-public class Tut01 implements GLEventListener {
+public class Tut01 extends Test {
 
-    private int imageWidth = 800;
-    private int imageHeight = 600;
-    private GLCanvas canvas;
-    private GLSLProgramObject programObject;
-    private int[] positionBufferObject = new int[1];
-    private int[] vertexArrayObject = new int[1];
-    private float[] vertexPositions = new float[]{
-        0.75f, 0.75f, 0.0f, 1.0f,
-        0.75f, -0.75f, 0.0f, 1.0f,
-        -0.75f, -0.75f, 0.0f, 1.0f,};
-    private String shadersFilepath = "/tut01/shaders/";
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        Tut01 tut01 = new Tut01();
-
-        Frame frame = new Frame("Tutorial 01");
-
-        frame.add(tut01.getCanvas());
-
-        frame.setSize(tut01.getCanvas().getWidth(), tut01.getCanvas().getHeight());
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                System.exit(0);
-            }
-        });
-
-        frame.setVisible(true);
+        Tut01 tut01 = new Tut01("Tutorial 01 - Main");
     }
 
-    public Tut01() {
-        initGL();
+    public Tut01(String title) {
+        super(title);
     }
 
-    private void initGL() {
-        GLProfile profile = GLProfile.getDefault();
+    private final String SHADERS_ROOT = "src/tut01/shaders";
+    private final String VERT_SHADER_SOURCE = "vertex-shader";
+    private final String FRAG_SHADER_SOURCE = "fragment-shader";
 
-        GLCapabilities capabilities = new GLCapabilities(profile);
-
-        canvas = new GLCanvas(capabilities);
-
-        canvas.setSize(imageWidth, imageHeight);
-
-        canvas.addGLEventListener(this);
-    }
+    private int theProgram;
+    private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
+    private float[] vertexPositions = new float[]{
+        +0.75f, +0.75f, 0.0f, 1.0f,
+        +0.75f, -0.75f, 0.0f, 1.0f,
+        -0.75f, -0.75f, 0.0f, 1.0f};
 
     @Override
-    public void init(GLAutoDrawable glad) {
-        System.out.println("init");
+    public void init(GL3 gl3) {
 
-        canvas.setAutoSwapBufferMode(false);
-
-        GL3 gl3 = glad.getGL().getGL3();
-
-        buildShaders(gl3);
+        initializeProgram(gl3);
 
         initializeVertexBuffer(gl3);
 
-        gl3.glGenVertexArrays(1, IntBuffer.wrap(vertexArrayObject));
-        gl3.glBindVertexArray(vertexArrayObject[0]);
+        gl3.glGenVertexArrays(1, vao);
+        gl3.glBindVertexArray(vao.get(0));
     }
 
-    @Override
-    public void dispose(GLAutoDrawable glad) {
-        System.out.println("dispose");
-    }
+    private void initializeProgram(GL3 gl3) {
 
-    @Override
-    public void display(GLAutoDrawable glad) {
-        System.out.println("display");
+        ShaderProgram shaderProgram = new ShaderProgram();
 
-        GL3 gl3 = glad.getGL().getGL3();
+        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
+                VERT_SHADER_SOURCE, "vert", null, true);
+        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
+                FRAG_SHADER_SOURCE, "frag", null, true);
 
-        gl3.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        gl3.glClear(GL3.GL_COLOR_BUFFER_BIT);
+        shaderProgram.add(vertShaderCode);
+        shaderProgram.add(fragShaderCode);
 
-        programObject.bind(gl3);
-        {
-            gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, positionBufferObject[0]);
+        shaderProgram.link(gl3, System.out);
 
-            gl3.glEnableVertexAttribArray(0);
-            {
-                gl3.glVertexAttribPointer(0, 4, GL3.GL_FLOAT, false, 0, 0);
+        theProgram = shaderProgram.program();
 
-                gl3.glDrawArrays(GL3.GL_TRIANGLES, 0, 3);
-            }
-            gl3.glDisableVertexAttribArray(0);
-        }
-        programObject.unbind(gl3);
-
-        glad.swapBuffers();
-    }
-
-    @Override
-    public void reshape(GLAutoDrawable glad, int x, int y, int w, int h) {
-        System.out.println("reshape() x: " + x + " y: " + y + " width: " + w + " height: " + h);
-
-        GL3 gl3 = glad.getGL().getGL3();
-
-        gl3.glViewport(x, y, w, h);
-    }
-
-    private void buildShaders(GL3 gl3) {
-        System.out.print("Building shaders...");
-
-        programObject = new GLSLProgramObject(gl3);
-        programObject.attachVertexShader(gl3, shadersFilepath + "vertex_shader.glsl");
-        programObject.attachFragmentShader(gl3, shadersFilepath + "fragment_shader.glsl");
-        programObject.initializeProgram(gl3, true);
-
-        System.out.println("ok");
+        vertShaderCode.destroy(gl3);
+        fragShaderCode.destroy(gl3);
     }
 
     private void initializeVertexBuffer(GL3 gl3) {
-        gl3.glGenBuffers(1, IntBuffer.wrap(positionBufferObject));
 
-        gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, positionBufferObject[0]);
-        {
-            FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(vertexPositions);
+        FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexPositions);
 
-            gl3.glBufferData(GL3.GL_ARRAY_BUFFER, vertexPositions.length * 4, buffer, GL3.GL_STATIC_DRAW);
-        }
-        gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, 0);
+        gl3.glGenBuffers(1, positionBufferObject);
+
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
 
-    public GLCanvas getCanvas() {
-        return canvas;
+    @Override
+    public void display(GL3 gl3) {
+
+        gl3.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        gl3.glClear(GL_COLOR_BUFFER_BIT);
+
+        gl3.glUseProgram(theProgram);
+
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, 0, 0);
+
+        gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        gl3.glDisableVertexAttribArray(Semantic.Attr.POSITION);
+        gl3.glUseProgram(0);        
     }
 
-    public void setCanvas(GLCanvas canvas) {
-        this.canvas = canvas;
+    @Override
+    public void reshape(GL3 gl3, int width, int height) {
+
+        gl3.glViewport(0, 0, width, height);
     }
 }

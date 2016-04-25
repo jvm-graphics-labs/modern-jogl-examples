@@ -18,8 +18,8 @@ import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
-import glsl.GLSLProgramObject;
-import glutil.MatrixStack;
+import framework.GLSLProgramObject;
+import framework.glutil.MatrixStack;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -30,7 +30,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jglm.Vec3;
+import framework.jglm.Vec3;
 
 /**
  *

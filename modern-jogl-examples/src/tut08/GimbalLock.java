@@ -15,11 +15,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import jglm.Mat4;
-import jglm.Vec3;
-import jglm.Vec4;
-import mesh.Mesh;
-import glutil.MatrixStack;
+import framework.jglm.Mat4;
+import framework.jglm.Vec3;
+import framework.jglm.Vec4;
+import framework.component.Mesh;
+import framework.glutil.MatrixStack;
 import tut08.glsl.GLSLProgramObject_1;
 
 /**

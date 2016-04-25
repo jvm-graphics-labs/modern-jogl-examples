@@ -18,8 +18,8 @@ import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.spi.DDSImage;
 import com.jogamp.opengl.util.texture.spi.DDSImage.ImageInfo;
-import glutil.MatrixStack;
-import glutil.Timer;
+import framework.glutil.MatrixStack;
+import framework.glutil.Timer;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -30,10 +30,10 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jglm.Jglm;
-import jglm.Mat4;
-import jglm.Vec3;
-import mesh.Mesh;
+import framework.jglm.Jglm;
+import framework.jglm.Mat4;
+import framework.jglm.Vec3;
+import framework.component.Mesh;
 import tut15.manyImages.program.ProgramData;
 
 /**

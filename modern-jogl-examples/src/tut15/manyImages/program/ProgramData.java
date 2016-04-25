@@ -12,7 +12,7 @@ import tut15.manyImages.ManyImages;
  *
  * @author gbarbieri
  */
-public class ProgramData extends glsl.GLSLProgramObject {
+public class ProgramData extends framework.GLSLProgramObject {
 
     private int modelToCameraMatrixUL;
     

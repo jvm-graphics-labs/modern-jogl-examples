@@ -11,7 +11,7 @@ import com.jogamp.opengl.GL3;
  *
  * @author gbarbieri
  */
-public class ProgramStandard extends glsl.GLSLProgramObject {
+public class ProgramStandard extends framework.GLSLProgramObject {
 
     private int modelToCameraMatrixUL;
     private int normalModelToCameraMatrixUL;

@@ -10,7 +10,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-import glsl.GLSLProgramObject;
+import framework.GLSLProgramObject;
 import com.jogamp.opengl.util.GLBuffers;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;

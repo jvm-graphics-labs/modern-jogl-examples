@@ -5,7 +5,7 @@
 package tut09.glsl;
 
 import com.jogamp.opengl.GL3;
-import glsl.GLSLProgramObject;
+import framework.GLSLProgramObject;
 
 /**
  *

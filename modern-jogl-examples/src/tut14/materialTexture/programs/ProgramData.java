@@ -12,7 +12,7 @@ import tut14.materialTexture.MaterialTexture;
  *
  * @author gbarbieri
  */
-public class ProgramData extends glsl.GLSLProgramObject {
+public class ProgramData extends framework.GLSLProgramObject {
 
     private int modelToCameraMatrixUL;
     private int normalModelToCameraMatrixUL;
