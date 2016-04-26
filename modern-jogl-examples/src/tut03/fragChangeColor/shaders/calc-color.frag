@@ -1,6 +1,9 @@
 #version 330
 
-out vec4 outputColor;
+// Attribute
+#define FRAG_COLOR  0
+
+layout (location = FRAG_COLOR) out vec4 outputColor;
 
 uniform float fragLoopDuration;
 uniform float time;

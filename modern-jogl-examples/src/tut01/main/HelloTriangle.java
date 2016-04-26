@@ -146,6 +146,9 @@ public class HelloTriangle extends Framework {
         gl3.glDeleteProgram(theProgram);
         gl3.glDeleteBuffers(1, positionBufferObject);
         gl3.glDeleteVertexArrays(1, vao);
+        
+        BufferUtils.destroyDirectBuffer(positionBufferObject);
+        BufferUtils.destroyDirectBuffer(vao);
     }
 
     /**

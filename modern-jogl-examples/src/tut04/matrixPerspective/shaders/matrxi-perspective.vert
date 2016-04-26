@@ -1,9 +1,13 @@
 #version 330
 
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec4 color;
+// Attribute
+#define POSITION    0
+#define COLOR       1
 
-smooth out vec4 intermediateColor;
+layout (location = POSITION) in vec4 position;
+layout (location = COLOR) in vec4 color;
+
+smooth out vec4 theColor;
 
 uniform vec2 offset;
 uniform mat4 perspectiveMatrix;
@@ -14,5 +18,5 @@ void main()
 
     gl_Position = perspectiveMatrix * cameraPosition;
 
-    intermediateColor = color;
+    theColor = color;
 }

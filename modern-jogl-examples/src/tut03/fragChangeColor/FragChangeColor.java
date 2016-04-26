@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut03.shaderCalcOffset;
+package tut03.fragChangeColor;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -27,17 +27,17 @@ import java.nio.IntBuffer;
  *
  * @author gbarbieri
  */
-public class VertCalcOffset extends Framework {
+public class FragChangeColor extends Framework{
 
-    private final String SHADERS_ROOT = "src/tut03/shaderCalcOffset/shaders";
+    private final String SHADERS_ROOT = "src/tut03/fragChangeColor/shaders";
     private final String VERT_SHADER_SOURCE = "calc-offset";
-    private final String FRAG_SHADER_SOURCE = "standard";
+    private final String FRAG_SHADER_SOURCE = "calc-color";
 
     public static void main(String[] args) {
-        VertCalcOffset vertCalcOffset = new VertCalcOffset("Tutorial 03 - Shader Calc Offset");
+        FragChangeColor fragChangeColor = new FragChangeColor("Tutorial 03 - Frag Change Color");
     }
 
-    public VertCalcOffset(String title) {
+    public FragChangeColor(String title) {
         super(title);
     }
 
@@ -86,6 +86,9 @@ public class VertCalcOffset extends Framework {
         gl3.glUniform1f(
                 gl3.glGetUniformLocation(theProgram, "loopDuration"),
                 5.0f);
+        gl3.glUniform1f(
+                gl3.glGetUniformLocation(theProgram, "fragLoopDuration"),
+                10.0f);
         gl3.glUseProgram(0);
     }
 
@@ -102,7 +105,7 @@ public class VertCalcOffset extends Framework {
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
 
-    @Override
+   @Override
     public void display(GL3 gl3) {
 
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));

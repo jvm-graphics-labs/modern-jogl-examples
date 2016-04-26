@@ -125,6 +125,9 @@ public class VertexColor extends Framework {
         gl3.glDeleteProgram(theProgram);
         gl3.glDeleteBuffers(1, vertexBufferObject);
         gl3.glDeleteVertexArrays(1, vao);
+        
+        BufferUtils.destroyDirectBuffer(vertexBufferObject);
+        BufferUtils.destroyDirectBuffer(vao);
     }
 
     @Override

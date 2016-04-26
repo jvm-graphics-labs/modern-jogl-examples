@@ -1,6 +1,10 @@
 #version 330
 
-layout (location = 0) in vec4 position;
+// Attribute
+#define POSITION    0
+
+layout (location = POSITION) in vec4 position;
+
 uniform float loopDuration;
 uniform float time;
 
