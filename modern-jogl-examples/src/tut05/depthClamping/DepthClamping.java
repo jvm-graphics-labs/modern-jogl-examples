@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut05.depthBuffer;
+package tut05.depthClamping;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -21,6 +21,8 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
+import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
@@ -37,16 +39,16 @@ import java.nio.ShortBuffer;
  *
  * @author gbarbieri
  */
-public class DepthBuffer extends Framework {
+public class DepthClamping extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut05/depthBuffer/shaders";
+    private final String SHADERS_ROOT = "src/tut05/depthClamping/shaders";
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        DepthBuffer depthBuffer = new DepthBuffer("Tutorial 05 - Depth Buffering");
+        DepthClamping depthBuffer = new DepthClamping("Tutorial 05 - Depth Clamping");
     }
 
-    public DepthBuffer(String title) {
+    public DepthClamping(String title) {
         super(title);
     }
 
@@ -65,7 +67,7 @@ public class DepthBuffer extends Framework {
     private final float RIGHT_EXTENT = 0.8f, LEFT_EXTENT = -RIGHT_EXTENT, TOP_EXTENT = 0.20f, MIDDLE_EXTENT = 0.0f,
             BOTTOM_EXTENT = -TOP_EXTENT, FRONT_EXTENT = -1.25f, REAR_EXTENT = -1.75f;
     private final float[] GREEN_COLOR = {0.75f, 0.75f, 1.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.5f, 0.0f, 1.0f},
-            RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, GREY_COLOR = {0.8f, 0.8f, 0.8f, 1.0f}, 
+            RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, GREY_COLOR = {0.8f, 0.8f, 0.8f, 1.0f},
             BROWN_COLOR = {0.5f, 0.5f, 0.0f, 1.0f};
     private float[] vertexData = {
         //Object 1 positions
@@ -176,6 +178,7 @@ public class DepthBuffer extends Framework {
         //
         14, 16, 15,
         17, 16, 14};
+    private boolean depthClampingActive = false;
 
     @Override
     public void init(GL3 gl3) {
@@ -271,7 +274,7 @@ public class DepthBuffer extends Framework {
 
         gl3.glBindVertexArray(vao.get(0));
 
-        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f);
+        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f);
         gl3.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
 
         gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
@@ -313,6 +316,17 @@ public class DepthBuffer extends Framework {
             case KeyEvent.VK_ESCAPE:
                 animator.stop();
                 glWindow.destroy();
+                break;
+            case KeyEvent.VK_SPACE:
+                glWindow.getContext().makeCurrent();
+                GL3 gl3 = GLContext.getCurrentGL().getGL3();
+                if (depthClampingActive) {
+                    gl3.glDisable(GL_DEPTH_CLAMP);
+                } else {
+                    gl3.glEnable(GL_DEPTH_CLAMP);
+                }
+                depthClampingActive = !depthClampingActive;
+                glWindow.getContext().release();
                 break;
         }
     }
