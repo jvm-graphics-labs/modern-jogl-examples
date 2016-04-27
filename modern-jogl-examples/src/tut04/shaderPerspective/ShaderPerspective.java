@@ -50,72 +50,95 @@ public class ShaderPerspective extends Framework {
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
+        //        
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
+        //        
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
+        //        
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
+        //        
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
+        //        
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
+        //        
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
+        //        
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
+        //        
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
+        //        
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
+        //        
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
+        //        
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f};
@@ -174,7 +197,7 @@ public class ShaderPerspective extends Framework {
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
 
         gl3.glGenBuffers(1, vertexBufferObject);
-        System.out.println("vertexBufferObject: "+vertexBufferObject.get(0));
+        
         gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);

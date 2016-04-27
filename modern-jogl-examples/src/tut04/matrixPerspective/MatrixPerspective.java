@@ -50,72 +50,95 @@ public class MatrixPerspective extends Framework {
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
+        //        
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
+        //        
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
+        //        
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
+        //        
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
+        //        
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
+        //        
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
+        //        
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
+        //        
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
+        //        
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
+        //        
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
+        //        
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
+        //        
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f};
@@ -169,9 +192,9 @@ public class MatrixPerspective extends Framework {
 
         gl3.glUseProgram(theProgram);
         gl3.glUniformMatrix4fv(
-                gl3.glGetUniformLocation(theProgram, "perspectiveMatrix"), 
-                1, 
-                false, 
+                gl3.glGetUniformLocation(theProgram, "perspectiveMatrix"),
+                1,
+                false,
                 perspectiveMatrix);
         gl3.glUseProgram(0);
     }
@@ -225,7 +248,7 @@ public class MatrixPerspective extends Framework {
         gl3.glDeleteProgram(theProgram);
         gl3.glDeleteBuffers(1, vertexBufferObject);
         gl3.glDeleteVertexArrays(1, vao);
-        
+
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(vertexBufferObject);
         BufferUtils.destroyDirectBuffer(perspectiveMatrix);
