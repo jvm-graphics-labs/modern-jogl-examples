@@ -42,7 +42,7 @@ public class FragPosition extends Framework {
 
     private int theProgram;
     private IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
-    private float[] vertexData = new float[]{
+    private float[] vertexData = {
         +0.75f, +0.75f, 0.0f, 1.0f,
         +0.75f, -0.75f, 0.0f, 1.0f,
         -0.75f, -0.75f, 0.0f, 1.0f};

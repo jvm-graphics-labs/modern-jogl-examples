@@ -43,7 +43,7 @@ public class FragChangeColor extends Framework{
 
     private int theProgram, elapsedTimeUniform;
     private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
-    private float[] vertexPositions = new float[]{
+    private float[] vertexPositions = {
         +0.25f, +0.25f, 0.0f, 1.0f,
         +0.25f, -0.25f, 0.0f, 1.0f,
         -0.25f, -0.25f, 0.0f, 1.0f};

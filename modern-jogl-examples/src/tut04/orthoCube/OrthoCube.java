@@ -46,7 +46,7 @@ public class OrthoCube extends Framework {
 
     private int theProgram, offsetUniform;
     private IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
-    private float[] vertexData = new float[]{
+    private float[] vertexData = {
         +0.25f, +0.25f, +0.75f, 1.0f,
         +0.25f, -0.25f, +0.75f, 1.0f,
         -0.25f, +0.25f, +0.75f, 1.0f,

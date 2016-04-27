@@ -2,21 +2,24 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut05.baseVertexOverlap;
+package tut05.depthBuffer;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_BACK;
 import static com.jogamp.opengl.GL.GL_CULL_FACE;
 import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
 import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
@@ -34,16 +37,16 @@ import java.nio.ShortBuffer;
  *
  * @author gbarbieri
  */
-public class BaseVertexOverlap extends Framework {
+public class DepthBuffer extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut05/baseVertexOverlap/shaders";
+    private final String SHADERS_ROOT = "src/tut05/depthBuffer/shaders";
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        BaseVertexOverlap baseVertexOverlap = new BaseVertexOverlap("Tutorial 05 - Base Vertex With Overlap");
+        DepthBuffer depthBuffer = new DepthBuffer("Tutorial 05 - Depth Buffer");
     }
 
-    public BaseVertexOverlap(String title) {
+    public DepthBuffer(String title) {
         super(title);
     }
 
@@ -64,7 +67,7 @@ public class BaseVertexOverlap extends Framework {
     private final float[] GREEN_COLOR = {0.75f, 0.75f, 1.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.5f, 0.0f, 1.0f},
             RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, GREY_COLOR = {0.8f, 0.8f, 0.8f, 1.0f}, 
             BROWN_COLOR = {0.5f, 0.5f, 0.0f, 1.0f};
-    private final float[] vertexData = {
+    private float[] vertexData = {
         //Object 1 positions
         LEFT_EXTENT, TOP_EXTENT, REAR_EXTENT,
         LEFT_EXTENT, MIDDLE_EXTENT, FRONT_EXTENT,
@@ -196,6 +199,11 @@ public class BaseVertexOverlap extends Framework {
         gl3.glEnable(GL_CULL_FACE);
         gl3.glCullFace(GL_BACK);
         gl3.glFrontFace(GL_CW);
+
+        gl3.glEnable(GL_DEPTH_TEST);
+        gl3.glDepthMask(true);
+        gl3.glDepthFunc(GL_LEQUAL);
+        gl3.glDepthRange(0.0f, 1.0f);
     }
 
     private void initializeProgram(GL3 gl3) {
@@ -257,6 +265,7 @@ public class BaseVertexOverlap extends Framework {
     public void display(GL3 gl3) {
 
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
         gl3.glUseProgram(theProgram);
 
