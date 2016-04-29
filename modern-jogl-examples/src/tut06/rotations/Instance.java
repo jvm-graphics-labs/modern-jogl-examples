@@ -18,12 +18,11 @@ public class Instance {
 
     private Rotations.Mode mode;
     private Vec3 offset;
-    private Mat3 mat;
+    private Mat3 mat = new Mat3();
 
     public Instance(Rotations.Mode mode, Vec3 offset) {
         this.mode = mode;
         this.offset = offset;
-        mat = new Mat3();
     }
 
     public Mat4 constructMatrix(float elapsedTime) {
@@ -31,7 +30,7 @@ public class Instance {
         Mat3 rotMatrix = calcRotation(elapsedTime);
         Mat4 theMat = new Mat4(rotMatrix);
         theMat.c3(new Vec4(offset, 1.0f));
-        
+
         return theMat;
     }
 
@@ -44,13 +43,13 @@ public class Instance {
 
             case RotateX:
                 return mat.rotationX(computeAngRad(elapsedTime, 3.0f));
-                
+
             case RotateY:
                 return mat.rotationY(computeAngRad(elapsedTime, 2.0f));
-                
+
             case RotateZ:
                 return mat.rotationZ(computeAngRad(elapsedTime, 2.0f));
-                
+
             case RotateAxis:
                 return mat.rotation(computeAngRad(elapsedTime, 2.0f), new Vec3(1.0f).normalize());
         }
