@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut06.hierarchy;
+package tut06.rotations;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -14,6 +14,8 @@ import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_LEQUAL;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TRIANGLES;
+import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
@@ -25,10 +27,10 @@ import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
-import java.nio.IntBuffer;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
+import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -36,17 +38,17 @@ import java.nio.ShortBuffer;
  *
  * @author gbarbieri
  */
-public class Hierarchy extends Framework {
+public class Rotations extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut06/hierarchy/shaders";
+    private final String SHADERS_ROOT = "src/tut06/rotations/shaders";
     private final String VERT_SHADER_SOURCE = "pos-color-local-transform";
     private final String FRAG_SHADER_SOURCE = "color-passthrough";
 
     public static void main(String[] args) {
-        Hierarchy hierarchy = new Hierarchy("Tutorial 06 - Hierarchy");
+        Rotations rotations = new Rotations("Tutorial 06 - Rotations");
     }
 
-    public Hierarchy(String title) {
+    public Rotations(String title) {
         super(title);
     }
 
@@ -62,96 +64,65 @@ public class Hierarchy extends Framework {
     private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f / 2.0)));
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
-    private final int numberOfVertices = 24;
+    private final int numberOfVertices = 8;
     private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.0f, 1.0f, 1.0f},
-            RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, YELLOW_COLOR = {1.0f, 1.0f, 0.0f, 1.0f},
-            CYAN_COLOR = {0.0f, 1.0f, 1.0f, 1.0f}, MAGENTA_COLOR = {1.0f, 0.0f, 1.0f, 1.0f};
+            RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, BROWN_COLOR = {0.5f, 0.5f, 0.0f, 1.0f};
     private float[] vertexData = {
-        //Front
         +1.0f, +1.0f, +1.0f,
-        +1.0f, -1.0f, +1.0f,
         -1.0f, -1.0f, +1.0f,
-        -1.0f, +1.0f, +1.0f,
-        //Top
-        +1.0f, +1.0f, +1.0f,
-        -1.0f, +1.0f, +1.0f,
         -1.0f, +1.0f, -1.0f,
-        +1.0f, +1.0f, -1.0f,
-        //Left
-        +1.0f, +1.0f, +1.0f,
-        +1.0f, +1.0f, -1.0f,
         +1.0f, -1.0f, -1.0f,
+        //
+        -1.0f, -1.0f, -1.0f,
+        +1.0f, +1.0f, -1.0f,
         +1.0f, -1.0f, +1.0f,
-        //Back
-        +1.0f, +1.0f, -1.0f,
-        -1.0f, +1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        +1.0f, -1.0f, -1.0f,
-        //Bottom
-        +1.0f, -1.0f, +1.0f,
-        +1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, +1.0f,
-        //Right
         -1.0f, +1.0f, +1.0f,
-        -1.0f, -1.0f, +1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, +1.0f, -1.0f,
         //
         GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
+        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
+        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
+        BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
+        //
         GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-        //
         BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-        //
         RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-        //
-        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-        //
-        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-        //
-        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3]};
+        BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3]};
     private short[] indexData = {
         0, 1, 2,
+        1, 0, 3,
         2, 3, 0,
+        3, 2, 1,
         //
-        4, 5, 6,
-        6, 7, 4,
-        //
-        8, 9, 10,
-        10, 11, 8,
-        //
-        12, 13, 14,
-        14, 15, 12,
-        //
-        16, 17, 18,
-        18, 19, 16,
-        //
-        20, 21, 22,
-        22, 23, 20};
-    private Armature armature = new Armature();
+        5, 4, 6,
+        4, 5, 7,
+        7, 6, 4,
+        6, 7, 5};
+    private Instance[] instanceList = {
+        new Instance(Mode.NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
+        new Instance(Mode.RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
+        new Instance(Mode.RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
+        new Instance(Mode.RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
+        new Instance(Mode.RotateAxis, new Vec3(5.0f, -5.0f, -25.0f))};
+    private long start;
 
     @Override
     public void init(GL3 gl3) {
 
         initializeProgram(gl3);
-        initializeVAO(gl3);
+        initializeVertexBuffers(gl3);
+
+        gl3.glGenVertexArrays(1, vao);
+        gl3.glBindVertexArray(vao.get(0));
+
+        int colorDataOffset = Vec3.SIZE * numberOfVertices;
+        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+
+        gl3.glBindVertexArray(0);
 
         gl3.glEnable(GL_CULL_FACE);
         gl3.glCullFace(GL_BACK);
@@ -161,6 +132,8 @@ public class Hierarchy extends Framework {
         gl3.glDepthMask(true);
         gl3.glDepthFunc(GL_LEQUAL);
         gl3.glDepthRange(0.0f, 1.0f);
+
+        start = System.currentTimeMillis();
     }
 
     private void initializeProgram(GL3 gl3) {
@@ -185,7 +158,7 @@ public class Hierarchy extends Framework {
         modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl3.glGetUniformLocation(theProgram, "cameraToClipMatrix");
 
-        float zNear = 1.0f, zFar = 100.0f;
+        float zNear = 1.0f, zFar = 61.0f;
 
         cameraToClipMatrix.m00 = frustumScale;
         cameraToClipMatrix.m11 = frustumScale;
@@ -200,7 +173,7 @@ public class Hierarchy extends Framework {
         gl3.glUseProgram(0);
     }
 
-    private void initializeVAO(GL3 gl3) {
+    private void initializeVertexBuffers(GL3 gl3) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
         ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indexData);
@@ -215,19 +188,6 @@ public class Hierarchy extends Framework {
         gl3.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
         gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        gl3.glGenVertexArrays(1, vao);
-        gl3.glBindVertexArray(vao.get(0));
-
-        int colorDataOffset = Vec3.SIZE * numberOfVertices;
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
-        gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
-
-        gl3.glBindVertexArray(0);
-
         BufferUtils.destroyDirectBuffer(vertexBuffer);
         BufferUtils.destroyDirectBuffer(indexBuffer);
     }
@@ -238,7 +198,21 @@ public class Hierarchy extends Framework {
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        armature.draw(gl3, theProgram, vao.get(0), modelToCameraMatrixUnif, indexData.length);
+        gl3.glUseProgram(theProgram);
+
+        gl3.glBindVertexArray(vao.get(0));
+
+        float elapsedTime = (System.currentTimeMillis() - start) / 1_000f;
+        for (Instance instance : instanceList) {
+
+            Mat4 transformMatrix = instance.constructMatrix(elapsedTime);
+
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix.toDfb(matrixBuffer));
+            gl3.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
+        }
+
+        gl3.glBindVertexArray(0);
+        gl3.glUseProgram(0);
     }
 
     @Override
@@ -261,13 +235,11 @@ public class Hierarchy extends Framework {
         gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl3.glDeleteVertexArrays(1, vao);
 
-        armature.dispose();
-
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
         BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
-
+    
     @Override
     protected void keyboard(KeyEvent keyEvent) {
 
@@ -276,45 +248,15 @@ public class Hierarchy extends Framework {
                 animator.stop();
                 glWindow.destroy();
                 break;
-            case KeyEvent.VK_A:
-                armature.adjBase(true);
-                break;
-            case KeyEvent.VK_D:
-                armature.adjBase(false);
-                break;
-            case KeyEvent.VK_W:
-                armature.adjUpperArm(false);
-                break;
-            case KeyEvent.VK_S:
-                armature.adjUpperArm(true);
-                break;
-            case KeyEvent.VK_R:
-                armature.adjLowerArm(false);
-                break;
-            case KeyEvent.VK_F:
-                armature.adjLowerArm(true);
-                break;
-            case KeyEvent.VK_T:
-                armature.adjWristPitch(false);
-                break;
-            case KeyEvent.VK_G:
-                armature.adjWristPitch(true);
-                break;
-            case KeyEvent.VK_Z:
-                armature.adjWristRoll(true);
-                break;
-            case KeyEvent.VK_C:
-                armature.adjWristRoll(false);
-                break;
-            case KeyEvent.VK_Q:
-                armature.adjFingerOpen(true);
-                break;
-            case KeyEvent.VK_E:
-                armature.adjFingerOpen(false);
-                break;
-            case KeyEvent.VK_SPACE:
-                armature.writePose();
-                break;
         }
+    }
+
+    public enum Mode {
+
+        NullRotation,
+        RotateX,
+        RotateY,
+        RotateZ,
+        RotateAxis
     }
 }
