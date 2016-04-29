@@ -131,13 +131,12 @@ public class Framework implements GLEventListener, KeyListener {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {        
+        keyboard(e);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-
-        keyboard(e);
     }
 
     protected void keyboard(KeyEvent keyEvent) {
