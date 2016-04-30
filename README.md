@@ -22,4 +22,4 @@ In this project there are the original Jglm and the java unofficial opengl SDK. 
 
 Ps: in the last jogl builds GL3 has been moved, so in the meanwhile I upgrade all my projects, you have to change it by yourself  :grimacing:
 
-Pps: upgrading in progress.. be patient  :pray: ############################################################################
+Pps: upgrading in progress.. be patient  :pray: 
