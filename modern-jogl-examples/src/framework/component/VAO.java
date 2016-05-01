@@ -18,11 +18,13 @@ public class VAO {
     private String name;
     private ArrayList<Integer> attribList;
 
-    public VAO(Element element) {
+    public static VAO process(Element element) {
 
-        attribList = new ArrayList<>();
+        VAO vao = new VAO();
+        
+        vao.attribList = new ArrayList<>();
 
-        name = element.getAttribute("name");
+        vao.name = element.getAttribute("name");
 
         NodeList children = element.getChildNodes();
 
@@ -42,10 +44,14 @@ public class VAO {
 
 //                    System.out.println("found new attrib: " + attrib);
 
-                    attribList.add(attrib);
+                    vao.attribList.add(attrib);
                 }
             }
         }
+        return vao;
+    }
+    
+    private VAO() {        
     }
 
     public VAO(ArrayList<Integer> attribList) {

@@ -26,24 +26,19 @@ import org.xml.sax.SAXException;
  */
 public class Mesh {
 
-    private ArrayList<Attribute> attributes;
-    private ArrayList<ElementsDrawer> indicesList;
-    private ArrayList<ArrayDrawer> arraysList;
-    private ArrayList<VAO> VAOList;
+    private ArrayList<Attribute> attribs = new ArrayList<>();
+    private ArrayList<RenderCmd> renderCmdList = new ArrayList<>();
+    private ArrayList<ElementsDrawer> indicesList = new ArrayList<>();
+    private ArrayList<ArrayDrawer> arraysList = new ArrayList<>();
+    private ArrayList<VAO> namedVaoList = new ArrayList<>();
     private int[] VBO;
     private int[] IBO;
-    private int[] VAO;
+    private int[] vao_;
     private float[] vertexAttributes;
     private int[] vertexIndices;
 
     public Mesh(String xml, GL3 gl3) {
 
-        attributes = new ArrayList<>();
-        indicesList = new ArrayList<>();
-        arraysList = new ArrayList<>();
-        VAOList = new ArrayList<>();
-
-//        System.out.println("readXml");
         readXml(xml);
 
 //        System.out.println("initializeVBO");
@@ -55,14 +50,13 @@ public class Mesh {
     public void render(GL3 gl3) {
 
 //        System.out.println("render()");
-
         int mode;
         int count;
         int type;
         int indices;
         int first;
 
-        gl3.glBindVertexArray(VAO[0]);
+        gl3.glBindVertexArray(vao_[0]);
         {
             for (ElementsDrawer elementsDrawer : indicesList) {
 
@@ -102,14 +96,14 @@ public class Mesh {
         int type;
         int indices;
 
-        for (int i = 0; i < VAO.length; i++) {
+        for (int i = 0; i < vao_.length; i++) {
 
-            if (VAOList.get(i).getName().equals(vaoName)) {
+            if (namedVaoList.get(i).getName().equals(vaoName)) {
 //                System.out.println("VAO[" + i + "]");
-                gl3.glBindVertexArray(VAO[i]);
+                gl3.glBindVertexArray(vao_[i]);
                 {
                     for (ElementsDrawer elementsDrawer : indicesList) {
-                        
+
                         mode = elementsDrawer.getCmd();
 
                         count = elementsDrawer.getIndices().length;
@@ -160,18 +154,18 @@ public class Mesh {
                 for (int i = 0; i < nodeList.getLength(); i++) {
 
 //                    System.out.println("found attribute " + i);
-
                     Element element = (Element) nodeList.item(i);
 
-                    Attribute attribute = new Attribute(element);
+//                    Attribute attribute = new Attribute(element);
+                    Attribute attribute = Attribute.create(element);
 
                     attribute.setOffset(offset);
 
 //                    System.out.println("offset: " + offset);
+//                    offset += attribute.getContent().length;
+                    offset += attribute.getDataArray_().capacity();
 
-                    offset += attribute.getContent().length;
-
-                    attributes.add(attribute);
+                    attribs.add(attribute);
 
 //                    for (int j = 0; j < attribute.getContent().length / attribute.getSize(); j++) {
 //                        System.out.println("attribute.getContent()[" + j + "]:");
@@ -180,6 +174,25 @@ public class Mesh {
 //                        }
 //                        System.out.println("");
 //                    }
+                }
+            } else {
+                throw new Error("`mesh` node must have at least one `attribute` child. File: " + xml);
+            }
+
+            /**
+             * VAOs.
+             */
+            nodeList = rootElement.getElementsByTagName("vao");
+
+            if (nodeList != null && nodeList.getLength() > 0) {
+
+                for (int i = 0; i < nodeList.getLength(); i++) {
+
+                    Element element = (Element) nodeList.item(i);
+
+                    VAO vao = VAO.process(element);
+
+                    namedVaoList.add(vao);
                 }
             }
 
@@ -195,7 +208,6 @@ public class Mesh {
                 for (int i = 0; i < nodeList.getLength(); i++) {
 
 //                    System.out.println("found indicesList " + i);
-
                     Element element = (Element) nodeList.item(i);
 
                     ElementsDrawer elementsDrawer = new ElementsDrawer(element);
@@ -203,7 +215,6 @@ public class Mesh {
                     elementsDrawer.setOffset(offset);
 
 //                    System.out.println("offset: " + offset);
-
                     offset += elementsDrawer.getIndices().length;
 
                     indicesList.add(elementsDrawer);
@@ -235,25 +246,8 @@ public class Mesh {
                 }
             }
 
-            /**
-             * VAOs.
-             */
-            nodeList = rootElement.getElementsByTagName("vao");
-
-            if (nodeList != null && nodeList.getLength() > 0) {
-
-                for (int i = 0; i < nodeList.getLength(); i++) {
-
-                    Element element = (Element) nodeList.item(i);
-
-                    VAO vao = new VAO(element);
-
-                    VAOList.add(vao);
-                }
-            }
-
         } catch (ParserConfigurationException | SAXException | IOException ex) {
-            Logger.getLogger(Mesh.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Mesh.class.getName()).log(Level.SEVERE, "Could not find the mesh file: " + xml, ex);
         }
     }
 
@@ -270,7 +264,6 @@ public class Mesh {
             gl3.glBufferData(GL3.GL_ARRAY_BUFFER, vertexAttributes.length * 4, GLBuffers.newDirectFloatBuffer(vertexAttributes), GL3.GL_STATIC_DRAW);
         }
         gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, 0);
-
 
         if (!indicesList.isEmpty()) {
 
@@ -292,30 +285,29 @@ public class Mesh {
     private void initializeVAO(GL3 gl3) {
 
 //        if (VAOList.isEmpty()) {
-
         ArrayList<Integer> attribList = new ArrayList<>();
 
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : attribs) {
 
             attribList.add(attribute.getIndex());
         }
 
-        VAOList.add(0, new VAO(attribList));
+        namedVaoList.add(0, new VAO(attribList));
 //        }
 
-        VAO = new int[VAOList.size()];
+        vao_ = new int[namedVaoList.size()];
 
         gl3.glBindBuffer(GL3.GL_ARRAY_BUFFER, VBO[0]);
 
-        gl3.glGenVertexArrays(VAO.length, IntBuffer.wrap(VAO));
+        gl3.glGenVertexArrays(vao_.length, IntBuffer.wrap(vao_));
 
-        for (int vaoIndex = 0; vaoIndex < VAO.length; vaoIndex++) {
+        for (int vaoIndex = 0; vaoIndex < vao_.length; vaoIndex++) {
 //            System.out.println("VAO " + vaoIndex);
-            VAO vao = VAOList.get(vaoIndex);
+            VAO vao = namedVaoList.get(vaoIndex);
 
-            gl3.glBindVertexArray(VAO[vaoIndex]);
+            gl3.glBindVertexArray(this.vao_[vaoIndex]);
             {
-                for (Attribute attribute : attributes) {
+                for (Attribute attribute : attribs) {
 //                    System.out.println("attribute: " + attribute.getIndex());
                     for (int index : vao.getAttribList()) {
 //                        System.out.println("found: " + index);
@@ -325,7 +317,7 @@ public class Mesh {
 //                            System.out.println("gl3.glEnableVertexAttribArray(" + index + ")");
                             gl3.glEnableVertexAttribArray(index);
 //                            System.out.println("gl3.glVertexAttribPointer(" + index + ", " + attribute.getSize() + ", " + GL3.GL_FLOAT + ", false, 0, " + attribute.getOffset() + ")");
-                            gl3.glVertexAttribPointer(index, attribute.getSize(), GL3.GL_FLOAT, false, 0, attribute.getOffset() * 4);
+                            gl3.glVertexAttribPointer(index, attribute.getSize(), GL3.GL_FLOAT, false, 0, attribute.getOffset());
                         }
                     }
                 }
@@ -341,7 +333,7 @@ public class Mesh {
 
         int totalSize = 0;
 
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : attribs) {
 
             totalSize += attribute.getContent().length;
         }
@@ -354,7 +346,7 @@ public class Mesh {
 
         int indexOffset = 0;
 
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : attribs) {
 
             for (int i = 0; i < attribute.getContent().length; i++) {
 
@@ -395,7 +387,7 @@ public class Mesh {
     }
 
     public ArrayList<Attribute> getAttributes() {
-        return attributes;
+        return attribs;
     }
 
     public ArrayList<ElementsDrawer> getIndicesList() {
@@ -411,6 +403,6 @@ public class Mesh {
     }
 
     public int[] getVAO() {
-        return VAO;
+        return vao_;
     }
 }

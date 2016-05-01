@@ -28,6 +28,7 @@ import java.nio.FloatBuffer;
  */
 public class Framework implements GLEventListener, KeyListener {
 
+    protected final String DATA_ROOT = "/tut07/data/";
     private final boolean DEBUG = false;
     protected GLWindow glWindow;
     protected Animator animator;
