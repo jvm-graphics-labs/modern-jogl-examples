@@ -19,6 +19,7 @@ Remember to clean & build after cloning it!
 In this project there are the original Jglm and the java unofficial opengl SDK. At the end of 2012 I decided to make them as separated projects, in order to make things clear and hope that they could grow their own. But you don't need them, the original ones work out of the box.
 
 
+
 Ps: in the last jogl builds GL3 has been moved, so in the meanwhile I upgrade all my projects, you have to change it by yourself  :grimacing:
 
-Pps: upgrading in progress.. be patient  :pray:
+Pps: upgrading in progress.. be patient  :pray: 
