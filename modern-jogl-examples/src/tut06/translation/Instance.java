@@ -59,12 +59,4 @@ public class Instance {
                         Math.sin(currTimeThroughLoop * scale) * 5 - 20.0f);
         }
     }
-
-    private float calculateLerpFactor(float elapsedTime, float loopDuration) {
-        float value = elapsedTime % loopDuration / loopDuration;
-        if (value > 0.5f) {
-            value = 1.0f - value;
-        }
-        return value * 2.0f;
-    }
 }
