@@ -18,7 +18,7 @@ public class Instance {
 
     private Rotations.Mode mode;
     private Vec3 offset;
-    private Mat3 mat = new Mat3();
+    private Mat3 theMat = new Mat3();
 
     public Instance(Rotations.Mode mode, Vec3 offset) {
         this.mode = mode;
@@ -36,26 +36,80 @@ public class Instance {
 
     private Mat3 calcRotation(float elapsedTime) {
 
+        float angRad, cos, sin;
+
         switch (mode) {
 
             default:
-                return mat.identity();
+                return theMat.identity();
 
             case RotateX:
-                return mat.rotationX(computeAngRad(elapsedTime, 3.0f));
+
+                angRad = computeAngleRad(elapsedTime, 3.0f);
+                cos = (float) Math.cos(angRad);
+                sin = (float) Math.sin(angRad);
+
+                theMat.identity();
+                theMat.m11 = cos;
+                theMat.m12 = sin;
+                theMat.m21 = -sin;
+                theMat.m22 = cos;
+                return theMat;
 
             case RotateY:
-                return mat.rotationY(computeAngRad(elapsedTime, 2.0f));
+
+                angRad = computeAngleRad(elapsedTime, 2.0f);
+                cos = (float) Math.cos(angRad);
+                sin = (float) Math.sin(angRad);
+
+                theMat.identity();
+                theMat.m00 = cos;
+                theMat.m02 = -sin;
+                theMat.m20 = sin;
+                theMat.m22 = cos;
+                return theMat;
 
             case RotateZ:
-                return mat.rotationZ(computeAngRad(elapsedTime, 2.0f));
+
+                angRad = computeAngleRad(elapsedTime, 2.0f);
+                cos = (float) Math.cos(angRad);
+                sin = (float) Math.sin(angRad);
+
+                theMat.identity();
+                theMat.m00 = cos;
+                theMat.m01 = sin;
+                theMat.m10 = -sin;
+                theMat.m11 = cos;
+                return theMat;
 
             case RotateAxis:
-                return mat.rotation(computeAngRad(elapsedTime, 2.0f), new Vec3(1.0f).normalize());
+
+                angRad = computeAngleRad(elapsedTime, 2.0f);
+                cos = (float) Math.cos(angRad);
+                sin = (float) Math.sin(angRad);
+                float invCos = 1.0f - cos,
+                 invSin = 1.0f - sin;
+
+                Vec3 axis = new Vec3(1.0f).normalize();
+                theMat.identity();
+
+                theMat.m00 = (axis.x * axis.x) + ((1 - axis.x * axis.x) * cos);
+                theMat.m10 = axis.x * axis.y * (invCos) - (axis.z * sin);
+                theMat.m20 = axis.x * axis.z * (invCos) + (axis.y * sin);
+
+                theMat.m01 = axis.x * axis.y * (invCos) + (axis.z * sin);
+                theMat.m11 = (axis.y * axis.y) + ((1 - axis.y * axis.y) * cos);
+                theMat.m21 = axis.y * axis.z * (invCos) - (axis.x * sin);
+
+                theMat.m02 = axis.x * axis.z * (invCos) - (axis.y * sin);
+                theMat.m12 = axis.y * axis.z * (invCos) + (axis.x * sin);
+                theMat.m22 = (axis.z * axis.z) + ((1 - axis.z * axis.z) * cos);
+
+                return theMat;
         }
     }
 
-    private float computeAngRad(float elapsedTime, float loopDuration) {
+    private float computeAngleRad(float elapsedTime, float loopDuration) {
         float scale = (float) (Math.PI * 2.0f / loopDuration);
         float currentTimeThroughLoop = elapsedTime % loopDuration;
         return currentTimeThroughLoop * scale;
