@@ -50,7 +50,8 @@ public class HelloTriangle extends Framework {
         -0.75f, -0.75f, 0.0f, 1.0f};
 
     /**
-     * Called after the window and OpenGL are initialized. Called exactly once, before the main loop.
+     * Called after the window and OpenGL are initialized. Called exactly once,
+     * before the main loop.
      *
      * @param gl3
      */
@@ -99,9 +100,9 @@ public class HelloTriangle extends Framework {
     }
 
     /**
-     * Called to update the display.
-     * You don't need to swap the buffers after all of your rendering to display
-     * what you rendered, it is done automatically.
+     * Called to update the display. You don't need to swap the buffers after
+     * all of your rendering to display what you rendered, it is done
+     * automatically.
      *
      * @param gl3
      */
@@ -123,8 +124,9 @@ public class HelloTriangle extends Framework {
     }
 
     /**
-     * Called whenever the window is resized. The new window size is given, in pixels.
-     * This is an opportunity to call glViewport or glScissor to keep up with the change in size.
+     * Called whenever the window is resized. The new window size is given, in
+     * pixels. This is an opportunity to call glViewport or glScissor to keep up
+     * with the change in size.
      *
      * @param gl3
      * @param w
@@ -135,10 +137,11 @@ public class HelloTriangle extends Framework {
 
         gl3.glViewport(0, 0, w, h);
     }
-    
+
     /**
      * Called at the end, here you want to clean all the resources.
-     * @param gl3 
+     *
+     * @param gl3
      */
     @Override
     protected void end(GL3 gl3) {
@@ -146,24 +149,24 @@ public class HelloTriangle extends Framework {
         gl3.glDeleteProgram(theProgram);
         gl3.glDeleteBuffers(1, positionBufferObject);
         gl3.glDeleteVertexArrays(1, vao);
-        
+
         BufferUtils.destroyDirectBuffer(positionBufferObject);
         BufferUtils.destroyDirectBuffer(vao);
     }
 
     /**
-     * Called whenever a key on the keyboard was pressed.
-     * The key is given by the KeyCode().
-     * It's often a good idea to have the escape key to exit the program.
+     * Called whenever a key on the keyboard was pressed. The key is given by
+     * the KeyCode(). It's often a good idea to have the escape key to exit the
+     * program.
      *
      * @param keyEvent
      */
     @Override
     protected void keyboard(KeyEvent keyEvent) {
-
+        
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.stop();
+                animator.remove(glWindow);
                 glWindow.destroy();
                 break;
         }

@@ -4,6 +4,7 @@
  */
 package framework.component;
 
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_BYTE;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_HALF_FLOAT;
@@ -13,6 +14,7 @@ import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import static com.jogamp.opengl.GL2ES2.GL_INT;
 import static com.jogamp.opengl.GL2GL3.GL_DOUBLE;
+import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import java.nio.ByteBuffer;
 import java.util.StringTokenizer;
@@ -24,59 +26,51 @@ import org.w3c.dom.Element;
  */
 public class Attribute {
 
-    private int index;
-    private String type;
-    private int size;
-    private boolean isIntegral;
-    private float[] dataArray;
-    private ByteBuffer dataArray_;
-    private int offset;
+    private int index = Integer.MAX_VALUE;
+    private AttributeType attribType = null;
+    private int size = -1;
+    private boolean isIntegral = false;
+    private ByteBuffer dataArray;
 
-    private Attribute() {
-    }
+    public Attribute(Element element) {
 
-    public static Attribute create(Element element) {
-
-        Attribute attribute = new Attribute();
-
-        attribute.index = Integer.parseInt(element.getAttribute("index"));
-        if (!((0 <= attribute.index) && (attribute.index < 16))) {
-            throw new Error("Attribute index must be between 0 and 16 (" + attribute.index + ").");
+        index = Integer.parseInt(element.getAttribute("index"));
+        if (!((0 <= index) && (index < 16))) {
+            throw new Error("Attribute index must be between 0 and 16 (" + index + ").");
         }
 
-        attribute.size = Integer.parseInt(element.getAttribute("size"));
-        if (!((1 <= attribute.size) && (attribute.size < 5))) {
-            throw new Error("Attribute size must be between 1 and 4 (" + attribute.size + ").");
+        size = Integer.parseInt(element.getAttribute("size"));
+        if (!((1 <= size) && (size < 5))) {
+            throw new Error("Attribute size must be between 1 and 4 (" + size + ").");
         }
 
-        AttributeType attributeType = AttributeType.get(element.getAttribute("type"));
-        attribute.type = attributeType.nameFromFile;
+        attribType = AttributeType.get(element.getAttribute("type"));
 
-        attribute.isIntegral = false;
+        isIntegral = false;
         String integralAttrib = element.getAttribute("integral");
         if (!integralAttrib.isEmpty()) {
 
             switch (integralAttrib) {
                 case "true":
-                    attribute.isIntegral = true;
+                    isIntegral = true;
                     break;
                 case "false":
-                    attribute.isIntegral = false;
+                    isIntegral = false;
                     break;
                 default:
                     throw new Error("Incorrect 'integral' value for the 'attribute' (" + integralAttrib + ").");
             }
-            if (attributeType.normalized) {
+            if (attribType.normalized) {
                 throw new Error("Attribute cannot be both 'integral' and a normalized 'type'.");
             }
-            if (attributeType.glType == GL_FLOAT
-                    || attributeType.glType == GL_HALF_FLOAT
-                    || attributeType.glType == GL_DOUBLE) {
+            if (attribType.glType == GL_FLOAT
+                    || attribType.glType == GL_HALF_FLOAT
+                    || attribType.glType == GL_DOUBLE) {
                 throw new Error("Attribute cannot be both 'integral' and a floating-point 'type'.");
             }
         }
 
-//        System.out.println("index: " + index + " type: " + type + " size: " + size);
+//        System.out.println("index: " + index + " type: " + attribType.nameFromFile + " size: " + size);
         String textContent = element.getTextContent();
 
         StringTokenizer stringTokenizer = new StringTokenizer(textContent);
@@ -89,75 +83,60 @@ public class Attribute {
         if (numberOfObjects == 0) {
             throw new Error("The attribute must have an array of values.");
         }
-        if (numberOfObjects % attribute.size != 0) {
+        if (numberOfObjects % size != 0) {
             throw new Error("The attribute's data must be a multiple of its size in elements.");
         }
 
-        attribute.dataArray_ = GLBuffers.newDirectByteBuffer(numberOfObjects * attributeType.numBytes);
-        attribute.dataArray = new float[numberOfObjects];
+        dataArray = GLBuffers.newDirectByteBuffer(numberOfObjects * attribType.numBytes);
 
         stringTokenizer = new StringTokenizer(textContent);
 
         for (int i = 0; i < numberOfObjects; i++) {
             String s = (String) stringTokenizer.nextElement();
 //            System.out.println("s[" + i + "]: " + s);
-            switch (attributeType.glType) {
+            switch (attribType.glType) {
                 case GL_FLOAT:
                 case GL_HALF_FLOAT:
-                    attribute.dataArray_.putFloat(Float.parseFloat(s));
-                    attribute.dataArray[i] = Float.parseFloat(s);
+                    dataArray.putFloat(Float.parseFloat(s));
                     break;
                 case GL_INT:
                 case GL_UNSIGNED_INT:
-                    attribute.dataArray_.putInt(Integer.parseInt(s));
+                    dataArray.putInt(Integer.parseInt(s));
                     break;
                 case GL_SHORT:
                 case GL_UNSIGNED_SHORT:
-                    attribute.dataArray_.putShort(Short.parseShort(s));
+                    dataArray.putShort(Short.parseShort(s));
                     break;
                 case GL_BYTE:
                 case GL_UNSIGNED_BYTE:
-                    attribute.dataArray_.put(Byte.parseByte(s));
+                    dataArray.put(Byte.parseByte(s));
                     break;
             }
         }
-        attribute.dataArray_.position(0);
-        return attribute;
+        dataArray.position(0);
     }
 
-    public Attribute(Element element) {
+    public void fillBoundBufferObject(GL3 gl3, int offset) {
+        attribType.writeToBuffer(gl3, GL_ARRAY_BUFFER, dataArray, offset);
+    }
 
-        index = Integer.parseInt(element.getAttribute("index"));
-//        if(a)
+    public void setupAttributeArray(GL3 gl3, int offset) {
 
-        type = element.getAttribute("type");
-
-        size = Integer.parseInt(element.getAttribute("size"));
-
-//        System.out.println("index: " + index + " type: " + type + " size: " + size);
-        String textContent = element.getTextContent();
-
-        StringTokenizer stringTokenizer = new StringTokenizer(textContent);
-
-        int numberOfObjects = 0;
-        while (stringTokenizer.hasMoreElements()) {
-            numberOfObjects++;
-            stringTokenizer.nextElement();
-        }
-
-        dataArray = new float[numberOfObjects];
-
-        stringTokenizer = new StringTokenizer(textContent);
-
-        for (int i = 0; i < numberOfObjects; i++) {
-            String s = (String) stringTokenizer.nextElement();
-//            System.out.println("s[" + i + "]: " + s);
-            dataArray[i] = Float.parseFloat(s);
+        gl3.glEnableVertexAttribArray(index);
+        if (isIntegral) {
+            gl3.glVertexAttribIPointer(index, size, attribType.glType, size * attribType.numBytes, offset);
+        } else {
+            gl3.glVertexAttribPointer(index, size, attribType.glType, attribType.normalized, 
+                    size * attribType.numBytes, offset);
         }
     }
 
-    public float[] getContent() {
-        return dataArray;
+    public int calcByteSize() {
+        return dataArray.capacity();
+    }
+
+    public int numElements() {
+        return dataArray.capacity() / size / attribType.numBytes;
     }
 
     public int getIndex() {
@@ -168,15 +147,7 @@ public class Attribute {
         return size;
     }
 
-    public int getOffset() {
-        return offset;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
     public ByteBuffer getDataArray_() {
-        return dataArray_;
+        return dataArray;
     }
 }

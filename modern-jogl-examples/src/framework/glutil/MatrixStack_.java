@@ -21,43 +21,52 @@ public class MatrixStack_ {
         matrices.add(new Mat4(1.0f));
     }
 
-    public void translate(Vec3 offset) {
+    public MatrixStack_ translate(Vec3 offset) {
         top().translate(offset);
+        return this;
     }
 
-    public void scale(Vec3 scaling) {
+    public MatrixStack_ scale(Vec3 scaling) {
         top().scale(scaling);
+        return this;
     }
 
-    public void rotateX(float angDeg) {
-        top().rotateX(angDeg);
+    public MatrixStack_ rotateX(float angDeg) {
+        top().rotateX(Math.toRadians(angDeg));
+        return this;
     }
 
-    public void rotateY(float angDeg) {
-        top().rotateY(angDeg);
+    public MatrixStack_ rotateY(float angDeg) {
+        top().rotateY(Math.toRadians(angDeg));
+        return this;
     }
 
-    public void rotateZ(float angDeg) {
-        top().rotateZ(angDeg);
+    public MatrixStack_ rotateZ(float angDeg) {
+        top().rotateZ(Math.toRadians(angDeg));
+        return this;
     }
 
-    public void applyMat(Mat4 mat4) {
+    public MatrixStack_ applyMat(Mat4 mat4) {
         top().mul(mat4);
+        return this;
     }
 
-    public void push() {
+    public MatrixStack_ push() {
         matrices.add(new Mat4(top()));
+        return this;
     }
 
-    public void pop() {
+    public MatrixStack_ pop() {
         matrices.remove(matrices.size() - 1);
+        return this;
     }
 
     public Mat4 top() {
         return matrices.get(matrices.size() - 1);
     }
 
-    public void setMatrix(Mat4 mat4) {
+    public MatrixStack_ setMatrix(Mat4 mat4) {
         matrices.set(matrices.size() - 1, mat4);
+        return this;
     }
 }

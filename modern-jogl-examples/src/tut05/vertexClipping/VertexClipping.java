@@ -310,7 +310,7 @@ public class VertexClipping extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.stop();
+                animator.remove(glWindow);
                 glWindow.destroy();
                 break;
         }

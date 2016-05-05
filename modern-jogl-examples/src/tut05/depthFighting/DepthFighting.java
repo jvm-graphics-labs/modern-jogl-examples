@@ -37,7 +37,9 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 /**
- * ********************************************* TO FINISH *********************************************************
+ * ********************************************* TO FINISH
+ *
+ *********************************************************
  * @author gbarbieri
  */
 public class DepthFighting extends Framework {
@@ -187,6 +189,12 @@ public class DepthFighting extends Framework {
     @Override
     public void display(GL3 gl3) {
 
+        if (depthClampingActive) {
+            gl3.glDisable(GL_DEPTH_CLAMP);
+        } else {
+            gl3.glEnable(GL_DEPTH_CLAMP);
+        }
+
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
@@ -247,19 +255,11 @@ public class DepthFighting extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.stop();
+                animator.remove(glWindow);
                 glWindow.destroy();
                 break;
             case KeyEvent.VK_SPACE:
-                glWindow.getContext().makeCurrent();
-                GL3 gl3 = GLContext.getCurrentGL().getGL3();
-                if (depthClampingActive) {
-                    gl3.glDisable(GL_DEPTH_CLAMP);
-                } else {
-                    gl3.glEnable(GL_DEPTH_CLAMP);
-                }
                 depthClampingActive = !depthClampingActive;
-                glWindow.getContext().release();
                 break;
         }
     }

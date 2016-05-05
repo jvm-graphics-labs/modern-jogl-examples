@@ -28,7 +28,6 @@ import java.nio.FloatBuffer;
  */
 public class Framework implements GLEventListener, KeyListener {
 
-    protected final String DATA_ROOT = "/tut07/data/";
     private final boolean DEBUG = false;
     protected GLWindow glWindow;
     protected Animator animator;
@@ -113,17 +112,14 @@ public class Framework implements GLEventListener, KeyListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-
+        System.out.println("dispose");
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);
 
         BufferUtils.destroyDirectBuffer(clearColor);
         BufferUtils.destroyDirectBuffer(clearDepth);
-
-        if (animator.isAnimating()) {
-            animator.stop();
-        }
+        
         System.exit(0);
     }
 
@@ -132,8 +128,8 @@ public class Framework implements GLEventListener, KeyListener {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {        
-        keyboard(e);
+    public void keyPressed(KeyEvent e) {
+        keyboard(e);        
     }
 
     @Override
@@ -141,7 +137,5 @@ public class Framework implements GLEventListener, KeyListener {
     }
 
     protected void keyboard(KeyEvent keyEvent) {
-
     }
-
 }

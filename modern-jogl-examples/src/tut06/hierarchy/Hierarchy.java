@@ -273,7 +273,7 @@ public class Hierarchy extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.stop();
+                animator.remove(glWindow);
                 glWindow.destroy();
                 break;
             case KeyEvent.VK_A:

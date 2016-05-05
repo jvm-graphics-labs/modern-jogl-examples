@@ -13,6 +13,8 @@ import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import static com.jogamp.opengl.GL2ES2.GL_INT;
+import com.jogamp.opengl.GL3;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -30,6 +32,10 @@ public class AttributeType {
         this.normalized = normalized;
         this.glType = glType;
         this.numBytes = numBytes;
+    }
+    
+    public void writeToBuffer(GL3 gl3, int buffer, ByteBuffer theData, int offset) {
+        gl3.glBufferSubData(buffer, offset, theData.capacity(), theData);
     }
 
     public static AttributeType get(String type) {
