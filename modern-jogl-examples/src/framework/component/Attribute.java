@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
  */
 public class Attribute {
 
-    private int index = Integer.MAX_VALUE;
+    int index = Integer.MAX_VALUE;
     private AttributeType attribType = null;
     private int size = -1;
     private boolean isIntegral = false;
@@ -147,7 +147,11 @@ public class Attribute {
         return size;
     }
 
-    public ByteBuffer getDataArray_() {
+    public ByteBuffer getDataArray() {
         return dataArray;
+    }
+
+    public AttributeType getAttribType() {
+        return attribType;
     }
 }

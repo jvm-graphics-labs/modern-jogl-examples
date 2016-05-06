@@ -112,7 +112,7 @@ public class Framework implements GLEventListener, KeyListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-        System.out.println("dispose");
+        
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);

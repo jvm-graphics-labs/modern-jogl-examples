@@ -62,7 +62,7 @@ public class Rotations extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
     private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
-    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f / 2.0)));
+    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
     private final int numberOfVertices = 8;
     private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.0f, 1.0f, 1.0f},

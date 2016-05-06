@@ -10,22 +10,26 @@ import static com.jogamp.opengl.GL.GL_CULL_FACE;
 import static com.jogamp.opengl.GL.GL_CW;
 import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
 import static com.jogamp.opengl.GL.GL_LEQUAL;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
 import framework.Framework;
+import framework.component.Attribute;
 import framework.component.Mesh;
+import framework.component.RenderCmd;
 import framework.glutil.MatrixStack_;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
+import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -59,9 +63,7 @@ public class WorldScene extends Framework {
     private ProgramData uniformColor, objectColor, uniformColorTint;
     private Mesh[] meshes = new Mesh[Mesh_.MAX];
     public static FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
-
-    private Vec3 sphereCamRelPos = new Vec3(67.5f, -46.0f, 150.0f);
-    private Vec3 camTarget = new Vec3(0.0f, 0.4f, 0.0f);
+    private Vec3 sphereCamRelPos = new Vec3(67.5f, -46.0f, 150.0f), camTarget = new Vec3(0.0f, 0.4f, 0.0f);
     private boolean drawLookAtPoint = false;
 
     @Override
@@ -70,7 +72,27 @@ public class WorldScene extends Framework {
         initializePrograms(gl3);
 
         for (int i = 0; i < Mesh_.MAX; i++) {
-            meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+            try {
+                meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+            } catch (ParserConfigurationException | SAXException | IOException ex) {
+                Logger.getLogger(WorldScene.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+//        for (Attribute attribute : meshes[Mesh_.CYLINDER].getAttribs()) {
+//            int size = attribute.getDataArray().capacity();
+//            System.out.println("Attribute " + attribute.getIndex() + ", size " + size);
+//            for (int j = 0; j < size; j += Float.BYTES * attribute.getSize()) {
+//                for (int i = 0; i < attribute.getSize(); i++) {
+//                    System.out.print(attribute.getDataArray().getFloat(j + i * Float.BYTES) + " ");
+//                }
+//                System.out.println("");
+//            }
+//        }
+        for (RenderCmd indexRenderCmd : meshes[Mesh_.CYLINDER].getIndexData()) {
+            System.out.println("");
+            for (int i = 0; i < indexRenderCmd.dataArray.capacity(); i += Short.BYTES) {
+                System.out.print(indexRenderCmd.dataArray.getShort(i) + " ");
+            }
         }
 
         gl3.glEnable(GL_CULL_FACE);
@@ -203,14 +225,14 @@ public class WorldScene extends Framework {
 
     private void drawForest(GL3 gl3, MatrixStack_ modelMatrix_) {
 
-        for (Forest.Tree tree : Forest.trees) {
-
-            modelMatrix_
-                    .push()
-                    .translate(new Vec3(tree.xPos, 0.0f, tree.zPos));
-            drawTree(gl3, modelMatrix_, tree.trunkHeight, tree.coneHeight);
-            modelMatrix_.pop();
-        }
+//        for (Forest.Tree tree : Forest.trees) {
+        Forest.Tree tree = Forest.trees[0];
+        modelMatrix_
+                .push()
+                .translate(new Vec3(tree.xPos, 1.0f, tree.zPos));
+        drawTree(gl3, modelMatrix_, tree.trunkHeight, tree.coneHeight);
+        modelMatrix_.pop();
+//        }
     }
 
     private void drawTree(GL3 gl3, MatrixStack_ modelStack_, float trunkHeight, float coneHeight) {
@@ -245,7 +267,7 @@ public class WorldScene extends Framework {
             gl3.glUseProgram(uniformColorTint.theProgram);
             gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
             gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f);
-            meshes[Mesh_.CONE].render(gl3);
+//            meshes[Mesh_.CONE].render(gl3);
             gl3.glUseProgram(0);
 
             modelStack_.pop();
@@ -266,7 +288,7 @@ public class WorldScene extends Framework {
                     .push()
                     .scale(new Vec3(parthenonWidth, parthenonBaseHeight, parthenonLength))
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
-                    .top().toDfb(matrixBuffer);;
+                    .top().toDfb(matrixBuffer);
 
             gl3.glUseProgram(uniformColorTint.theProgram);
             gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
@@ -465,67 +487,58 @@ public class WorldScene extends Framework {
         gl3.glDeleteProgram(uniformColor.theProgram);
         gl3.glDeleteProgram(objectColor.theProgram);
         gl3.glDeleteProgram(uniformColorTint.theProgram);
-        
+
         for (Mesh mesh : meshes) {
             mesh.dispose(gl3);
         }
+
+        BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
 
     @Override
     public void keyboard(KeyEvent e) {
-
-        float factor;
-
-        factor = e.isShiftDown() ? 10 : 1;
-
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_W:
-                camTarget.z -= 4.0f / factor;
+                camTarget.z -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
-
             case KeyEvent.VK_S:
-                camTarget.z += 4.0f / factor;
+                camTarget.z += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_D:
-                camTarget.x += 4.0f / factor;
+                camTarget.x += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
-
             case KeyEvent.VK_A:
-                camTarget.x -= 4.0f / factor;
+                camTarget.x -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_E:
-                camTarget.y -= 4.0f / factor;
+                camTarget.y -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
-
             case KeyEvent.VK_Q:
-                camTarget.y += 4.0f / factor;
+                camTarget.y += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_I:
-                sphereCamRelPos.y -= 11.25f / factor;
+                sphereCamRelPos.y -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
-
             case KeyEvent.VK_K:
-                sphereCamRelPos.y += 11.25f / factor;
+                sphereCamRelPos.y += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_J:
-                sphereCamRelPos.x -= 11.25f / factor;
+                sphereCamRelPos.x -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
-
             case KeyEvent.VK_L:
-                sphereCamRelPos.x += 11.25f / factor;
+                sphereCamRelPos.x += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_O:
-                sphereCamRelPos.z -= 5.0f / factor;
+                sphereCamRelPos.z -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
-
             case KeyEvent.VK_U:
-                sphereCamRelPos.z += 5.0f / factor;
+                sphereCamRelPos.z += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_SPACE:

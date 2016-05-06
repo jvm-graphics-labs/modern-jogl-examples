@@ -29,6 +29,7 @@ import framework.Framework;
 import framework.Semantic;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
@@ -61,7 +62,7 @@ public class Scale extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
     private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
-    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f / 2.0)));
+    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
     private final int numberOfVertices = 8;
     private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.0f, 1.0f, 1.0f},
@@ -114,12 +115,12 @@ public class Scale extends Framework {
         gl3.glGenVertexArrays(1, vao);
         gl3.glBindVertexArray(vao.get(0));
 
-        int colorDataOffset = glm.vec._3.Vec3.SIZE * numberOfVertices;
+        int colorDataOffset = Vec3.SIZE * numberOfVertices;
         gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, glm.vec._3.Vec3.SIZE, 0);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, glm.vec._4.Vec4.SIZE, colorDataOffset);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
         gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl3.glBindVertexArray(0);

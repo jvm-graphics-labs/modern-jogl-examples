@@ -11,17 +11,14 @@ import static com.jogamp.opengl.GL.GL_CULL_FACE;
 import static com.jogamp.opengl.GL.GL_CW;
 import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
 import static com.jogamp.opengl.GL.GL_LEQUAL;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_STREAM_DRAW;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
 import framework.component.Mesh;
@@ -29,8 +26,13 @@ import framework.glutil.MatrixStack_;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -39,11 +41,6 @@ import java.nio.IntBuffer;
 public class WorldWithUBO extends Framework {
 
     private final String SHADERS_ROOT = "src/tut07/worldWithUBO/shaders";
-    private final String[] VERT_SHADERS_SOURCE
-            = new String[]{"pos-only-world-transform-ubo", "pos-color-world-transform-ubo",
-                "pos-color-world-transform-ubo"};
-    private final String[] FRAG_SHADERS_SOURCE
-            = new String[]{"color-uniform", "color-passthrough", "color-mult-uniform"};
     protected final String DATA_ROOT = "/tut07/worldWithUBO/data/";
     private final String[] MESHES_SOURCE = new String[]{"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml",
         "UnitCubeColor.xml", "UnitPlane.xml"};
@@ -56,21 +53,6 @@ public class WorldWithUBO extends Framework {
         super(title);
     }
 
-    public class Program {
-
-        public final static int UNIFORM_COLOR = 0;
-        public final static int OBJECT_COLOR = 1;
-        public final static int UNIFORM_COLOR_TINT = 2;
-        public final static int MAX = 3;
-    }
-
-    public class Uniform {
-
-        public final static int MODEL_TO_WORLD = 0;
-        public final static int BASE_COLOR = 1;
-        public final static int MAX = 2;
-    }
-
     private class Mesh_ {
 
         public final static int CONE = 0;
@@ -81,13 +63,10 @@ public class WorldWithUBO extends Framework {
         public final static int MAX = 5;
     }
 
-    private int[] programName = new int[Program.MAX];
-    private int[][] uniform = new int[Program.MAX][Uniform.MAX];
+    private ProgramData uniformColor, objectColor, uniformColorTint;
     private Mesh[] meshes = new Mesh[Mesh_.MAX];
     public static FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
-
-    private Vec3 sphereCamRelPos = new Vec3(67.5f, -46.0f, 150.0f);
-    private Vec3 camTarget = new Vec3(0.0f, 0.4f, 0.0f);
+    private Vec3 sphereCamRelPos = new Vec3(67.5f, -46.0f, 150.0f), camTarget = new Vec3(0.0f, 0.4f, 0.0f);
     private boolean drawLookAtPoint = false;
     private IntBuffer globalMatricesUBO = GLBuffers.newDirectIntBuffer(1);
 
@@ -97,7 +76,11 @@ public class WorldWithUBO extends Framework {
         initializePrograms(gl3);
 
         for (int i = 0; i < Mesh_.MAX; i++) {
-            meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+            try {
+                meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+            } catch (ParserConfigurationException | SAXException | IOException ex) {
+                Logger.getLogger(WorldWithUBO.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         gl3.glEnable(GL_CULL_FACE);
@@ -113,38 +96,16 @@ public class WorldWithUBO extends Framework {
 
     private void initializePrograms(GL3 gl3) {
 
-        for (int i = 0; i < Program.MAX; i++) {
-
-            ShaderProgram shaderProgram = new ShaderProgram();
-
-            ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                    VERT_SHADERS_SOURCE[i], "vert", null, true);
-            ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                    FRAG_SHADERS_SOURCE[i], "frag", null, true);
-
-            shaderProgram.add(vertShaderCode);
-            shaderProgram.add(fragShaderCode);
-
-            shaderProgram.link(gl3, System.out);
-
-            programName[i] = shaderProgram.program();
-
-            vertShaderCode.destroy(gl3);
-            fragShaderCode.destroy(gl3);
-
-            uniform[i][Uniform.MODEL_TO_WORLD] = gl3.glGetUniformLocation(programName[i], "modelToWorldMatrix");
-            int globalUniformBlockIndex = gl3.glGetUniformBlockIndex(programName[i], "GlobalMatrices");
-            uniform[i][Uniform.BASE_COLOR] = gl3.glGetUniformLocation(programName[i], "baseColor");
-
-            gl3.glUniformBlockBinding(programName[i], globalUniformBlockIndex, Semantic.Uniform.GLOBAL_MATRICES);
-        }
+        uniformColor = new ProgramData(gl3, SHADERS_ROOT, "pos-only-world-transform-ubo", "color-uniform");
+        objectColor = new ProgramData(gl3, SHADERS_ROOT, "pos-color-world-transform-ubo", "color-passthrough");
+        uniformColorTint = new ProgramData(gl3, SHADERS_ROOT, "pos-color-world-transform-ubo", "color-mult-uniform");
 
         gl3.glGenBuffers(1, globalMatricesUBO);
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesUBO.get(0));
         gl3.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE * 2, null, GL_STREAM_DRAW);
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesUBO.get(0), 0,
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesUBO.get(0), 0, 
                 Mat4.SIZE * 2);
     }
 
@@ -158,8 +119,7 @@ public class WorldWithUBO extends Framework {
 
         MatrixStack_ camMatrix = new MatrixStack_()
                 .setMatrix(calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f)));
-        
-        
+
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesUBO.get(0));
         gl3.glBufferSubData(GL_UNIFORM_BUFFER, Mat4.SIZE, Mat4.SIZE, camMatrix.top().toDfb(matrixBuffer));
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -173,9 +133,9 @@ public class WorldWithUBO extends Framework {
                     .scale(new Vec3(100.0f, 1.0f, 100.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[Program.UNIFORM_COLOR]);
-            gl3.glUniformMatrix4fv(uniform[Program.UNIFORM_COLOR][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[Program.UNIFORM_COLOR][Uniform.BASE_COLOR], 0.302f, 0.416f, 0.0589f, 1.0f);
+            gl3.glUseProgram(uniformColor.theProgram);
+            gl3.glUniformMatrix4fv(uniformColor.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColor.baseColorUnif, 0.302f, 0.416f, 0.0589f, 1.0f);
             meshes[Mesh_.PLANE].render(gl3);
             gl3.glUseProgram(0);
 
@@ -199,7 +159,6 @@ public class WorldWithUBO extends Framework {
         if (drawLookAtPoint) {
 
             gl3.glDisable(GL3.GL_DEPTH_TEST);
-            Mat4 identity = new Mat4(1.0f);
 
             modelMatrix
                     .push()
@@ -207,8 +166,8 @@ public class WorldWithUBO extends Framework {
                     .scale(new Vec3(1.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[Program.OBJECT_COLOR]);
-            gl3.glUniformMatrix4fv(uniform[Program.OBJECT_COLOR][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
+            gl3.glUseProgram(objectColor.theProgram);
+            gl3.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matrixBuffer);
             meshes[Mesh_.CUBE_COLOR].render(gl3);
             gl3.glUseProgram(0);
 
@@ -276,9 +235,9 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[Program.UNIFORM_COLOR_TINT][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[Program.UNIFORM_COLOR_TINT][Uniform.BASE_COLOR], 0.694f, 0.4f, 0.106f, 1.0f);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.694f, 0.4f, 0.106f, 1.0f);
             meshes[Mesh_.CYLINDER].render(gl3);
             gl3.glUseProgram(0);
 
@@ -294,9 +253,9 @@ public class WorldWithUBO extends Framework {
                     .scale(new Vec3(3.0f, coneHeight, 3.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[Program.UNIFORM_COLOR_TINT][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[Program.UNIFORM_COLOR_TINT][Uniform.BASE_COLOR], 0.0f, 1.0f, 0.0f, 1.0f);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f);
             meshes[Mesh_.CONE].render(gl3);
             gl3.glUseProgram(0);
 
@@ -320,9 +279,9 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);;
 
-            gl3.glUseProgram(programName[Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[Program.UNIFORM_COLOR_TINT][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[Program.UNIFORM_COLOR_TINT][Uniform.BASE_COLOR], 0.9f, 0.9f, 0.9f, 0.9f);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[Mesh_.CUBE_TINT].render(gl3);
             gl3.glUseProgram(0);
 
@@ -339,9 +298,9 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[Program.UNIFORM_COLOR_TINT][Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[Program.UNIFORM_COLOR_TINT][Uniform.BASE_COLOR], 0.9f, 0.9f, 0.9f, 0.9f);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[Mesh_.CUBE_TINT].render(gl3);
             gl3.glUseProgram(0);
 
@@ -403,9 +362,9 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[WorldScene.Program.OBJECT_COLOR]);
-            gl3.glUniformMatrix4fv(uniform[WorldScene.Program.OBJECT_COLOR][WorldScene.Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            meshes[WorldScene.Mesh_.CUBE_COLOR].render(gl3);
+            gl3.glUseProgram(objectColor.theProgram);
+            gl3.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            meshes[Mesh_.CUBE_COLOR].render(gl3);
             gl3.glUseProgram(0);
 
             modelMatrix_.pop();
@@ -423,9 +382,9 @@ public class WorldWithUBO extends Framework {
                     .rotateY(45.0f)
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[WorldScene.Program.OBJECT_COLOR]);
-            gl3.glUniformMatrix4fv(uniform[WorldScene.Program.OBJECT_COLOR][WorldScene.Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            meshes[WorldScene.Mesh_.CUBE_COLOR].render(gl3);
+            gl3.glUseProgram(objectColor.theProgram);
+            gl3.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            meshes[Mesh_.CUBE_COLOR].render(gl3);
             gl3.glUseProgram(0);
 
             modelMatrix_.pop();
@@ -445,10 +404,10 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[WorldScene.Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.BASE_COLOR], 1.0f, 1.0f, 1.0f, 1.0f);
-            meshes[WorldScene.Mesh_.CUBE_TINT].render(gl3);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+            meshes[Mesh_.CUBE_TINT].render(gl3);
             gl3.glUseProgram(0);
 
             modelMatrix.pop();
@@ -463,10 +422,10 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[WorldScene.Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.BASE_COLOR], 0.9f, 0.9f, 0.9f, 0.9f);
-            meshes[WorldScene.Mesh_.CUBE_TINT].render(gl3);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            meshes[Mesh_.CUBE_TINT].render(gl3);
             gl3.glUseProgram(0);
 
             modelMatrix.pop();
@@ -481,10 +440,10 @@ public class WorldWithUBO extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().toDfb(matrixBuffer);
 
-            gl3.glUseProgram(programName[WorldScene.Program.UNIFORM_COLOR_TINT]);
-            gl3.glUniformMatrix4fv(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.MODEL_TO_WORLD], 1, false, matrixBuffer);
-            gl3.glUniform4f(uniform[WorldScene.Program.UNIFORM_COLOR_TINT][WorldScene.Uniform.BASE_COLOR], 0.9f, 0.9f, 0.9f, 0.9f);
-            meshes[WorldScene.Mesh_.CYLINDER].render(gl3);
+            gl3.glUseProgram(uniformColorTint.theProgram);
+            gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
+            gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            meshes[Mesh_.CYLINDER].render(gl3);
             gl3.glUseProgram(0);
 
             modelMatrix.pop();
@@ -496,28 +455,31 @@ public class WorldWithUBO extends Framework {
 
         float zNear = 1.0f, zFar = 1000.0f;
 
-        MatrixStack_ perspectiveMatrix = new MatrixStack_()
+        MatrixStack_ perspMatrix = new MatrixStack_()
                 .setMatrix(glm.perspective_(45.0f, w / (float) h, zNear, zFar));
-
-        for (int i = 0; i < WorldScene.Program.MAX; i++) {
-            gl3.glUseProgram(programName[i]);
-            gl3.glUniformMatrix4fv(uniform[i][WorldScene.Uniform.CAMERA_TO_CLIP], 1, false,
-                    perspectiveMatrix.top().toDfb(matrixBuffer));
-        }
-        gl3.glUseProgram(0);
-
+                
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesUBO.get(0));
+	gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().toDfb(matrixBuffer));
+	gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        
         gl3.glViewport(0, 0, w, h);
     }
 
     @Override
     public void end(GL3 gl3) {
 
-        for (int i = 0; i < WorldScene.Program.MAX; i++) {
-            gl3.glDeleteProgram(programName[i]);
-        }
+        gl3.glDeleteProgram(uniformColor.theProgram);
+        gl3.glDeleteProgram(objectColor.theProgram);
+        gl3.glDeleteProgram(uniformColorTint.theProgram);
+        
+        gl3.glDeleteBuffers(1, globalMatricesUBO);
+        
         for (Mesh mesh : meshes) {
             mesh.dispose(gl3);
         }
+        
+        BufferUtils.destroyDirectBuffer(matrixBuffer);
+        BufferUtils.destroyDirectBuffer(globalMatricesUBO);
     }
 
     @Override
