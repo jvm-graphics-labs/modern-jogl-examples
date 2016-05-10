@@ -6,6 +6,8 @@
 package framework.component;
 
 import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_TRIANGLE_FAN;
+import static com.jogamp.opengl.GL.GL_TRIANGLE_STRIP;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
@@ -26,8 +28,8 @@ public class RenderCmd {
     public int start;
     public int elemCount;
     //Only if isIndexedCmd is true.
-    public int indexDataType;  
-    private int primRestart;    
+    public int indexDataType;
+    private int primRestart;
     public AttributeType attribType;
     public ByteBuffer dataArray;
 
@@ -112,7 +114,7 @@ public class RenderCmd {
             throw new Error("`array` 'count' must be between 0 or greater.");
         }
     }
-    
+
     public void fillBoundBufferObject(GL3 gl3, int offset) {
         attribType.writeToBuffer(gl3, GL_ELEMENT_ARRAY_BUFFER, dataArray, offset);
     }
@@ -120,10 +122,14 @@ public class RenderCmd {
     public int calcByteSize() {
         return dataArray.capacity();
     }
-    
+
     public void render(GL3 gl3) {
         if (isIndexedCmd) {
-            gl3.glDrawElements(primType, elemCount, indexDataType, start);
+//            System.out.println("glDrawElements(" + (primType == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN"
+//                    : primType == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" : primType) + ", " + elemCount + ", "
+//                    + (indexDataType == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" : indexDataType) + ", "
+//                    + (start * attribType.numBytes) + ")");
+            gl3.glDrawElements(primType, elemCount, indexDataType, start * attribType.numBytes);
         } else {
             gl3.glDrawArrays(primType, start, elemCount);
         }

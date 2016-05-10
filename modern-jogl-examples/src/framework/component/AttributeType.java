@@ -5,7 +5,9 @@
  */
 package framework.component;
 
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_BYTE;
+import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_HALF_FLOAT;
 import static com.jogamp.opengl.GL.GL_SHORT;
@@ -33,8 +35,11 @@ public class AttributeType {
         this.glType = glType;
         this.numBytes = numBytes;
     }
-    
+
     public void writeToBuffer(GL3 gl3, int buffer, ByteBuffer theData, int offset) {
+//        System.out.println("glBufferData(" + (buffer == GL_ARRAY_BUFFER ? "GL_ARRAY_BUFFER"
+//                : buffer == GL_ELEMENT_ARRAY_BUFFER ? "GL_ELEMENT_ARRAY_BUFFER" : buffer)
+//                + ", " + offset + ", " + theData.capacity() + ")");
         gl3.glBufferSubData(buffer, offset, theData.capacity(), theData);
     }
 

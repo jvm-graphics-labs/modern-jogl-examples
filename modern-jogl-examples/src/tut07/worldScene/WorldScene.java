@@ -88,12 +88,12 @@ public class WorldScene extends Framework {
 //                System.out.println("");
 //            }
 //        }
-        for (RenderCmd indexRenderCmd : meshes[Mesh_.CYLINDER].getIndexData()) {
-            System.out.println("");
-            for (int i = 0; i < indexRenderCmd.dataArray.capacity(); i += Short.BYTES) {
-                System.out.print(indexRenderCmd.dataArray.getShort(i) + " ");
-            }
-        }
+//        for (RenderCmd indexRenderCmd : meshes[Mesh_.CYLINDER].getIndexData()) {
+//            System.out.println("");
+//            for (int i = 0; i < indexRenderCmd.dataArray.capacity(); i += Short.BYTES) {
+//                System.out.print(indexRenderCmd.dataArray.getShort(i) + " ");
+//            }
+//        }
 
         gl3.glEnable(GL_CULL_FACE);
         gl3.glCullFace(GL_BACK);
@@ -225,14 +225,13 @@ public class WorldScene extends Framework {
 
     private void drawForest(GL3 gl3, MatrixStack_ modelMatrix_) {
 
-//        for (Forest.Tree tree : Forest.trees) {
-        Forest.Tree tree = Forest.trees[0];
+        for (Forest.Tree tree : Forest.trees) {
         modelMatrix_
                 .push()
                 .translate(new Vec3(tree.xPos, 1.0f, tree.zPos));
         drawTree(gl3, modelMatrix_, tree.trunkHeight, tree.coneHeight);
         modelMatrix_.pop();
-//        }
+        }
     }
 
     private void drawTree(GL3 gl3, MatrixStack_ modelStack_, float trunkHeight, float coneHeight) {
@@ -267,7 +266,7 @@ public class WorldScene extends Framework {
             gl3.glUseProgram(uniformColorTint.theProgram);
             gl3.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matrixBuffer);
             gl3.glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f);
-//            meshes[Mesh_.CONE].render(gl3);
+            meshes[Mesh_.CONE].render(gl3);
             gl3.glUseProgram(0);
 
             modelStack_.pop();

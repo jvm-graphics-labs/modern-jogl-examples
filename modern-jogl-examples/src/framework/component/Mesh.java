@@ -88,8 +88,8 @@ public class Mesh {
         int[] attribStartLocs = new int[attribs.size()];
         for (int loop = 0; loop < attribs.size(); loop++) {
 
-            attribBufferSize = (attribBufferSize % 16 != 0)
-                    ? (attribBufferSize + (16 - attribBufferSize % 16)) : attribBufferSize;
+//            attribBufferSize = (attribBufferSize % 16 != 0)
+//                    ? (attribBufferSize + (16 - attribBufferSize % 16)) : attribBufferSize;
 
             attribStartLocs[loop] = attribBufferSize;
             Attribute attrib = attribs.get(loop);

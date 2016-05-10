@@ -121,12 +121,15 @@ public class Attribute {
     }
 
     public void setupAttributeArray(GL3 gl3, int offset) {
-
+//        System.out.println("glEnableVertexAttribArray(" + index + ")");
         gl3.glEnableVertexAttribArray(index);
         if (isIntegral) {
             gl3.glVertexAttribIPointer(index, size, attribType.glType, size * attribType.numBytes, offset);
         } else {
-            gl3.glVertexAttribPointer(index, size, attribType.glType, attribType.normalized, 
+//            System.out.println("glVertexAttribPointer(" + index + ", " + size + ", " + (attribType.glType == GL_FLOAT
+//                    ? "GL_FLOAT" : attribType.glType) + ", " + attribType.normalized + ", "
+//                    + (size * attribType.numBytes) + ", " + offset + ")");
+            gl3.glVertexAttribPointer(index, size, attribType.glType, attribType.normalized,
                     size * attribType.numBytes, offset);
         }
     }
