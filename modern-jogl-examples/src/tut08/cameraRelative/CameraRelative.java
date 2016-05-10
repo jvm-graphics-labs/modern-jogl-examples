@@ -19,6 +19,7 @@ import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
 import framework.glutil.MatrixStack_;
@@ -76,7 +77,7 @@ public class CameraRelative extends Framework {
     @Override
     public void init(GL3 gl3) {
 
-//        initializeProgram(gl3);
+        initializeProgram(gl3);
         try {
             ship = new Mesh(DATA_ROOT + SHIP_SCR, gl3);
             plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
@@ -168,8 +169,7 @@ public class CameraRelative extends Framework {
             gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
             gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matrixBuffer));
 
-//            ship.render(gl3, "tint");
-            ship.render(gl3);
+            ship.render(gl3, "tint");
 
             currMatrix.pop();
         }
@@ -225,11 +225,15 @@ public class CameraRelative extends Framework {
         gl3.glViewport(0, 0, w, h);
     }
 
-    class GimbalAngles {
+    @Override
+    public void end(GL3 gl3) {
 
-        public float angleX;
-        public float angleY;
-        public float angleZ;
+        gl3.glDeleteProgram(theProgram);
+
+        plane.dispose(gl3);
+        ship.dispose(gl3);
+
+        BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
 
     @Override
@@ -243,7 +247,7 @@ public class CameraRelative extends Framework {
                 animator.remove(glWindow);
                 glWindow.destroy();
                 break;
-            
+
             case KeyEvent.VK_W:
                 offsetOrientation(new Vec3(1.0f, 0.0f, 0.0f), +smallAngleIncrement);
                 break;
@@ -267,8 +271,7 @@ public class CameraRelative extends Framework {
 
             case KeyEvent.VK_SPACE:
 
-                offset += 1;
-                offset %= OffsetRelative.MAX;
+                offset = (offset + 1) % OffsetRelative.MAX;
                  {
                     switch (offset) {
 
@@ -288,19 +291,19 @@ public class CameraRelative extends Framework {
                 }
 
             case KeyEvent.VK_I:
-                sphereCamRelPos.y -= e.isShiftDown() ? 11.25f : 1.125f;
+                sphereCamRelPos.y -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_K:
-                sphereCamRelPos.y += e.isShiftDown() ? 11.25f : 1.125f;
+                sphereCamRelPos.y += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_J:
-                sphereCamRelPos.x -= e.isShiftDown() ? 11.25f : 1.125f;
+                sphereCamRelPos.x -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_L:
-                sphereCamRelPos.x += e.isShiftDown() ? 11.25f : 1.125f;
+                sphereCamRelPos.x += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
         }
 

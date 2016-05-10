@@ -9,7 +9,7 @@ layout(std140, column_major) uniform;
 layout (location = POSITION) in vec4 position;
 layout (location = COLOR) in vec4 color;
 
-smooth out vec4 interpColor;
+smooth out vec4 theColor;
 
 uniform GlobalMatrices
 {
@@ -24,5 +24,5 @@ void main()
     vec4 temp = modelToWorldMatrix * position;
     temp = worldToCameraMatrix * temp;
     gl_Position = cameraToClipMatrix * temp;
-    interpColor = color;
+    theColor = color;
 }

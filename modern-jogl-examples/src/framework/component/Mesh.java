@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -90,7 +91,6 @@ public class Mesh {
 
 //            attribBufferSize = (attribBufferSize % 16 != 0)
 //                    ? (attribBufferSize + (16 - attribBufferSize % 16)) : attribBufferSize;
-
             attribStartLocs[loop] = attribBufferSize;
             Attribute attrib = attribs.get(loop);
 
@@ -122,30 +122,30 @@ public class Mesh {
         }
 
         //Fill the named VAOs.
-//        int vaoBackup = vao.get(0);
-//        for (Pair namedVao : namedVaoList) {
-//
-//            vao.put(0, -1);
-//            gl3.glGenVertexArrays(1, vao);
-//            gl3.glBindVertexArray(vao.get(0));
-//
-//            for (Integer attribIx : namedVao.getAttributes()) {
-//
-//                int attribOffset = -1;
-//
-//                for (int count = 0; count < attribs.size(); count++) {
-//
-//                    if (attribs.get(count).index == attribIx) {
-//
-//                        attribOffset = count;
-//                        break;
-//                    }
-//                }
-//                attribs.get(attribOffset).setupAttributeArray(gl3, attribStartLocs[attribOffset]);
-//            }
-//            namedVAOs.put(namedVao.getName(), vao.get(0));
-//        }
-//        vao.put(0, vaoBackup);
+        int vaoBackup = vao.get(0);
+        for (Pair namedVao : namedVaoList) {
+
+            vao.put(0, -1);
+            gl3.glGenVertexArrays(1, vao);
+            gl3.glBindVertexArray(vao.get(0));
+
+            for (Integer attribIx : namedVao.getAttributes()) {
+
+                int attribOffset = -1;
+
+                for (int count = 0; count < attribs.size(); count++) {
+
+                    if (attribs.get(count).index == attribIx) {
+
+                        attribOffset = count;
+                        break;
+                    }
+                }
+                attribs.get(attribOffset).setupAttributeArray(gl3, attribStartLocs[attribOffset]);
+            }
+            namedVAOs.put(namedVao.getName(), vao.get(0));
+        }
+        vao.put(0, vaoBackup);
 
         gl3.glBindVertexArray(0);
 
@@ -186,6 +186,14 @@ public class Mesh {
                 }
             }
 
+            vaoBackup = vao.get(0);
+            for (Map.Entry<String, Integer> entry : namedVAOs.entrySet()) {
+                vao.put(0, entry.getValue());
+                gl3.glBindVertexArray(vao.get(0));
+                gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
+            }
+            vao.put(0, vaoBackup);
+
             gl3.glBindVertexArray(0);
         }
     }
@@ -205,10 +213,10 @@ public class Mesh {
 
     public void render(GL3 gl3, String meshName) {
 
-        if (!namedVAOs.containsKey("meshName")) {
+        if (!namedVAOs.containsKey(meshName)) {
             return;
         }
-        
+
         gl3.glBindVertexArray(namedVAOs.get(meshName));
         for (RenderCmd renderCmd : primatives) {
             renderCmd.render(gl3);
