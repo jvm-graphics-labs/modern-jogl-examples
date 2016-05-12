@@ -19,8 +19,8 @@ import static com.jogamp.opengl.GL.GL_TRIANGLE_STRIP;
  */
 public class PrimitiveType {
 
-    private String primitiveName;
-    private int glPrimType;
+    String primitiveName;
+    int glPrimType;
 
     public PrimitiveType(String primitiveName, int glPrimType) {
         this.primitiveName = primitiveName;
@@ -44,12 +44,4 @@ public class PrimitiveType {
         new PrimitiveType("line-strip", GL_LINE_STRIP),
         new PrimitiveType("line-loop", GL_LINE_LOOP),
         new PrimitiveType("points", GL_POINTS)};
-
-    public String getPrimitiveName() {
-        return primitiveName;
-    }
-
-    public int getGlPrimType() {
-        return glPrimType;
-    }
 }

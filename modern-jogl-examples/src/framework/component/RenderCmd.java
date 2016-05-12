@@ -23,15 +23,15 @@ import org.w3c.dom.Element;
  */
 public class RenderCmd {
 
-    public boolean isIndexedCmd;
-    private int primType;
-    public int start;
-    public int elemCount;
+    boolean isIndexedCmd;
+    int primType;
+    int start;
+    int elemCount;
     //Only if isIndexedCmd is true.
-    public int indexDataType;
-    private int primRestart;
-    public AttributeType attribType;
-    public ByteBuffer dataArray;
+    int indexDataType;
+    int primRestart;
+    AttributeType attribType;
+    ByteBuffer dataArray;
 
     private RenderCmd() {
     }
@@ -43,7 +43,7 @@ public class RenderCmd {
         String cmdName = element.getAttribute("cmd");
         PrimitiveType primitiveType = PrimitiveType.get(cmdName);
 
-        cmd.primType = primitiveType.getGlPrimType();
+        cmd.primType = primitiveType.glPrimType;
 
         if (indices) {
             processIndices(element, cmd);

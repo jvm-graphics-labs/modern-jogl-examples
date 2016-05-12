@@ -27,10 +27,10 @@ import org.w3c.dom.Element;
 public class Attribute {
 
     int index = Integer.MAX_VALUE;
-    private AttributeType attribType = null;
-    private int size = -1;
-    private boolean isIntegral = false;
-    private ByteBuffer dataArray;
+    AttributeType attribType = null;
+    int size = -1;
+    boolean isIntegral = false;
+    ByteBuffer dataArray;
 
     public Attribute(Element element) {
 
@@ -140,21 +140,5 @@ public class Attribute {
 
     public int numElements() {
         return dataArray.capacity() / size / attribType.numBytes;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public ByteBuffer getDataArray() {
-        return dataArray;
-    }
-
-    public AttributeType getAttribType() {
-        return attribType;
     }
 }

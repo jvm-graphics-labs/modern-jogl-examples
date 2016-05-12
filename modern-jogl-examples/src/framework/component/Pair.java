@@ -13,8 +13,8 @@ import java.util.ArrayList;
  */
 public class Pair {
 
-    private String name = "";
-    private ArrayList<Integer> attributes = new ArrayList<>();
+    String name = "";
+    ArrayList<Integer> attributes = new ArrayList<>();
 
     public String getName() {
         return name;

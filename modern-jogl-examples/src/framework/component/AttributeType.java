@@ -24,10 +24,10 @@ import java.nio.ByteBuffer;
  */
 public class AttributeType {
 
-    public final String nameFromFile;
-    public final boolean normalized;
-    public final int glType;
-    public final int numBytes;
+    final String nameFromFile;
+    final boolean normalized;
+    final int glType;
+    final int numBytes;
 
     private AttributeType(String nameFromFile, boolean normalized, int glType, int numBytes) {
         this.nameFromFile = nameFromFile;

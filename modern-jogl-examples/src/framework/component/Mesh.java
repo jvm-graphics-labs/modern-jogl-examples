@@ -225,17 +225,24 @@ public class Mesh {
     }
 
     public void dispose(GL3 gl3) {
+        
         for (Attribute attrib : attribs) {
-            BufferUtils.destroyDirectBuffer(attrib.getDataArray());
+            BufferUtils.destroyDirectBuffer(attrib.dataArray);
         }
         for (RenderCmd cmd : indexData) {
             BufferUtils.destroyDirectBuffer(cmd.dataArray);
         }
-        gl3.glDeleteBuffers(1, attribArraysBuffer);
+        
+        gl3.glDeleteBuffers(1, attribArraysBuffer);        
         if (!indexData.isEmpty()) {
             gl3.glDeleteBuffers(1, indexBuffer);
         }
-        gl3.glDeleteVertexArrays(1, vao);
+        
+        gl3.glDeleteVertexArrays(1, vao);        
+        for (Map.Entry<String, Integer> entry : namedVAOs.entrySet()) {
+            vao.put(0, entry.getValue());
+            gl3.glDeleteVertexArrays(1, vao);
+        }
     }
 
     public ArrayList<Attribute> getAttribs() {
