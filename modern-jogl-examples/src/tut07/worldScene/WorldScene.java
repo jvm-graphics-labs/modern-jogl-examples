@@ -50,7 +50,7 @@ public class WorldScene extends Framework {
         super(title);
     }
 
-    private class Mesh_ {
+    private interface Mesh_ {
 
         public final static int CONE = 0;
         public final static int CYLINDER = 1;

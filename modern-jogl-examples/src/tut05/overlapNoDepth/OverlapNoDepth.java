@@ -48,14 +48,14 @@ public class OverlapNoDepth extends Framework {
         super(title);
     }
 
-    private class Buffer {
+    private interface Buffer {
 
         public final static int VERTEX = 0;
         public final static int INDEX = 1;
         public final static int MAX = 2;
     }
 
-    private class VertexArray {
+    private interface VertexArray {
 
         public final static int _1 = 0;
         public final static int _2 = 1;

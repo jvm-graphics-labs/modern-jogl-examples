@@ -52,7 +52,7 @@ public class CameraRelative extends Framework {
         super(title);
     }
 
-    private class OffsetRelative {
+    private interface OffsetRelative {
 
         public final static int MODEL_RELATIVE = 0;
         public final static int WORLD_RELATIVE = 1;

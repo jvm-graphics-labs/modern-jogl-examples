@@ -52,7 +52,7 @@ public class Scale extends Framework {
         super(title);
     }
 
-    private class Buffer {
+    private interface Buffer {
 
         public final static int VERTEX = 0;
         public final static int INDEX = 1;

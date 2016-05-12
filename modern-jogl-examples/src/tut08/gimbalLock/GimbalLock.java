@@ -4,273 +4,221 @@
  */
 package tut08.gimbalLock;
 
+import static com.jogamp.opengl.GL.GL_BACK;
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
+import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
-import java.awt.Frame;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
+import com.jogamp.opengl.util.GLBuffers;
+import com.jogamp.opengl.util.glsl.ShaderCode;
+import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.Framework;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import framework.jglm.Mat4;
-import framework.jglm.Vec3;
-import framework.jglm.Vec4;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack;
-import tut08.glsl.GLSLProgramObject_1;
+import framework.glutil.MatrixStack_;
+import glm.mat._4.Mat4;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author gbarbieri
  */
-public class GimbalLock implements GLEventListener, KeyListener {
+public class GimbalLock extends Framework {
 
-    private int imageWidth = 800;
-    private int imageHeight = 600;
-    private GLCanvas canvas;
-    private GLSLProgramObject_1 programObject;
-    private int[] VBO = new int[1];
-    private int[] IBO = new int[1];
-    private int[] VAO = new int[1];
-    private String shadersFilepath = "/tut08/shaders/";
-    private String dataFilepath = "/tut08/data/";
-    private Mat4 cameraToClipMatrix;
-    private Mesh cone;
-    private Mesh cylinder;
-    private Mesh cubeTint;
-    private Mesh cubeColor;
-    private Mesh plane;
-    private float zNear;
-    private float zFar;
+    private final String SHADERS_ROOT = "src/tut08/gimbalLock/shaders", DATA_ROOT = "/tut08/gimbalLock/data/",
+            VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
+            SHIP_SRC = "Ship.xml";
+    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal"};
+
+    public static void main(String[] args) {
+        GimbalLock gimbalLock = new GimbalLock("Tutorial 08 - Camera Relative");
+    }
+
+    public GimbalLock(String title) {
+        super(title);
+    }
+
+    private interface Gimbal {
+
+        public static final int LARGE = 0;
+        public static final int MEDIUM = 1;
+        public static final int SMALL = 2;
+        public static final int MAX = 3;
+    }
+
+    private enum GimbalAxis {
+        X, Y, Z
+    }
+
+    private class GimbalAngles {
+
+        public float angleX;
+        public float angleY;
+        public float angleZ;
+
+        public GimbalAngles() {
+            angleX = 0.0f;
+            angleY = 0.0f;
+            angleZ = 0.0f;
+        }
+    }
+
+    private Mesh[] gimbals = new Mesh[Gimbal.MAX];
+    private Mesh object;
+    private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif, baseColorUnif;
+    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
+    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
+            vectorBuffer = GLBuffers.newDirectFloatBuffer(4);
+    private GimbalAngles angles = new GimbalAngles();
+
+    private glm.vec._3.Vec3 camTarget = new glm.vec._3.Vec3(0.0f, 10.0f, 0.0f);
+    private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+    //In spherical coordinates.
+    private glm.vec._3.Vec3 sphereCamRelPos = new glm.vec._3.Vec3(90.0f, 0.0f, 66.0f);
+
     private boolean drawLookAtPoint;
-    private Mesh[] gimbals;
-    private Mesh ship;
-    private float frustumScale = MatrixStack.calculateFrustumScale(20.0f);
-    private GimbalAngles gimbalAngles;
     private boolean drawGimbals;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        GimbalLock gimbalLock = new GimbalLock();
+    @Override
+    public void init(GL3 gl3) {
 
-        Frame frame = new Frame("Tutorial 08 - Gimbal Lock");
+        initializeProgram(gl3);
 
-        frame.add(gimbalLock.getCanvas());
-
-        frame.setSize(gimbalLock.getCanvas().getWidth(), gimbalLock.getCanvas().getHeight());
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                System.exit(0);
+        try {
+            for (int loop = 0; loop < Gimbal.MAX; loop++) {
+                gimbals[loop] = new Mesh(DATA_ROOT + GIMBALS_SCR[loop], gl3);
             }
-        });
-
-        frame.setVisible(true);
-    }
-
-    public GimbalLock() {
-        initGL();
-    }
-
-    private void initGL() {
-        GLProfile profile = GLProfile.getDefault();
-
-        GLCapabilities capabilities = new GLCapabilities(profile);
-
-        canvas = new GLCanvas(capabilities);
-
-        canvas.setSize(imageWidth, imageHeight);
-
-        canvas.addGLEventListener(this);
-        canvas.addKeyListener(this);
-    }
-
-    @Override
-    public void init(GLAutoDrawable glad) {
-        System.out.println("init");
-
-        canvas.setAutoSwapBufferMode(false);
-
-        GL3 gl3 = glad.getGL().getGL3();
-
-        initializePrograms(gl3);
-
-        initializeObjects(gl3);
-
-        gl3.glEnable(GL3.GL_CULL_FACE);
-        gl3.glCullFace(GL3.GL_BACK);
-        gl3.glFrontFace(GL3.GL_CW);
-
-        gl3.glEnable(GL3.GL_DEPTH_TEST);
-        gl3.glDepthMask(true);
-        gl3.glDepthFunc(GL3.GL_LEQUAL);
-        gl3.glDepthRangef(0.0f, 1.0f);
-
-        gimbalAngles = new GimbalAngles();
-        drawGimbals = true;
-    }
-
-    @Override
-    public void dispose(GLAutoDrawable glad) {
-        System.out.println("dispose");
-    }
-
-    @Override
-    public void display(GLAutoDrawable glad) {
-        System.out.println("display");
-
-        GL3 gl3 = glad.getGL().getGL3();
-
-        gl3.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        gl3.glClearDepthf(1.0f);
-        gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-
-        MatrixStack matrixStack = new MatrixStack();
-
-        matrixStack.translate(new Vec3(0.0f, 0.0f, -200.0f));
-        matrixStack.rotateX(gimbalAngles.angleX);
-
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_X_AXIS, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
-
-        matrixStack.rotateY(gimbalAngles.angleY);
-
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Y_AXIS, new Vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        matrixStack.rotateZ(gimbalAngles.angleZ);
-
-        drawGimbal(gl3, matrixStack, GimbalAxis.GIMBAL_Z_AXIS, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
-
-        programObject.bind(gl3);
-        {
-            matrixStack.scale(new Vec3(3.0f, 3.0f, 3.0f));
-            matrixStack.rotateX(-90.0f);
-
-            gl3.glUniform4f(programObject.getBaseColorUnLoc(), 1.0f, 1.0f, 1.0f, 1.0f);
-            gl3.glUniformMatrix4fv(programObject.getModelToCameraMatUnLoc(), 1, false, matrixStack.top().toFloatArray(), 0);
-
-            ship.render(gl3, "tint");
+            object = new Mesh(DATA_ROOT + SHIP_SRC, gl3);
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            Logger.getLogger(GimbalLock.class.getName()).log(Level.SEVERE, null, ex);
         }
-        programObject.unbind(gl3);
 
-        glad.swapBuffers();
+        gl3.glEnable(GL_CULL_FACE);
+        gl3.glCullFace(GL_BACK);
+        gl3.glFrontFace(GL_CW);
+
+        gl3.glEnable(GL_DEPTH_TEST);
+        gl3.glDepthMask(true);
+        gl3.glDepthFunc(GL_LEQUAL);
+        gl3.glDepthRangef(0.0f, 1.0f);
+        gl3.glEnable(GL_DEPTH_CLAMP);
     }
 
-    private void drawGimbal(GL3 gl3, MatrixStack matrixStack, GimbalAxis gimbalAxis, Vec4 baseColor) {
+    private void initializeProgram(GL3 gl3) {
+
+        ShaderProgram shaderProgram = new ShaderProgram();
+
+        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
+                VERT_SHADER_SRC, "vert", null, true);
+        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
+                FRAG_SHADER_SRC, "frag", null, true);
+
+        shaderProgram.add(vertShaderCode);
+        shaderProgram.add(fragShaderCode);
+
+        shaderProgram.link(gl3, System.out);
+
+        theProgram = shaderProgram.program();
+
+        vertShaderCode.destroy(gl3);
+        fragShaderCode.destroy(gl3);
+
+        modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
+        cameraToClipMatrixUnif = gl3.glGetUniformLocation(theProgram, "cameraToClipMatrix");
+        baseColorUnif = gl3.glGetUniformLocation(theProgram, "baseColor");
+
+        float zNear = 1.0f, zFar = 600.0f;
+
+        cameraToClipMatrix.m00 = frustumScale;
+        cameraToClipMatrix.m11 = frustumScale;
+        cameraToClipMatrix.m22 = (zFar + zNear) / (zNear - zFar);
+        cameraToClipMatrix.m23 = -1.0f;
+        cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
+
+        gl3.glUseProgram(theProgram);
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUseProgram(0);
+    }
+
+    @Override
+    public void display(GL3 gl3) {
+
+        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
+
+        MatrixStack_ currMatrix = new MatrixStack_()
+                .translate(new Vec3(0.0f, 0.0f, -200.0f))
+                .rotateX(angles.angleX);
+        drawGimbal(gl3, currMatrix, GimbalAxis.X, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
+        currMatrix.rotateY(angles.angleY);
+        drawGimbal(gl3, currMatrix, GimbalAxis.Y, new Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+        currMatrix.rotateY(angles.angleZ);
+        drawGimbal(gl3, currMatrix, GimbalAxis.Z, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
+
+        gl3.glUseProgram(theProgram);
+        currMatrix
+                .scale(new Vec3(3.0f))
+                .rotateX(-90);
+        //Set the base color for this object.
+        gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matrixBuffer));
+
+        object.render(gl3, "tint");
+
+        gl3.glUseProgram(0);
+    }
+
+    private void drawGimbal(GL3 gl3, MatrixStack_ matrixStack, GimbalAxis axis, Vec4 baseColor) {
 
         if (!drawGimbals) {
             return;
         }
 
-        int index = -1;
-
         matrixStack.push();
-        {
-            switch (gimbalAxis) {
 
-                case GIMBAL_X_AXIS:
-                    index = 0;
-                    break;
+        switch (axis) {
 
-                case GIMBAL_Y_AXIS:
-                    index = 1;
-                    matrixStack.rotateZ(90.0f);
-                    matrixStack.rotateX(90.0f);
-                    break;
+            case X:
+                break;
 
-                case GIMBAL_Z_AXIS:
-                    index = 2;
-                    matrixStack.rotateY(90.0f);
-                    matrixStack.rotateX(90.0f);
-                    break;
-            }
+            case Y:
+                matrixStack
+                        .rotateZ(90.0f)
+                        .rotateX(90.0f);
+                break;
 
-            programObject.bind(gl3);
-            {
-                gl3.glUniform4fv(programObject.getBaseColorUnLoc(), 1, baseColor.toFloatArray(), 0);
-                gl3.glUniformMatrix4fv(programObject.getModelToCameraMatUnLoc(), 1, false, matrixStack.top().toFloatArray(), 0);
-
-                gimbals[index].render(gl3);
-            }
-            programObject.unbind(gl3);
+            case Z:
+                matrixStack
+                        .rotateY(90.0f)
+                        .rotateX(90.0f);
+                break;
         }
+
+        gl3.glUseProgram(theProgram);
+        //Set the base color for this object.
+        gl3.glUniform4fv(baseColorUnif, 1, baseColor.toDfb(vectorBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().toDfb(matrixBuffer));
+
+        gimbals[axis.ordinal()].render(gl3);
+
+        gl3.glUseProgram(0);
         matrixStack.pop();
-    }
-
-    @Override
-    public void reshape(GLAutoDrawable glad, int x, int y, int w, int h) {
-        System.out.println("reshape() x: " + x + " y: " + y + " width: " + w + " height: " + h);
-
-        GL3 gl3 = glad.getGL().getGL3();
-
-        cameraToClipMatrix.c0.x = frustumScale * (h / (float) w);
-        cameraToClipMatrix.c1.y = frustumScale;
-
-        programObject.bind(gl3);
-        {
-            gl3.glUniformMatrix4fv(programObject.getCameraToClipMatUnLoc(), 1, false, cameraToClipMatrix.toFloatArray(), 0);
-        }
-        programObject.unbind(gl3);
-
-        gl3.glViewport(x, y, w, h);
-    }
-
-    private void initializeObjects(GL3 gl3) {
-        System.out.println("initializeObjects");
-
-        gimbals = new Mesh[3];
-
-        String[] gimbalNames = new String[]{"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
-
-        for (int i = 0; i < gimbals.length; i++) {
-
-            gimbals[i] = new Mesh(dataFilepath + gimbalNames[i], gl3);
-        }
-
-        ship = new Mesh(dataFilepath + "Ship.xml", gl3);
-    }
-
-    private void initializePrograms(GL3 gl3) {
-        System.out.println("initializePrograms...");
-
-        programObject = new GLSLProgramObject_1(gl3, shadersFilepath, "PosColorLocalTransform_VS.glsl", "ColorMultUniform_FS.glsl");
-
-        zNear = 1.0f;
-        zFar = 600.0f;
-
-        cameraToClipMatrix = new Mat4();
-
-        cameraToClipMatrix.c0.x = frustumScale;
-        cameraToClipMatrix.c1.y = frustumScale;
-        cameraToClipMatrix.c2.z = (zFar + zNear) / (zNear - zFar);
-        cameraToClipMatrix.c2.w = -1.0f;
-        cameraToClipMatrix.c3.z = (2 * zFar * zNear) / (zNear - zFar);
-
-        programObject.bind(gl3);
-        {
-            gl3.glUniformMatrix4fv(programObject.getCameraToClipMatUnLoc(), 1, false, cameraToClipMatrix.toFloatArray(), 0);
-        }
-        programObject.unbind(gl3);
-    }
-
-    public GLCanvas getCanvas() {
-        return canvas;
-    }
-
-    public void setCanvas(GLCanvas canvas) {
-        this.canvas = canvas;
-    }
-
-    class GimbalAngles {
-
-        public float angleX;
-        public float angleY;
-        public float angleZ;
     }
 
     @Override
@@ -285,27 +233,27 @@ public class GimbalLock implements GLEventListener, KeyListener {
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_W:
-                gimbalAngles.angleX += smallAngleIncrement;
+                angles.angleX += smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_S:
-                gimbalAngles.angleX -= smallAngleIncrement;
+                angles.angleX -= smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_A:
-                gimbalAngles.angleY += smallAngleIncrement;
+                angles.angleY += smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_D:
-                gimbalAngles.angleY -= smallAngleIncrement;
+                angles.angleY -= smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_Q:
-                gimbalAngles.angleZ += smallAngleIncrement;
+                angles.angleZ += smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_E:
-                gimbalAngles.angleZ -= smallAngleIncrement;
+                angles.angleZ -= smallAngleIncrement;
                 break;
 
             case KeyEvent.VK_SPACE:
@@ -317,12 +265,5 @@ public class GimbalLock implements GLEventListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-    }
-
-    enum GimbalAxis {
-
-        GIMBAL_X_AXIS,
-        GIMBAL_Y_AXIS,
-        GIMBAL_Z_AXIS
     }
 }
