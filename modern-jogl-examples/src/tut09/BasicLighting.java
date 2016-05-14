@@ -275,8 +275,8 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
     private void initializeObjects(GL3 gl3) {
         System.out.println("initializeObjects");
 
-        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
-        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
+//        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
+//        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
     }
 
     private void initializePrograms(GL3 gl3) {

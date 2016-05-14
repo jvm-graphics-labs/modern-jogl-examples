@@ -362,9 +362,9 @@ public class VertexPointLighting implements GLEventListener, KeyListener, MouseL
     private void initializeMeshes(GL3 gl3) {
         System.out.println("initializeObjects");
 
-        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
-        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
-        cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
+//        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
+//        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
+//        cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
     }
 
     public GLCanvas getCanvas() {

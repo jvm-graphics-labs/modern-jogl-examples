@@ -140,9 +140,9 @@ public class BasicTexture implements GLEventListener, KeyListener, MouseListener
 
         String dataPath = "/tut14/data/";
 
-        objectMesh = new Mesh(dataPath + "Infinity.xml", gl3);
-
-        cubeMesh = new Mesh(dataPath + "UnitCube.xml", gl3);
+//        objectMesh = new Mesh(dataPath + "Infinity.xml", gl3);
+//
+//        cubeMesh = new Mesh(dataPath + "UnitCube.xml", gl3);
 
         gl3.glEnable(GL3.GL_CULL_FACE);
         gl3.glCullFace(GL3.GL_BACK);

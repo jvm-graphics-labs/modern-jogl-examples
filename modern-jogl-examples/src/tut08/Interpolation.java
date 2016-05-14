@@ -162,7 +162,7 @@ public class Interpolation implements GLEventListener, KeyListener {
     private void initializeObjects(GL3 gl3) {
         System.out.println("initializeObjects");
 
-        ship = new Mesh(dataFilepath + "Ship.xml", gl3);
+//        ship = new Mesh(dataFilepath + "Ship.xml", gl3);
     }
 
     private void initializePrograms(GL3 gl3) {

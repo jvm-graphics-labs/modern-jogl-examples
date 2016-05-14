@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
  */
 public class CameraRelative extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut08/cameraRelative/shaders", DATA_ROOT = "/tut08/cameraRelative/data/",
+    private final String SHADERS_ROOT = "/tut08/cameraRelative/shaders", DATA_ROOT = "/tut08/cameraRelative/data/",
             VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
             SHIP_SCR = "Ship.xml", PLANE_SRC = "UnitPlane.xml";
 

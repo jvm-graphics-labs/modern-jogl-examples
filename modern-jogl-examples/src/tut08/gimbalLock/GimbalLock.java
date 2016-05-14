@@ -4,6 +4,7 @@
  */
 package tut08.gimbalLock;
 
+import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_BACK;
 import static com.jogamp.opengl.GL.GL_CULL_FACE;
 import static com.jogamp.opengl.GL.GL_CW;
@@ -18,12 +19,11 @@ import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
 import framework.Framework;
-import java.awt.event.KeyEvent;
 import framework.component.Mesh;
 import framework.glutil.MatrixStack_;
 import glm.mat._4.Mat4;
-import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import java.io.IOException;
@@ -39,13 +39,13 @@ import org.xml.sax.SAXException;
  */
 public class GimbalLock extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut08/gimbalLock/shaders", DATA_ROOT = "/tut08/gimbalLock/data/",
+    private final String SHADERS_ROOT = "/tut08/gimbalLock/shaders", DATA_ROOT = "/tut08/gimbalLock/data/",
             VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
             SHIP_SRC = "Ship.xml";
-    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal"};
+    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
 
     public static void main(String[] args) {
-        GimbalLock gimbalLock = new GimbalLock("Tutorial 08 - Camera Relative");
+        GimbalLock gimbalLock = new GimbalLock("Tutorial 08 - Gimbal Lock");
     }
 
     public GimbalLock(String title) {
@@ -85,15 +85,7 @@ public class GimbalLock extends Framework {
     private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
             vectorBuffer = GLBuffers.newDirectFloatBuffer(4);
     private GimbalAngles angles = new GimbalAngles();
-
-    private glm.vec._3.Vec3 camTarget = new glm.vec._3.Vec3(0.0f, 10.0f, 0.0f);
-    private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
-
-    //In spherical coordinates.
-    private glm.vec._3.Vec3 sphereCamRelPos = new glm.vec._3.Vec3(90.0f, 0.0f, 66.0f);
-
-    private boolean drawLookAtPoint;
-    private boolean drawGimbals;
+    private boolean drawGimbals = true;
 
     @Override
     public void init(GL3 gl3) {
@@ -222,20 +214,46 @@ public class GimbalLock extends Framework {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
+    public void reshape(GL3 gl3, int w, int h) {
+
+        cameraToClipMatrix.m00 = frustumScale * (h / (float) w);
+        cameraToClipMatrix.m11 = frustumScale;
+
+        gl3.glUseProgram(theProgram);
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUseProgram(0);
+
+        gl3.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void end(GL3 gl3) {
 
-        float smallAngleIncrement = 9.0f;
+        gl3.glDeleteProgram(theProgram);
+
+        object.dispose(gl3);
+        for (int loop = 0; loop < Gimbal.MAX; loop++) {
+            gimbals[loop].dispose(gl3);
+        }
+
+        BufferUtils.destroyDirectBuffer(matrixBuffer);
+    }
+
+    @Override
+    public void keyboard(KeyEvent e) {
+
+        final float smallAngleIncrement = 9.0f;
 
         switch (e.getKeyCode()) {
+
+            case KeyEvent.VK_ESCAPE:
+                animator.remove(glWindow);
+                glWindow.destroy();
+                break;
 
             case KeyEvent.VK_W:
                 angles.angleX += smallAngleIncrement;
                 break;
-
             case KeyEvent.VK_S:
                 angles.angleX -= smallAngleIncrement;
                 break;
@@ -243,7 +261,6 @@ public class GimbalLock extends Framework {
             case KeyEvent.VK_A:
                 angles.angleY += smallAngleIncrement;
                 break;
-
             case KeyEvent.VK_D:
                 angles.angleY -= smallAngleIncrement;
                 break;
@@ -251,7 +268,6 @@ public class GimbalLock extends Framework {
             case KeyEvent.VK_Q:
                 angles.angleZ += smallAngleIncrement;
                 break;
-
             case KeyEvent.VK_E:
                 angles.angleZ -= smallAngleIncrement;
                 break;
@@ -260,10 +276,5 @@ public class GimbalLock extends Framework {
                 drawGimbals = !drawGimbals;
                 break;
         }
-        canvas.display();
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
     }
 }

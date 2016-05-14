@@ -201,11 +201,11 @@ public class PhongLighting implements GLEventListener, KeyListener, MouseListene
 
         String dataFilepath = "/tut10/data/";
 
-        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
-
-        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
-
-        cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
+//        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
+//
+//        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
+//
+//        cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
     }
 
     private void initUBO(GL3 gl3, int projectionUBB) {

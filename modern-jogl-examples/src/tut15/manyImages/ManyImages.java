@@ -117,8 +117,8 @@ public class ManyImages implements GLEventListener, KeyListener {
 
         String dataPath = "/tut15/manyImages/data/";
 
-        plane = new Mesh(dataPath + "BigPlane.xml", gl3);
-        corridor = new Mesh(dataPath + "Corridor.xml", gl3);
+//        plane = new Mesh(dataPath + "BigPlane.xml", gl3);
+//        corridor = new Mesh(dataPath + "Corridor.xml", gl3);
 
         gl3.glEnable(GL3.GL_CULL_FACE);
         gl3.glCullFace(GL3.GL_BACK);
