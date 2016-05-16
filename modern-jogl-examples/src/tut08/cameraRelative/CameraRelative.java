@@ -93,7 +93,6 @@ public class CameraRelative extends Framework {
         gl3.glDepthMask(true);
         gl3.glDepthFunc(GL_LEQUAL);
         gl3.glDepthRangef(0.0f, 1.0f);
-        gl3.glEnable(GL_DEPTH_CLAMP);
     }
 
     private void initializeProgram(GL3 gl3) {
