@@ -18,6 +18,7 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
+import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
 import framework.glutil.MatrixStack_;
@@ -188,4 +189,14 @@ public class Interpolation extends Framework {
         KeyEvent.VK_T,
         KeyEvent.VK_Y,
         KeyEvent.VK_U};
+    
+    @Override
+    public void end(GL3 gl3) {
+
+        gl3.glDeleteProgram(theProgram);
+
+        ship.dispose(gl3);
+
+        BufferUtils.destroyDirectBuffer(matrixBuffer);
+    }
 }

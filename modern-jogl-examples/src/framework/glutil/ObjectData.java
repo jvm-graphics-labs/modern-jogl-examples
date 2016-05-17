@@ -4,8 +4,8 @@
  */
 package framework.glutil;
 
-import framework.jglm.Quat;
-import framework.jglm.Vec3;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
 
 /**
  *
@@ -13,24 +13,12 @@ import framework.jglm.Vec3;
  */
 public class ObjectData {
 
-    private Vec3 position;
-    private Quat orientation;
+    Vec3 position;
+    Quat orientation;
 
     public ObjectData(Vec3 position, Quat orientation) {
 
         this.position = position;
-        this.orientation = orientation;
-    }
-
-    public Vec3 getPosition() {
-        return position;
-    }
-
-    public Quat getOrientation() {
-        return orientation;
-    }
-
-    public void setOrientation(Quat orientation) {
         this.orientation = orientation;
     }
 }

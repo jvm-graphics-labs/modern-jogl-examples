@@ -74,6 +74,7 @@ public class Semantic {
 
         public static final int MATERIAL = 0;
         public static final int GLOBAL_MATRICES = 0;
+        public static final int PROJECTION = 2;
         public static final int TRANSFORM0 = 1;
         public static final int TRANSFORM1 = 2;
         public static final int INDIRECTION = 3;

@@ -2,58 +2,66 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut09;
+package tut09.basicLighting;
 
+import static com.jogamp.opengl.GL.GL_BACK;
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_DYNAMIC_DRAW;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 import com.jogamp.opengl.GL3;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.GLBuffers;
-import java.awt.Frame;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import framework.jglm.Quat;
-import framework.jglm.Vec3;
+import framework.Framework;
+import framework.Semantic;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack;
+import framework.glutil.MatrixStack_;
 import framework.glutil.ObjectData;
 import framework.glutil.ObjectPole;
 import framework.glutil.ViewData;
 import framework.glutil.ViewPole;
 import framework.glutil.ViewScale;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import framework.jglm.Jglm;
-import framework.jglm.Mat3;
-import framework.jglm.Vec4;
-import tut09.glsl.GLSLProgramObject_1;
+import glm.mat._4.Mat4;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author gbarbieri
  */
-public class BasicLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class BasicLighting extends Framework {
 
-    private int imageWidth = 800;
-    private int imageHeight = 600;
-    private GLCanvas canvas;
-    private GLSLProgramObject_1 whiteDiffuseColor;
-    private GLSLProgramObject_1 vertexDiffuseColor;
-    private String shadersFilepath = "/tut09/shaders/";
-    private String dataFilepath = "/tut09/data/";
-    private Mesh cylinder;
-    private Mesh plane;
-    private float zNear;
-    private float zFar;
-    private int projectionBlockIndex;
-    private int[] projectionUBO;
+    private final String SHADERS_ROOT = "/tut08/basicLighting/shaders", DATA_ROOT = "/tut08/basicLighting/data/",
+            VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
+            CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
+
+    public static void main(String[] args) {
+        BasicLighting basicLighting = new BasicLighting("Tutorial 09 - Basic Lighting");
+    }
+
+    public BasicLighting(String title) {
+        super(title);
+    }
+
+    ProgramData whiteDiffuseColor, vertexDiffuseColor;
+    private Mesh cylinderMesh, planeMesh;
+    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
+
+    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
+    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
+
     private ViewPole viewPole;
     private ViewData initialViewData;
     private ViewScale viewScale;
@@ -62,119 +70,71 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
     private Vec4 lightDirection;
     private boolean drawColoredCyl;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-
-        BasicLighting basicLighting = new BasicLighting();
-
-        Frame frame = new Frame("Tutorial 09 - Basic Lighting");
-
-        frame.add(basicLighting.getCanvas());
-
-        frame.setSize(basicLighting.getCanvas().getWidth(), basicLighting.getCanvas().getHeight());
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                System.exit(0);
-            }
-        });
-
-        frame.setVisible(true);
-    }
-
-    public BasicLighting() {
-        initGL();
-    }
-
-    private void initGL() {
-        GLProfile profile = GLProfile.getDefault();
-
-        GLCapabilities capabilities = new GLCapabilities(profile);
-
-        canvas = new GLCanvas(capabilities);
-
-        canvas.setSize(imageWidth, imageHeight);
-
-        canvas.addGLEventListener(this);
-        canvas.addKeyListener(this);
-        canvas.addMouseListener(this);
-        canvas.addMouseMotionListener(this);
-        canvas.addMouseWheelListener(this);
-    }
-
     @Override
-    public void init(GLAutoDrawable glad) {
-        System.out.println("init");
+    public void init(GL3 gl3) {
 
-        canvas.setAutoSwapBufferMode(false);
+        initializeProgram(gl3);
 
-        GL3 gl3 = glad.getGL().getGL3();
-
-        projectionBlockIndex = 2;
-
-        initializePrograms(gl3);
-
-        initializeObjects(gl3);
-
-        gl3.glEnable(GL3.GL_CULL_FACE);
-        gl3.glCullFace(GL3.GL_BACK);
-        gl3.glFrontFace(GL3.GL_CW);
-
-        gl3.glEnable(GL3.GL_DEPTH_TEST);
-        gl3.glDepthMask(true);
-        gl3.glDepthFunc(GL3.GL_LEQUAL);
-        gl3.glDepthRangef(0.0f, 1.0f);
-        gl3.glEnable(GL3.GL_DEPTH_CLAMP);
-
-        projectionUBO = new int[1];
-        gl3.glGenBuffers(1, projectionUBO, 0);
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
-        {
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, 16 * 4, null, GL3.GL_DYNAMIC_DRAW);
-
-            gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, projectionBlockIndex, projectionUBO[0], 0, 16 * 4);
+        try {
+            cylinderMesh = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
+            planeMesh = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            Logger.getLogger(BasicLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
-        initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
+        gl3.glEnable(GL_CULL_FACE);
+        gl3.glCullFace(GL_BACK);
+        gl3.glFrontFace(GL_CW);
 
-        viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f / 250.0f);
+        gl3.glEnable(GL_DEPTH_TEST);
+        gl3.glDepthMask(true);
+        gl3.glDepthFunc(GL_LEQUAL);
+        gl3.glDepthRangef(0.0f, 1.0f);
+        gl3.glEnable(GL_DEPTH_CLAMP);
+        
+        gl3.glGenBuffers(1, projectionUniformBuffer);
+	gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
+	gl3.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
-        viewPole = new ViewPole(initialViewData, viewScale);
+	//Bind the static buffers.
+	gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer.get(0),
+		0, Mat4.SIZE);
 
-        initialObjectData = new ObjectData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.0f, 0.0f, 0.0f, 1.0f));
-
-        objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, viewPole);
-
-        lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
-
-        zNear = 1.0f;
-        zFar = 1000.0f;
-
-        drawColoredCyl = true;
+	gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-    @Override
-    public void dispose(GLAutoDrawable glad) {
-        System.out.println("dispose");
+    private void initializeProgram(GL3 gl3) {
+
+        whiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, VERT_SHADER_SRC, FRAG_SHADER_SRC);
+        vertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, VERT_SHADER_SRC, FRAG_SHADER_SRC);
     }
 
+
+//        initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
+//
+//        viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f / 250.0f);
+//
+//        viewPole = new ViewPole(initialViewData, viewScale);
+//
+//        initialObjectData = new ObjectData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.0f, 0.0f, 0.0f, 1.0f));
+//
+//        objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, viewPole);
+//
+//        lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
+//
+//        zNear = 1.0f;
+//        zFar = 1000.0f;
+//
+//        drawColoredCyl = true;
+
     @Override
-    public void display(GLAutoDrawable glad) {
-        System.out.println("display");
+    public void display(GL3 gl3) {
 
-        GL3 gl3 = glad.getGL().getGL3();
+        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        gl3.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        gl3.glClearDepthf(1.0f);
-        gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-
-        MatrixStack modelMatrix = new MatrixStack();
-
-        modelMatrix.setTop(viewPole.calcMatrix());
+        MatrixStack_ modelMatrix = new MatrixStack_()
+                .setMatrix(viewPole.calcMatrix());
 
         Vec4 lightDirCameraSpace = modelMatrix.top().mult(lightDirection);
 
@@ -361,9 +321,9 @@ public class BasicLighting implements GLEventListener, KeyListener, MouseListene
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        
+
         viewPole.mouseWheel(e);
-        
+
         canvas.display();
     }
 }
