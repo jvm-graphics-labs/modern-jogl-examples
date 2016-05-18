@@ -4,6 +4,7 @@
  */
 package framework.glutil;
 
+import com.jogamp.newt.event.MouseEvent;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
@@ -102,7 +103,28 @@ public class ObjectPole {
         if (!isDragging) {
             fromInitial = false;
         }
-        po.orientation = 
+        po.orientation = rot.mul_(fromInitial ? startDragOrient : po.orientation).normalize();
+    }
+
+    public void rotateLocalDegrees(Quat rot, boolean fromInitial) {
+        if (!isDragging) {
+            fromInitial = false;
+        }
+        po.orientation = (fromInitial ? startDragOrient : po.orientation).mul_(rot).normalize();
+    }
+
+    public void rotateViewDegrees(Quat rot, boolean fromInitial) {
+        if (!isDragging) {
+            fromInitial = false;
+        }
+        if (view != null) {
+            Quat viewQuat = Quat.cast_(view.calcMatrix());
+            Quat invViewQuat = viewQuat.conjugate_();
+            po.orientation = (invViewQuat.mul(rot).mul(viewQuat).mul(fromInitial ? startDragOrient : po.orientation))
+                    .normalize();
+        } else {
+            rotateWorldDegrees(rot, fromInitial);
+        }
     }
 
     public void mousePressed(MouseEvent mouseEvent) {
@@ -135,44 +157,11 @@ public class ObjectPole {
         }
     }
 
-    public void mousePressed(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        if (!isDragging) {
-
-            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON3) {
-//                System.out.println("in1");
-                if (mouseEvent.isAltDown()) {
-
-                    rotateMode = RotatingMode.SPIN;
-
-                } else if (mouseEvent.isControlDown()) {
-
-                    rotateMode = RotatingMode.BIAXIAL;
-
-                } else {
-
-                    rotateMode = RotatingMode.DUAL_AXIS;
-                }
-
-                prevMousePos = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-                startDragMousePos = prevMousePos;
-
-                startDragOrient = po.getOrientation();
-
-                isDragging = true;
-            }
-        }
-    }
-
-    /**
-     * @deprecated @param mouseEvent
-     */
     public void mouseReleased(MouseEvent mouseEvent) {
 
         if (isDragging) {
 
-            if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+            if (mouseEvent.getButton() == MouseEvent.BUTTON3) {
 
                 mouseMove(mouseEvent);
 
@@ -181,48 +170,7 @@ public class ObjectPole {
         }
     }
 
-    public void mouseReleased(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        if (isDragging) {
-
-            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON3) {
-
-                mouseMove(mouseEvent);
-
-                isDragging = false;
-            }
-        }
-    }
-
-    /**
-     * @deprecated @param mouseEvent
-     */
     public void mouseMove(MouseEvent mouseEvent) {
-
-        if (isDragging) {
-
-            Vec2 positionVec2 = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-            Vec2 diff = positionVec2.minus(prevMousePos);
-
-            switch (rotateMode) {
-
-                case DUAL_AXIS:
-
-                    Quat rotation = Jglm.angleAxis(diff.x * rotateScale, new Vec3(0.0f, 1.0f, 0.0f));
-
-                    rotation = Jglm.angleAxis(diff.y * rotateScale, new Vec3(1.0f, 0.0f, 0.0f)).mult(rotation);
-
-                    rotation.normalize();
-
-                    rotateViewDegrees(rotation);
-            }
-
-            prevMousePos = positionVec2;
-        }
-    }
-
-    public void mouseMove(com.jogamp.newt.event.MouseEvent mouseEvent) {
 
         if (isDragging) {
 

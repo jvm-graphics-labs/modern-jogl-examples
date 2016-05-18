@@ -335,7 +335,7 @@ public class CameraRelative extends Framework {
                 Vec3 camPos = resolveCamPosition();
                 Mat4 camMat = calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f));
 
-                Quat viewQuat = Quat.cast(camMat);
+                Quat viewQuat = Quat.cast_(camMat);
                 Quat invViewQuat = viewQuat.conjugate_();
 
                 Quat worldQuat = invViewQuat.mul(offsetQuat).mul(viewQuat);
