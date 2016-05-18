@@ -3,6 +3,8 @@ modern-jogl-examples
 
 Examples ported in JOGL from the book "Learning Modern 3D Graphic Programming" by J.L.McKesson
 
+You can find the pdf in the root of the project (you can see it also above), I strongly suggest you to read it and try to write the exercises in your own.
+
 To run the examples, just follow these simple steps:
 
 - clone the project
