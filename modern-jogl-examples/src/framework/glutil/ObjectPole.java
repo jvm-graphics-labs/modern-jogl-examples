@@ -8,7 +8,7 @@ import com.jogamp.newt.event.MouseEvent;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
-import glm.vec._2.Vec2;
+import glm.vec._2.i.Vec2i;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 
@@ -47,21 +47,34 @@ import glm.vec._4.Vec4;
  */
 public class ObjectPole {
 
-    ViewProvider view;
-    ObjectData po;
-    ObjectData initialPo;
+    private ViewProvider view;
+    private ObjectData po;
+    private ObjectData initialPo;
 
-    float rotateScale;
-    int actionButton;
+    private float rotateScale;
+    private int actionButton;
 
     //Used when rotating.
-    int rotateMode;
-    boolean isDragging;
+    private int rotateMode;
+    private boolean isDragging;
 
-    private Vec2 prevMousePos;
-    private Vec2 startDragMousePos;
+    private Vec2i prevMousePos;
+    private Vec2i startDragMousePos;
     private Quat startDragOrient;
 
+    /**
+     * Creates an object pole with a given initial position and orientation.
+     *
+     * @param initialData The starting position and orientation of the object in
+     * world space.
+     * @param rotateScale The number of degrees to rotate the object per window
+     * space pixel
+     * @param actionButton The mouse button to listen for. All other mouse
+     * buttons are ignored.
+     * @param lookAtProvider An object that will compute a view matrix. This
+     * defines the view space that orientations can be relative to. If it is
+     * NULL, then orientations will be relative to the world.
+     */
     public ObjectPole(ObjectData initialData, float rotateScale, int actionButton, ViewProvider lookAtProvider) {
 
         view = lookAtProvider;
@@ -70,8 +83,16 @@ public class ObjectPole {
         this.rotateScale = rotateScale;
         this.actionButton = actionButton;
         isDragging = false;
+        prevMousePos = new Vec2i();
+        startDragMousePos = new Vec2i();
+        startDragOrient = new Quat();
     }
 
+    /**
+     * Generates the local-to-world matrix for this object.
+     *
+     * @return
+     */
     public Mat4 calcMatrix() {
 
         Mat4 translateMat = new Mat4(1.0f);
@@ -80,10 +101,35 @@ public class ObjectPole {
         return translateMat.mul(Mat4.cast_(po.orientation));
     }
 
+    /**
+     * Sets the scaling factor for orientation changes.
+     *
+     * @param rotateScale The scaling factor is the number of degrees to rotate
+     * the object per window space pixel. The scale is the same for all mouse
+     * movements.
+     */
     public void setRotationScale(float rotateScale) {
         this.rotateScale = rotateScale;
     }
 
+    /**
+     * @return The current scaling factor for orientation changes.
+     */
+    public float getRotationScale() {
+        return rotateScale;
+    }
+
+    /**
+     * @return The current position and orientation of the object.
+     */
+    public ObjectData getPosOrient() {
+        return po;
+    }
+
+    /**
+     * Resets the object to the initial position/orientation. Will fail if
+     * currently dragging.
+     */
     public void reset() {
         if (!isDragging) {
             po = initialPo;
@@ -99,6 +145,10 @@ public class ObjectPole {
         new Vec3(0.0, 1.0, 0.0),
         new Vec3(0.0, 0.0, 1.0)};
 
+    public void rotateWorldDegrees(Quat rot) {
+        rotateViewDegrees(rot, false);
+    }
+
     public void rotateWorldDegrees(Quat rot, boolean fromInitial) {
         if (!isDragging) {
             fromInitial = false;
@@ -106,11 +156,19 @@ public class ObjectPole {
         po.orientation = rot.mul_(fromInitial ? startDragOrient : po.orientation).normalize();
     }
 
+    public void rotateLocalDegrees(Quat rot) {
+        rotateLocalDegrees(rot, false);
+    }
+
     public void rotateLocalDegrees(Quat rot, boolean fromInitial) {
         if (!isDragging) {
             fromInitial = false;
         }
         po.orientation = (fromInitial ? startDragOrient : po.orientation).mul_(rot).normalize();
+    }
+
+    public void rotateViewDegrees(Quat rot) {
+        rotateViewDegrees(rot, false);
     }
 
     public void rotateViewDegrees(Quat rot, boolean fromInitial) {
@@ -127,30 +185,71 @@ public class ObjectPole {
         }
     }
 
+    public void mouseMove(Vec2i position) {
+
+        Vec2i diff = position.sub_(prevMousePos);
+
+        switch (rotateMode) {
+
+            case RotateMode.DUAL_AXIS:
+
+                Quat rot = calcRotationQuat(Axis.Y, diff.x * rotateScale);
+                rot = calcRotationQuat(Axis.X, diff.y * rotateScale).mul(rot).normalize();
+                rotateViewDegrees(rot);
+
+                break;
+
+            case RotateMode.BIAXIAL:
+
+                Vec2i initDiff = position.sub_(startDragMousePos);
+                int axis;
+                float degAngle;
+                if (Math.abs(initDiff.x) > Math.abs(initDiff.y)) {
+                    axis = Axis.Y;
+                    degAngle = initDiff.x * rotateScale;
+                } else {
+                    axis = Axis.X;
+                    degAngle = initDiff.y * rotateScale;
+                }
+
+                rot = calcRotationQuat(axis, degAngle);
+                rotateViewDegrees(rot, true);
+
+                break;
+
+            case RotateMode.SPIN:
+
+                rotateViewDegrees(calcRotationQuat(Axis.Z, -diff.x * rotateScale));
+
+                break;
+        }
+
+        prevMousePos = diff;
+    }
+
     public void mousePressed(MouseEvent mouseEvent) {
 
+        //Ignore button presses when dragging.
         if (!isDragging) {
 
-            if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+            if (mouseEvent.getButton() == actionButton) {
 
                 if (mouseEvent.isAltDown()) {
 
-                    rotateMode = RotatingMode.SPIN;
+                    rotateMode = RotateMode.SPIN;
 
                 } else if (mouseEvent.isControlDown()) {
 
-                    rotateMode = RotatingMode.BIAXIAL;
+                    rotateMode = RotateMode.BIAXIAL;
 
                 } else {
 
-                    rotateMode = RotatingMode.DUAL_AXIS;
+                    rotateMode = RotateMode.DUAL_AXIS;
                 }
 
-                prevMousePos = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-                startDragMousePos = prevMousePos;
-
-                startDragOrient = po.getOrientation();
+                prevMousePos.set(mouseEvent.getX(), mouseEvent.getY());
+                startDragMousePos.set(mouseEvent.getX(), mouseEvent.getY());
+                startDragOrient = po.orientation;
 
                 isDragging = true;
             }
@@ -159,53 +258,30 @@ public class ObjectPole {
 
     public void mouseReleased(MouseEvent mouseEvent) {
 
+        //Ignore up buttons if not dragging.
         if (isDragging) {
 
-            if (mouseEvent.getButton() == MouseEvent.BUTTON3) {
+            if (mouseEvent.getButton() == actionButton) {
 
-                mouseMove(mouseEvent);
+                mouseMove(new Vec2i(mouseEvent.getX(), mouseEvent.getY()));
 
                 isDragging = false;
             }
         }
     }
 
-    public void mouseMove(MouseEvent mouseEvent) {
+    private interface RotateMode {
 
-        if (isDragging) {
-
-            Vec2 positionVec2 = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-            Vec2 diff = positionVec2.minus(prevMousePos);
-
-            switch (rotateMode) {
-
-                case DUAL_AXIS:
-
-                    Quat rotation = Jglm.angleAxis(diff.x * rotateScale, new Vec3(0.0f, 1.0f, 0.0f));
-
-                    rotation = Jglm.angleAxis(diff.y * rotateScale, new Vec3(1.0f, 0.0f, 0.0f)).mult(rotation);
-
-                    rotation.normalize();
-
-                    rotateViewDegrees(rotation);
-            }
-
-            prevMousePos = positionVec2;
-        }
+        public static final int DUAL_AXIS = 0;
+        public static final int BIAXIAL = 1;
+        public static final int SPIN = 2;
     }
 
-    private void rotateViewDegrees(Quat rotation) {
+    private interface Axis {
 
-        Quat viewQuat = viewPole.calcMatrix().toQuaternion();
-
-//        viewQuat.print("viewQuat");
-        Quat invViewQuat = viewQuat.conjugate();
-
-        Quat tmp = invViewQuat.mult(rotation);
-
-        tmp = tmp.mult(viewQuat);
-
-        po.setOrientation(tmp.mult(po.getOrientation()));
+        public static final int X = 0;
+        public static final int Y = 1;
+        public static final int Z = 2;
+        public static final int MAX = 3;
     }
 }

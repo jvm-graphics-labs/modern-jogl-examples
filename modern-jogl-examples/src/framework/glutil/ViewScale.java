@@ -5,18 +5,26 @@
 package framework.glutil;
 
 /**
+ * Utility object describing the scale of the ViewPole.
  *
  * @author gbarbieri
  */
 public class ViewScale {
 
-    private float minRadius;
-    private float maxRadius;
-    private float largeRadiusDelta;
-    private float smallRadiusDelta;
-    private float largePosOffset;
-    private float smallPosOffset;
-    private float rotationScale;
+    // The closest the radius to the target point can get.
+    float minRadius;
+    // The farthest the radius to the target point can get.
+    float maxRadius;
+    // The radius change to use when the SHIFT key isn't held while mouse wheel scrolling.
+    float largeRadiusDelta;
+    // The radius change to use when the SHIFT key \em is held while mouse wheel scrolling.
+    float smallRadiusDelta;
+    // The position offset to use when the SHIFT key isn't held while pressing a movement key.
+    float largePosOffset;
+    // The position offset to use when the SHIFT key \em is held while pressing a movement key.
+    float smallPosOffset;
+    // The number of degrees to rotate the view per window space pixel the mouse moves when dragging.
+    float rotationScale;
 
     public ViewScale(float minRadius, float maxRadius, float largeRadiusDelta, float smallRadiusDelta, float largePosOffset, float smallPosOffset, float rotationScale) {
 
@@ -27,25 +35,5 @@ public class ViewScale {
         this.largePosOffset = largePosOffset;
         this.smallPosOffset = smallPosOffset;
         this.rotationScale = rotationScale;
-    }
-
-    public float getRotationScale() {
-        return rotationScale;
-    }
-
-    public float getLargeRadiusDelta() {
-        return largeRadiusDelta;
-    }
-
-    public float getSmallRadiusDelta() {
-        return smallRadiusDelta;
-    }
-
-    public float getMinRadius() {
-        return minRadius;
-    }
-
-    public float getMaxRadius() {
-        return maxRadius;
     }
 }

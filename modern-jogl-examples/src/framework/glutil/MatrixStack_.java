@@ -4,6 +4,7 @@
  */
 package framework.glutil;
 
+import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import java.util.ArrayList;
@@ -68,5 +69,9 @@ public class MatrixStack_ {
     public MatrixStack_ setMatrix(Mat4 mat4) {
         matrices.set(matrices.size() - 1, mat4);
         return this;
+    }
+    
+    public void perspective(float defFOV, float aspectRatio, float zNear, float zFar) {
+        top().mulPerspective(defFOV, aspectRatio, zNear, zFar);
     }
 }

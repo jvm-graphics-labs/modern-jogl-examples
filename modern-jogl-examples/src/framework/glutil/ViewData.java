@@ -4,19 +4,25 @@
  */
 package framework.glutil;
 
-import framework.jglm.Quat;
-import framework.jglm.Vec3;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
+
 
 /**
+ * Utility object containing the ViewPole's view information.
  *
  * @author gbarbieri
  */
 public class ViewData {
 
-    private Vec3 targetPos;
-    private Quat orient;
-    private float radius;
-    private float degSpinRotation;
+    // The starting target position position.
+    Vec3 targetPos;
+    // The initial orientation aroudn the target position.
+    Quat orient;
+    // The initial radius of the camera from the target point.
+    float radius;
+    // The initial spin rotation of the "up" axis, relative to \a orient
+    float degSpinRotation;
 
     public ViewData(Vec3 targetPos, Quat orient, float radius, float degSpinRotation) {
 
@@ -24,33 +30,5 @@ public class ViewData {
         this.orient = orient;
         this.radius = radius;
         this.degSpinRotation = degSpinRotation;
-    }
-
-    public Vec3 getTargetPos() {
-        return targetPos;
-    }
-
-    public Quat getOrient() {
-        return orient;
-    }
-
-    public float getRadius() {
-        return radius;
-    }
-
-    public float getDegSpinRotation() {
-        return degSpinRotation;
-    }
-
-    public void setOrient(Quat orient) {
-        this.orient = orient;
-    }
-
-    public void setDegSpinRotation(float degSpinRotation) {
-        this.degSpinRotation = degSpinRotation;
-    }
-
-    public void setRadius(float radius) {
-        this.radius = radius;
     }
 }

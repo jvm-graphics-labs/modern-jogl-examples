@@ -18,5 +18,10 @@ abstract class ViewProvider {
     //Computes the camera matrix.
     abstract Mat4 calcMatrix();
 
-    
+    public interface MouseButtons {
+
+        public static final int LEFT = 0;   // The left mouse button.
+        public static final int MIDDLE = 1; // The middle mouse button.
+        public static final int RIGHT = 2;  // The right mouse button.
+    }
 }

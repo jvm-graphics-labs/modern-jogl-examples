@@ -4,292 +4,414 @@
  */
 package framework.glutil;
 
+import com.jogamp.newt.event.KeyEvent;
+import glm.glm;
+import glm.mat._4.Mat4;
+import glm.quat.Quat;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
-import framework.jglm.Jglm;
-import framework.jglm.Mat4;
-import framework.jglm.Quat;
-import framework.jglm.Vec2;
-import framework.jglm.Vec3;
+import glm.vec._2.i.Vec2i;
+import glm.vec._3.Vec3;
 
 /**
+ * Mouse-based control over the orientation and position of the camera. This
+ * view controller is based on a target point, which is centered in the camera,
+ * and an orientation around that target point that represents the camera. The
+ * Pole allows the user to rotate around this point, move closer to/farther from
+ * it, and to move the point itself.
+ *
+ * This Pole is given a ViewDef that defines a number of size parameters and
+ * limitations.
+ *
+ * This Pole is given an action button, which it will listen for click events
+ * from. If the mouse button is clicked and no modifiers are pressed, the the
+ * view will rotate around the object in both the view-local X and Y axes. If
+ * the CTRL key is held, then it will rotate about the X or Y axes, based on how
+ * far the mouse is from the starting point in the X or Y directions. If the ALT
+ * key is held, then the camera will spin in the view-local Z direction.
+ *
+ * Scrolling the mouse wheel up or down moves the camera closer or farther from
+ * the object, respectively. The distance is taken from
+ * ViewDef::largeRadiusDelta. If the SHIFT key is held while scrolling, then the
+ * movement will be the ViewDef::smallRadiusDelta value instead.
+ *
+ * The target point can be moved, relative to the current view, with the WASD
+ * keys. W/S move forward and backwards, while A/D move left and right,
+ * respectively. Q and E move down and up, respectively. If the
+ * rightKeyboardCtrls parameter of the constructor is set, then it uses the
+ * IJKLUO keys instead of WASDQE. The offset applied to the position is
+ * ViewDef::largePosOffset; if SHIFT is held, then ViewDef::smallPosOffset is
+ * used instead.
  *
  * @author gbarbieri
  */
-public class ViewPole {
+public class ViewPole extends ViewProvider {
 
     private ViewData currView;
-    private ViewData initialView;
     private ViewScale viewScale;
+
+    private ViewData initialView;
+    private int actionButton;
+    private boolean rightKeyboardCtrls;
+
+    //Used when rotating.
     private boolean isDragging;
-    private RotatingMode rotatingMode;
-    private Vec2 startDragMouseLoc;
+    private int rotateMode;
+
     private float degStartDragSpin;
+    private Vec2i startDragMouseLoc;
     private Quat startDragOrient;
 
-    public ViewPole(ViewData viewData, ViewScale viewScale) {
-
-        this.currView = viewData;
-        this.initialView = viewData;
-        this.viewScale = viewScale;
-
-        isDragging = false;
-    }
-
-    public Mat4 calcMatrix() {
-
-        Mat4 mat = new Mat4(1.0f);
-
-        mat = Jglm.translate(mat, new Vec3(0.0f, 0.0f, -currView.getRadius()));
-//        System.out.println("currView.getRadius(): "+(-currView.getRadius()));
-//        mat.print("mat");
-
-        Quat fullRotation = Jglm.angleAxis(currView.getDegSpinRotation(), new Vec3(0.0f, 0.0f, 1.0f));
-        fullRotation = fullRotation.mult(currView.getOrient());
-
-        mat = mat.mult(fullRotation.toMatrix());
-
-        mat = Jglm.translate(mat, currView.getTargetPos().negated());
-
-        return mat;
+    public ViewPole(ViewData initialView, ViewScale viewScale, int actionButton) {
+        this(initialView, viewScale, actionButton, false);
     }
 
     /**
-     * @deprecated 
-     * @param mouseEvent 
+     * Creates a view pole with the given initial target position, view
+     * definition, and action button.
+     *
+     * @param initialView initialView The starting state of the view.
+     * @param viewScale viewScale The viewport definition to use.
+     * @param actionButton actionButton The mouse button to listen for. All
+     * other mouse buttons are ignored.
+     * @param rightKeyboardCtrls if true, then it uses IJKLUO instead of WASDQE
+     * keys.
      */
-    public void mousePressed(MouseEvent mouseEvent) {
+    public ViewPole(ViewData initialView, ViewScale viewScale, int actionButton, boolean rightKeyboardCtrls) {
 
-        if (!isDragging) {
-
-            if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
-
-                Vec2 position = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-                if (mouseEvent.isControlDown()) {
-
-                    beginDragRotate(position, RotatingMode.BIAXIAL);
-
-                } else if (mouseEvent.isAltDown()) {
-
-                    beginDragRotate(position, RotatingMode.SPIN);
-
-                } else {
-
-                    beginDragRotate(position, RotatingMode.DUAL_AXIS);
-                }
-            }
-        }
-    }
-    
-    public void mousePressed(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        if (!isDragging) {
-
-//            System.out.println("mouseEvent.getButton() "+mouseEvent.getButton());
-//            System.out.println("com.jogamp.newt.event.MouseEvent.BUTTON1 "+com.jogamp.newt.event.MouseEvent.BUTTON1);
-            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON1) {
-//                System.out.println("in");
-                Vec2 position = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-                if (mouseEvent.isControlDown()) {
-
-                    beginDragRotate(position, RotatingMode.BIAXIAL);
-
-                } else if (mouseEvent.isAltDown()) {
-
-                    beginDragRotate(position, RotatingMode.SPIN);
-
-                } else {
-
-                    beginDragRotate(position, RotatingMode.DUAL_AXIS);
-                }
-            }
-        }
+        currView = initialView;
+        this.viewScale = viewScale;
+        this.initialView = initialView;
+        this.actionButton = actionButton;
+        this.rightKeyboardCtrls = rightKeyboardCtrls;
+        isDragging = false;
     }
 
-    private void beginDragRotate(Vec2 position, RotatingMode rotatingMode) {
+    /**
+     * Generates the world-to-camera matrix for the view.
+     *
+     * @return
+     */
+    public Mat4 calcMatrix() {
 
-        this.rotatingMode = rotatingMode;
+        Mat4 theMat = new Mat4(1.0f);
 
-        startDragMouseLoc = position;
+        /**
+         * Remember: these transforms are in reverse order.
+         *
+         * In this space, we are facing in the correct direction. Which means
+         * that the camera point is directly behind us by the radius number of
+         * units.
+         */
+        theMat.translate(0.0f, 0.0f, -currView.radius);
 
-        degStartDragSpin = currView.getDegSpinRotation();
+        //Rotate the world to look in the right direction..
+        Quat fullRotation = glm.angleAxis_(currView.degSpinRotation, new Vec3(0.0f, 0.0f, 1.0f));
+        fullRotation.mul(currView.orient);
 
-        startDragOrient = currView.getOrient();
+        theMat.mul(Mat4.cast_(fullRotation));
+
+        // Translate the world by the negation of the lookat point, placing the origin at the lookat point.
+        theMat.translate(currView.targetPos.negate_());
+
+        return theMat;
+    }
+
+    /**
+     * Sets the scaling factor for orientation changes.
+     *
+     * @param rotateScale The scaling factor is the number of degrees to rotate
+     * the view per window space pixel. The scale is the same for all mouse
+     * movements.
+     */
+    public void setRotationScale(float rotateScale) {
+        viewScale.rotationScale = rotateScale;
+    }
+
+    /**
+     * @return Gets the current scaling factor for orientation changes.
+     */
+    public float getRotationScale() {
+        return viewScale.rotationScale;
+    }
+
+    /**
+     * @return Retrieves the current viewing information.
+     */
+    public ViewData getView() {
+        return currView;
+    }
+
+    /**
+     * Resets the view to the initial view. Will fail if currently dragging.
+     */
+    public void reset() {
+        if (!isDragging) {
+            currView = initialView;
+        }
+    }
+
+    public void processXchange(int xDiff) {
+
+        float degAngleDiff = (xDiff * viewScale.rotationScale);
+
+        //Rotate about the world-space Y axis.
+        currView.orient = startDragOrient.mul_(glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)));
+    }
+
+    public void processYchange(int yDiff) {
+
+        float degAngleDiff = (yDiff * viewScale.rotationScale);
+
+        //Rotate about the world-space X axis.
+        currView.orient = glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)).mul(startDragOrient);
+    }
+
+    private void processXYchange(Vec2i diff) {
+
+        float degXAngleDiff = diff.x * viewScale.rotationScale;
+        float degYAngleDiff = diff.y * viewScale.rotationScale;
+
+        // Rotate about the world-space Y axis.
+        currView.orient = startDragOrient.mul_(glm.angleAxis_(degXAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)));
+        //Rotate about the local-space X axis.
+        currView.orient = glm.angleAxis_(degYAngleDiff, new Vec3(1.0f, 0.0f, 0.0f)).mul(currView.orient);
+    }
+
+    private void processSpinAxis(Vec2i diff) {
+
+        float degSpinDiff = diff.x * viewScale.rotationScale;
+        currView.degSpinRotation = degSpinDiff + degStartDragSpin;
+    }
+
+    private void beginDragRotate(Vec2i start, int rotMode) {
+
+        rotateMode = rotMode;
+
+        startDragMouseLoc = start;
+
+        degStartDragSpin = currView.degSpinRotation;
+
+        startDragOrient = currView.orient;
 
         isDragging = true;
     }
 
-    /**
-     * @deprecated 
-     * @param mouseEvent 
-     */
-    public void mouseMove(MouseEvent mouseEvent) {
-
-        if (isDragging) {
-
-            onDragRotate(mouseEvent);
-        }
-    }
-    
-    public void mouseMove(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        if (isDragging) {
-
-            onDragRotate(mouseEvent);
-        }
-    }
-
-    /**
-     * @deprecated 
-     * @param mouseEvent 
-     */
     private void onDragRotate(MouseEvent mouseEvent) {
 
-        Vec2 current = new Vec2(mouseEvent.getX(), mouseEvent.getY());
+        Vec2i diff = new Vec2i(mouseEvent.getX() - startDragMouseLoc.x, mouseEvent.getY() - startDragMouseLoc.y);
 
-        current = current.minus(startDragMouseLoc);
+        switch (rotateMode) {
 
-        switch (rotatingMode) {
-
-            case DUAL_AXIS:
-                processXYchange(current);
+            case RotateMode.DUAL_AXIS_ROTATE:
+                processXYchange(diff);
                 break;
 
-            case SPIN:
-                processSpinAxis(current);
-                break;
-        }
-    }
-    
-    private void onDragRotate(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        Vec2 current = new Vec2(mouseEvent.getX(), mouseEvent.getY());
-
-        current = current.minus(startDragMouseLoc);
-
-        switch (rotatingMode) {
-
-            case DUAL_AXIS:
-                processXYchange(current);
-                break;
-
-            case SPIN:
-                processSpinAxis(current);
-                break;
-        }
-    }
-
-    private void processXYchange(Vec2 diff) {
-
-        diff = diff.times(viewScale.getRotationScale());
-
-        Quat yWorldSpace = Jglm.angleAxis(diff.x, new Vec3(0.0f, 1.0f, 0.0f));
-
-        currView.setOrient(startDragOrient.mult(yWorldSpace));
-
-        Quat xLocalSpace = Jglm.angleAxis(diff.y, new Vec3(1.0f, 0.0f, 0.0f));
-
-        currView.setOrient(xLocalSpace.mult(currView.getOrient()));
-    }
-
-    private void processSpinAxis(Vec2 diff) {
-
-        float degSpinDiff = diff.x * viewScale.getRotationScale();
-
-        currView.setDegSpinRotation(degSpinDiff + degStartDragSpin);
-    }
-
-    /**
-     * @deprecated 
-     * @param mouseEvent 
-     */
-    public void mouseReleased(MouseEvent mouseEvent) {
-
-        if (isDragging) {
-
-            if (SwingUtilities.isLeftMouseButton(mouseEvent)) {
-
-                if (rotatingMode == RotatingMode.DUAL_AXIS || rotatingMode == RotatingMode.BIAXIAL || rotatingMode == RotatingMode.SPIN) {
-
-                    endDragRotate(mouseEvent);
+            case RotateMode.BIAXIAL_ROTATE:
+                if (Math.abs(diff.x) > Math.abs(diff.y)) {
+                    processXchange(diff.x);
+                } else {
+                    processYchange(diff.y);
                 }
-            }
-        }
-    }
+                break;
 
-    public void mouseReleased(com.jogamp.newt.event.MouseEvent mouseEvent) {
+            case RotateMode.XZ_AXIS_ROTATE:
+                processXchange(diff.x);
+                break;
 
-        if (isDragging) {
+            case RotateMode.Y_AXIS_ROTATE:
+                processYchange(diff.y);
+                break;
 
-            if (mouseEvent.getButton() == com.jogamp.newt.event.MouseEvent.BUTTON1) {
+            case RotateMode.SPIN_VIEW_AXIS:
+                processSpinAxis(diff);
+                break;
 
-                if (rotatingMode == RotatingMode.DUAL_AXIS || 
-                        rotatingMode == RotatingMode.BIAXIAL || 
-                        rotatingMode == RotatingMode.SPIN) {
-
-                    endDragRotate(mouseEvent);
-                }
-            }
+            default:
+                break;
         }
     }
 
     private void endDragRotate(MouseEvent mouseEvent) {
-
-        onDragRotate(mouseEvent);
-
-        isDragging = false;
-    }
-    
-    private void endDragRotate(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        onDragRotate(mouseEvent);
-
-        isDragging = false;
+        endDragRotate(mouseEvent, true);
     }
 
-    /**
-     * @deprecated 
-     * @param mouseWheelEvent 
-     */
+    private void endDragRotate(MouseEvent mouseEvent, boolean keepResults) {
+
+        if (keepResults) {
+            onDragRotate(mouseEvent);
+        } else {
+            currView.orient = startDragOrient;
+        }
+        isDragging = false;
+    }
+
+    private void moveCloser(boolean largeStep) {
+
+        currView.radius -= largeStep ? viewScale.largeRadiusDelta : viewScale.smallRadiusDelta;
+
+        if (currView.radius < viewScale.minRadius) {
+            currView.radius = viewScale.minRadius;
+        }
+    }
+
+    private void moveAway(boolean largeStep) {
+
+        currView.radius += largeStep ? viewScale.largeRadiusDelta : viewScale.smallRadiusDelta;
+
+        if (currView.radius > viewScale.maxRadius) {
+            currView.radius = viewScale.maxRadius;
+        }
+    }
+
+    public void mouseMove(MouseEvent mouseEvent) {
+
+        if (isDragging) {
+            onDragRotate(mouseEvent);
+        }
+    }
+
+    public void mousePressed(MouseEvent mouseEvent) {
+
+        //Ignore all other button presses when dragging.
+        if (!isDragging) {
+
+            if (mouseEvent.getButton() == actionButton) {
+
+                Vec2i position = new Vec2i(mouseEvent.getX(), mouseEvent.getY());
+
+                if (mouseEvent.isControlDown()) {
+                    beginDragRotate(position, RotateMode.BIAXIAL_ROTATE);
+                } else if (mouseEvent.isAltDown()) {
+                    beginDragRotate(position, RotateMode.SPIN_VIEW_AXIS);
+                } else {
+                    beginDragRotate(position, RotateMode.DUAL_AXIS_ROTATE);
+                }
+            }
+        }
+    }
+
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+        //Ignore all other button releases when not dragging
+        if (isDragging) {
+
+            if (mouseEvent.getButton() == actionButton) {
+
+                if (rotateMode == RotateMode.DUAL_AXIS_ROTATE
+                        || rotateMode == RotateMode.BIAXIAL_ROTATE
+                        || rotateMode == RotateMode.SPIN_VIEW_AXIS) {
+
+                    endDragRotate(mouseEvent);
+                }
+            }
+        }
+    }
+
     public void mouseWheel(MouseWheelEvent mouseWheelEvent) {
 
-        if (mouseWheelEvent.isShiftDown()) {
+        if (mouseWheelEvent.getWheelRotation() < 0) {
+            moveCloser(!mouseWheelEvent.isShiftDown());
+        } else {
+            moveAway(!mouseWheelEvent.isShiftDown());
+        }
+    }
 
-            currView.setRadius(currView.getRadius() + mouseWheelEvent.getWheelRotation() * viewScale.getLargeRadiusDelta());
+    public void charPress(KeyEvent keyEvent) {
 
+        float offset = keyEvent.isShiftDown() ? viewScale.smallPosOffset : viewScale.largePosOffset;
+
+        if (rightKeyboardCtrls) {
+
+            switch (keyEvent.getKeyCode()) {
+
+                case KeyEvent.VK_I:
+                    offsetTargetPos(TargetOffsetDir.FORWARD, offset);
+                    break;
+                case KeyEvent.VK_K:
+                    offsetTargetPos(TargetOffsetDir.BACKWARD, offset);
+                    break;
+                case KeyEvent.VK_L:
+                    offsetTargetPos(TargetOffsetDir.RIGHT, offset);
+                    break;
+                case KeyEvent.VK_J:
+                    offsetTargetPos(TargetOffsetDir.LEFT, offset);
+                    break;
+                case KeyEvent.VK_O:
+                    offsetTargetPos(TargetOffsetDir.UP, offset);
+                    break;
+                case KeyEvent.VK_U:
+                    offsetTargetPos(TargetOffsetDir.DOWN, offset);
+                    break;
+            }
         } else {
 
-            currView.setRadius(currView.getRadius() + mouseWheelEvent.getWheelRotation() * viewScale.getSmallRadiusDelta());
+            switch (keyEvent.getKeyCode()) {
+
+                case KeyEvent.VK_W:
+                    offsetTargetPos(TargetOffsetDir.FORWARD, offset);
+                    break;
+                case KeyEvent.VK_S:
+                    offsetTargetPos(TargetOffsetDir.BACKWARD, offset);
+                    break;
+                case KeyEvent.VK_D:
+                    offsetTargetPos(TargetOffsetDir.RIGHT, offset);
+                    break;
+                case KeyEvent.VK_A:
+                    offsetTargetPos(TargetOffsetDir.LEFT, offset);
+                    break;
+                case KeyEvent.VK_E:
+                    offsetTargetPos(TargetOffsetDir.UP, offset);
+                    break;
+                case KeyEvent.VK_Q:
+                    offsetTargetPos(TargetOffsetDir.DOWN, offset);
+                    break;
+            }
         }
-
-        currView.setRadius(Jglm.clamp(currView.getRadius(), viewScale.getMinRadius(), viewScale.getMaxRadius()));
-    }
-    
-    public void mouseWheel(com.jogamp.newt.event.MouseEvent mouseEvent) {
-
-        if (mouseEvent.isShiftDown()) {
-
-            currView.setRadius(currView.getRadius() + mouseEvent.getRotation()[0] * viewScale.getLargeRadiusDelta());
-
-        } else {
-
-            currView.setRadius(currView.getRadius() + mouseEvent.getRotation()[1] * viewScale.getSmallRadiusDelta());
-        }
-
-        currView.setRadius(Jglm.clamp(currView.getRadius(), viewScale.getMinRadius(), viewScale.getMaxRadius()));
     }
 
-    public ViewData getCurrView() {
-        return currView;
-    }
-    
-    public enum RotatingMode {
+    private void offsetTargetPos(int dir, float worldDistance) {
 
-        SPIN,
-        BIAXIAL,
-        DUAL_AXIS
+        Vec3 offsetDir = offsets[dir];
+        offsetTargetPos(offsetDir.mul_(worldDistance));
     }
+
+    private void offsetTargetPos(Vec3 cameraOffset) {
+
+        Mat4 currMat = calcMatrix();
+        Quat orientation = Quat.cast_(currMat);
+
+        Quat invOrient = orientation.conjugate();
+        Vec3 worldOffset = invOrient.mul(cameraOffset);
+
+        currView.targetPos.add(worldOffset);
+    }
+
+    private interface RotateMode {
+
+        public static final int DUAL_AXIS_ROTATE = 0;
+        public static final int BIAXIAL_ROTATE = 1;
+        public static final int XZ_AXIS_ROTATE = 2;
+        public static final int Y_AXIS_ROTATE = 3;
+        public static final int SPIN_VIEW_AXIS = 4;
+    }
+
+    private interface TargetOffsetDir {
+
+        public static final int UP = 0;
+        public static final int DOWN = 1;
+        public static final int FORWARD = 2;
+        public static final int BACKWARD = 3;
+        public static final int RIGHT = 4;
+        public static final int LEFT = 5;
+    }
+
+    private Vec3[] offsets = {
+        new Vec3(+0.0f, +1.0f, +0.0f),
+        new Vec3(+0.0f, -1.0f, +0.0f),
+        new Vec3(+0.0f, +0.0f, -1.0f),
+        new Vec3(+0.0f, +0.0f, +1.0f),
+        new Vec3(+1.0f, +0.0f, +0.0f),
+        new Vec3(-1.0f, +0.0f, +0.0f)};
 }
