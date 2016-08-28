@@ -1,9 +1,11 @@
 modern-jogl-examples
 ====================
 
-Examples ported in JOGL from the book "Learning Modern 3D Graphic Programming" by J.L.McKesson
+Examples ported in JOGL from the tutorials "Learning Modern 3D Graphic Programming" by J.L.McKesson, (original bitbucket [repository](https://bitbucket.org/alfonse/gltut/overview)).
 
-You can find the pdf in the root of the project (you can see it also above), I strongly suggest you to read it and try to write the exercises in your own.
+The original website (http://www.arcsynthesis.org/gltut) is down because probably the domain [expired](https://bitbucket.org/alfonse/gltut/issues/127/arcsynthesisorg-web-site). Pavel Rojtberg is continuing the manteinance of the tutorial [here](https://github.com/paroj/gltut). 
+
+He is also supporting the html form of the documentation [here](https://paroj.github.io/gltut/), I strongly suggest you to read it and try to write the exercises in your own.
 
 To run the examples, just follow these simple steps:
 
@@ -24,4 +26,4 @@ In this project there are the original Jglm and the java unofficial opengl SDK. 
 
 Ps: in the last jogl builds GL3 has been moved, so in the meanwhile I upgrade all my projects, you have to change it by yourself  :grimacing:
 
-Pps: upgrading in progress.. be patient  :pray: 
+Pps: I am also rewriting the samples using the jogl [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html).. be patient  :pray: 
