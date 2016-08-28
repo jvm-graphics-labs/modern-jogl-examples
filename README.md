@@ -5,7 +5,7 @@ Examples ported in JOGL from the tutorials "Learning Modern 3D Graphic Programmi
 
 The original website (http://www.arcsynthesis.org/gltut) is down because probably the domain [expired](https://bitbucket.org/alfonse/gltut/issues/127/arcsynthesisorg-web-site). Pavel Rojtberg is continuing the manteinance of the tutorial [here](https://github.com/paroj/gltut). 
 
-He is also supporting the html form of the documentation [here](https://paroj.github.io/gltut/), I strongly suggest you to read it and try to write the exercises in your own.
+He is also supporting the html form of the documentation [here](https://paroj.github.io/gltut/), I strongly suggest you to read and refer it during the learning of each tutorial sample.
 
 To run the examples, just follow these simple steps:
 
