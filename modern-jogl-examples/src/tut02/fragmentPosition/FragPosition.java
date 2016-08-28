@@ -33,7 +33,7 @@ public class FragPosition extends Framework {
     private final String SHADERS_SOURCE = "frag-position";
 
     public static void main(String[] args) {
-        FragPosition fragPosition = new FragPosition("Tutorial 02 - Fragment Position");
+        new FragPosition("Tutorial 02 - Fragment Position");
     }
 
     public FragPosition(String title) {

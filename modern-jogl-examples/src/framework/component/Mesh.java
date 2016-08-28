@@ -15,10 +15,13 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import one.util.streamex.IntStreamEx;
+import one.util.streamex.StreamEx;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -30,12 +33,13 @@ import org.xml.sax.SAXException;
  */
 public class Mesh {
 
-    private ArrayList<Attribute> attribs = new ArrayList<>();
-    private ArrayList<RenderCmd> primatives = new ArrayList<>();
-    private ArrayList<RenderCmd> indexData = new ArrayList<>();
-    private ArrayList<Pair> namedVaoList = new ArrayList<>();
+    private List<Attribute> attribs = new ArrayList<>();
+    private List<RenderCmd> primatives = new ArrayList<>();
+    private List<RenderCmd> indexData = new ArrayList<>();
+    private List<Pair> namedVaoList = new ArrayList<>();
 
-    private IntBuffer vao = GLBuffers.newDirectIntBuffer(1), attribArraysBuffer = GLBuffers.newDirectIntBuffer(1),
+    private IntBuffer vao = GLBuffers.newDirectIntBuffer(1),
+            attribArraysBuffer = GLBuffers.newDirectIntBuffer(1),
             indexBuffer = GLBuffers.newDirectIntBuffer(1);
 
     private HashMap<String, Integer> namedVAOs = new HashMap<>();
@@ -129,13 +133,13 @@ public class Mesh {
             gl3.glGenVertexArrays(1, vao);
             gl3.glBindVertexArray(vao.get(0));
 
-            for (Integer attribIx : namedVao.getAttributes()) {
+            for (Integer attribIx : namedVao.attributes()) {
 
                 int attribOffset = -1;
 
                 for (int count = 0; count < attribs.size(); count++) {
 
-                    if (attribs.get(count).index == attribIx) {
+                    if (attribs.get(count).index() == attribIx) {
 
                         attribOffset = count;
                         break;
@@ -143,7 +147,7 @@ public class Mesh {
                 }
                 attribs.get(attribOffset).setupAttributeArray(gl3, attribStartLocs[attribOffset]);
             }
-            namedVAOs.put(namedVao.getName(), vao.get(0));
+            namedVAOs.put(namedVao.name(), vao.get(0));
         }
         vao.put(0, vaoBackup);
 
@@ -172,26 +176,26 @@ public class Mesh {
             gl3.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, null, GL_STATIC_DRAW);
 
             //Fill with data.
-            for (int loop = 0; loop < indexData.size(); loop++) {
-                indexData.get(loop).fillBoundBufferObject(gl3, indexStartLocs[loop]);
-            }
+            IntStreamEx.range(indexData.size()).forEach(i
+                    -> indexData.get(i).fillBoundBufferObject(gl3, indexStartLocs[i]));
 
             //Fill in indexed rendering commands.
             for (int loop = 0; loop < indexData.size(); loop++) {
                 RenderCmd prim = primatives.get(loop);
-                if (prim.isIndexedCmd) {
-                    prim.start = indexStartLocs[loop] / indexData.get(loop).attribType.numBytes;
-                    prim.elemCount = indexData.get(loop).dataArray.capacity() / indexData.get(loop).attribType.numBytes;
-                    prim.indexDataType = indexData.get(loop).attribType.glType;
+                if (prim.isIndexedCmd()) {
+                    prim.start(indexStartLocs[loop] / indexData.get(loop).attribType().numBytes());
+                    prim.elemCount(indexData.get(loop).dataArray().capacity()
+                            / indexData.get(loop).attribType().numBytes());
+                    prim.indexDataType(indexData.get(loop).attribType().glType());
                 }
             }
 
             vaoBackup = vao.get(0);
-            for (Map.Entry<String, Integer> entry : namedVAOs.entrySet()) {
+            namedVAOs.entrySet().forEach(entry -> {
                 vao.put(0, entry.getValue());
                 gl3.glBindVertexArray(vao.get(0));
                 gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
-            }
+            });
             vao.put(0, vaoBackup);
 
             gl3.glBindVertexArray(0);
@@ -205,9 +209,7 @@ public class Mesh {
         }
 
         gl3.glBindVertexArray(vao.get(0));
-        for (RenderCmd renderCmd : primatives) {
-            renderCmd.render(gl3);
-        }
+        primatives.forEach(renderCmd -> renderCmd.render(gl3));
         gl3.glBindVertexArray(0);
     }
 
@@ -218,42 +220,36 @@ public class Mesh {
         }
 
         gl3.glBindVertexArray(namedVAOs.get(meshName));
-        for (RenderCmd renderCmd : primatives) {
-            renderCmd.render(gl3);
-        }
+        primatives.forEach(renderCmd -> renderCmd.render(gl3));
         gl3.glBindVertexArray(0);
     }
 
     public void dispose(GL3 gl3) {
+
+        attribs.forEach(attrib -> BufferUtils.destroyDirectBuffer(attrib.dataArray()));
+        indexData.forEach(cmd -> BufferUtils.destroyDirectBuffer(cmd.dataArray()));
         
-        for (Attribute attrib : attribs) {
-            BufferUtils.destroyDirectBuffer(attrib.dataArray);
-        }
-        for (RenderCmd cmd : indexData) {
-            BufferUtils.destroyDirectBuffer(cmd.dataArray);
-        }
-        
-        gl3.glDeleteBuffers(1, attribArraysBuffer);        
+        gl3.glDeleteBuffers(1, attribArraysBuffer);
         if (!indexData.isEmpty()) {
             gl3.glDeleteBuffers(1, indexBuffer);
         }
-        
-        gl3.glDeleteVertexArrays(1, vao);        
-        for (Map.Entry<String, Integer> entry : namedVAOs.entrySet()) {
-            vao.put(0, entry.getValue());
+
+        gl3.glDeleteVertexArrays(1, vao);
+        namedVAOs.forEach((s, i) -> {
+            vao.put(0, i);
             gl3.glDeleteVertexArrays(1, vao);
-        }
+        });
     }
 
-    public ArrayList<Attribute> getAttribs() {
+    public List<Attribute> attribs() {
         return attribs;
     }
 
-    public ArrayList<RenderCmd> getPrimatives() {
+    public List<RenderCmd> primatives() {
         return primatives;
     }
 
-    public ArrayList<RenderCmd> getIndexData() {
+    public List<RenderCmd> indexData() {
         return indexData;
     }
 }

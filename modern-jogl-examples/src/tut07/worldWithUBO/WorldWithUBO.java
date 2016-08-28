@@ -32,6 +32,7 @@ import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
+import one.util.streamex.StreamEx;
 import org.xml.sax.SAXException;
 
 /**
@@ -46,7 +47,7 @@ public class WorldWithUBO extends Framework {
         "UnitCubeColor.xml", "UnitPlane.xml"};
 
     public static void main(String[] args) {
-        WorldWithUBO worldWithUBO = new WorldWithUBO("Tutorial 07 - World With UBO");
+        new WorldWithUBO("Tutorial 07 - World With UBO");
     }
 
     public WorldWithUBO(String title) {
@@ -474,9 +475,7 @@ public class WorldWithUBO extends Framework {
         
         gl3.glDeleteBuffers(1, globalMatricesUBO);
         
-        for (Mesh mesh : meshes) {
-            mesh.dispose(gl3);
-        }
+        StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl3));
         
         BufferUtils.destroyDirectBuffer(matrixBuffer);
         BufferUtils.destroyDirectBuffer(globalMatricesUBO);

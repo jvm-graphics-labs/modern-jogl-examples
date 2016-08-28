@@ -40,7 +40,7 @@ public class BaseVertexOverlap extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        BaseVertexOverlap baseVertexOverlap = new BaseVertexOverlap("Tutorial 05 - Base Vertex With Overlap");
+        new BaseVertexOverlap("Tutorial 05 - Base Vertex With Overlap");
     }
 
     public BaseVertexOverlap(String title) {

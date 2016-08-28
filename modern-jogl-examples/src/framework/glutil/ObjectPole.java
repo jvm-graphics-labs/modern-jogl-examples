@@ -96,9 +96,9 @@ public class ObjectPole {
     public Mat4 calcMatrix() {
 
         Mat4 translateMat = new Mat4(1.0f);
-        translateMat.c3(new Vec4(po.position, 1.0f));
+        translateMat.c3(new Vec4(po.position(), 1.0f));
 
-        return translateMat.mul(Mat4.cast_(po.orientation));
+        return translateMat.mul(Mat4.cast_(po.orientation()));
     }
 
     /**
@@ -153,7 +153,7 @@ public class ObjectPole {
         if (!isDragging) {
             fromInitial = false;
         }
-        po.orientation = rot.mul_(fromInitial ? startDragOrient : po.orientation).normalize();
+        po.orientation(rot.mul_(fromInitial ? startDragOrient : po.orientation()).normalize());
     }
 
     public void rotateLocalDegrees(Quat rot) {
@@ -164,7 +164,7 @@ public class ObjectPole {
         if (!isDragging) {
             fromInitial = false;
         }
-        po.orientation = (fromInitial ? startDragOrient : po.orientation).mul_(rot).normalize();
+        po.orientation((fromInitial ? startDragOrient : po.orientation()).mul_(rot).normalize());
     }
 
     public void rotateViewDegrees(Quat rot) {
@@ -178,53 +178,58 @@ public class ObjectPole {
         if (view != null) {
             Quat viewQuat = Quat.cast_(view.calcMatrix());
             Quat invViewQuat = viewQuat.conjugate_();
-            po.orientation = (invViewQuat.mul(rot).mul(viewQuat).mul(fromInitial ? startDragOrient : po.orientation))
-                    .normalize();
+            po.orientation((invViewQuat.mul(rot).mul(viewQuat).mul(fromInitial ? startDragOrient : po.orientation()))
+                    .normalize());
         } else {
             rotateWorldDegrees(rot, fromInitial);
         }
     }
 
-    public void mouseMove(Vec2i position) {
+    public void mouseMove(MouseEvent mouseEvent) {
 
-        Vec2i diff = position.sub_(prevMousePos);
+        if (isDragging) {
 
-        switch (rotateMode) {
+            Vec2i position = new Vec2i(mouseEvent.getX(), mouseEvent.getY());
 
-            case RotateMode.DUAL_AXIS:
+            Vec2i diff = position.sub_(prevMousePos);
 
-                Quat rot = calcRotationQuat(Axis.Y, diff.x * rotateScale);
-                rot = calcRotationQuat(Axis.X, diff.y * rotateScale).mul(rot).normalize();
-                rotateViewDegrees(rot);
+            switch (rotateMode) {
 
-                break;
+                case RotateMode.DUAL_AXIS:
+                    System.out.println("rotateScale " + rotateScale);
+                    Quat rot = calcRotationQuat(Axis.Y, diff.x * rotateScale);
+                    rot = calcRotationQuat(Axis.X, diff.y * rotateScale).mul(rot).normalize();
+                    rotateViewDegrees(rot);
 
-            case RotateMode.BIAXIAL:
+                    break;
 
-                Vec2i initDiff = position.sub_(startDragMousePos);
-                int axis;
-                float degAngle;
-                if (Math.abs(initDiff.x) > Math.abs(initDiff.y)) {
-                    axis = Axis.Y;
-                    degAngle = initDiff.x * rotateScale;
-                } else {
-                    axis = Axis.X;
-                    degAngle = initDiff.y * rotateScale;
-                }
+                case RotateMode.BIAXIAL:
 
-                rot = calcRotationQuat(axis, degAngle);
-                rotateViewDegrees(rot, true);
+                    Vec2i initDiff = position.sub_(startDragMousePos);
+                    int axis;
+                    float degAngle;
+                    if (Math.abs(initDiff.x) > Math.abs(initDiff.y)) {
+                        axis = Axis.Y;
+                        degAngle = initDiff.x * rotateScale;
+                    } else {
+                        axis = Axis.X;
+                        degAngle = initDiff.y * rotateScale;
+                    }
 
-                break;
+                    rot = calcRotationQuat(axis, degAngle);
+                    rotateViewDegrees(rot, true);
 
-            case RotateMode.SPIN:
+                    break;
 
-                rotateViewDegrees(calcRotationQuat(Axis.Z, -diff.x * rotateScale));
+                case RotateMode.SPIN:
 
-                break;
+                    rotateViewDegrees(calcRotationQuat(Axis.Z, -diff.x * rotateScale));
+
+                    break;
+            }
+
+            prevMousePos = position;
         }
-
-        prevMousePos = diff;
     }
 
     public void mousePressed(MouseEvent mouseEvent) {
@@ -249,7 +254,7 @@ public class ObjectPole {
 
                 prevMousePos.set(mouseEvent.getX(), mouseEvent.getY());
                 startDragMousePos.set(mouseEvent.getX(), mouseEvent.getY());
-                startDragOrient = po.orientation;
+                startDragOrient = po.orientation();
 
                 isDragging = true;
             }
@@ -263,7 +268,7 @@ public class ObjectPole {
 
             if (mouseEvent.getButton() == actionButton) {
 
-                mouseMove(new Vec2i(mouseEvent.getX(), mouseEvent.getY()));
+                mouseMove(mouseEvent);
 
                 isDragging = false;
             }

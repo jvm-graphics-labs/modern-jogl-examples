@@ -8,6 +8,7 @@ import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -15,7 +16,7 @@ import java.util.ArrayList;
  */
 public class MatrixStack_ {
 
-    private ArrayList<Mat4> matrices;
+    private List<Mat4> matrices;
 
     public MatrixStack_() {
         matrices = new ArrayList<>();
@@ -70,7 +71,7 @@ public class MatrixStack_ {
         matrices.set(matrices.size() - 1, mat4);
         return this;
     }
-    
+
     public void perspective(float defFOV, float aspectRatio, float zNear, float zFar) {
         top().mulPerspective(defFOV, aspectRatio, zNear, zFar);
     }

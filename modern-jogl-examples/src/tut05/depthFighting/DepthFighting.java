@@ -48,7 +48,7 @@ public class DepthFighting extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        DepthFighting depthBuffer = new DepthFighting("Tutorial 05 - Depth Clamping");
+        new DepthFighting("Tutorial 05 - Depth Clamping");
     }
 
     public DepthFighting(String title) {

@@ -4,6 +4,8 @@
  */
 package framework.component;
 
+import one.util.streamex.IntStreamEx;
+import one.util.streamex.StreamEx;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -16,7 +18,7 @@ public class VAO {
 
     public static void process(Element element, Pair pair) {
 
-        pair.setName(element.getAttribute("name"));
+        pair.name(element.getAttribute("name"));
 
         NodeList children = element.getChildNodes();
 
@@ -32,7 +34,7 @@ public class VAO {
 
                     int attrib = Integer.parseInt(childElement.getAttribute("attrib"));
 
-                    pair.getAttributes().add(attrib);
+                    pair.attributes().add(attrib);
                 }
             }
         }

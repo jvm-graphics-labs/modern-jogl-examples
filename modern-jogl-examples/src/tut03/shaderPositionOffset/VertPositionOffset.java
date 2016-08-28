@@ -35,7 +35,7 @@ public class VertPositionOffset extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard";
 
     public static void main(String[] args) {
-        VertPositionOffset vertPositionOffset = new VertPositionOffset("Tutorial 03 - Shader Position Offset");
+        new VertPositionOffset("Tutorial 03 - Shader Position Offset");
     }
 
     public VertPositionOffset(String title) {

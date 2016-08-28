@@ -33,7 +33,7 @@ public class VertexColor extends Framework {
     private final String SHADERS_SOURCE = "vertex-colors";
 
     public static void main(String[] args) {
-        VertexColor vertexColor = new VertexColor("Tutorial 02 - Vertex Colors");
+        new VertexColor("Tutorial 02 - Vertex Colors");
     }
 
     public VertexColor(String title) {

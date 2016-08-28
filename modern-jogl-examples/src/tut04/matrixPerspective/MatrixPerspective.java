@@ -37,7 +37,7 @@ public class MatrixPerspective extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard-colors";
 
     public static void main(String[] args) {
-        MatrixPerspective aspectRatio = new MatrixPerspective("Tutorial 04 - Matrix Perspective");
+        new MatrixPerspective("Tutorial 04 - Matrix Perspective");
     }
 
     public MatrixPerspective(String title) {

@@ -33,7 +33,7 @@ public class CpuPositionOffset extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        CpuPositionOffset cpuPositionOffset = new CpuPositionOffset("Tutorial 03 - CPU Position Offset");
+        new CpuPositionOffset("Tutorial 03 - CPU Position Offset");
     }
 
     public CpuPositionOffset(String title) {

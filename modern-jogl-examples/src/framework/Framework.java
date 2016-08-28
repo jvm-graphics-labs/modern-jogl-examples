@@ -10,6 +10,8 @@ import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -26,13 +28,14 @@ import java.nio.FloatBuffer;
  *
  * @author elect
  */
-public class Framework implements GLEventListener, KeyListener {
+public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     private final boolean DEBUG = false;
     protected GLWindow glWindow;
     protected Animator animator;
     protected Vec2i windowSize = new Vec2i(500);
-    protected FloatBuffer clearColor = GLBuffers.newDirectFloatBuffer(4), clearDepth = GLBuffers.newDirectFloatBuffer(1);
+    protected FloatBuffer clearColor = GLBuffers.newDirectFloatBuffer(4),
+            clearDepth = GLBuffers.newDirectFloatBuffer(1);
 
     public Framework(String title) {
         initGL(title);
@@ -67,6 +70,7 @@ public class Framework implements GLEventListener, KeyListener {
 
         glWindow.addGLEventListener(this);
         glWindow.addKeyListener(this);
+        glWindow.addMouseListener(this);
 
         animator = new Animator();
         animator.add(glWindow);
@@ -112,14 +116,14 @@ public class Framework implements GLEventListener, KeyListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-        
+
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);
 
         BufferUtils.destroyDirectBuffer(clearColor);
         BufferUtils.destroyDirectBuffer(clearDepth);
-        
+
         System.exit(0);
     }
 
@@ -129,7 +133,7 @@ public class Framework implements GLEventListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        keyboard(e);        
+        keyboard(e);
     }
 
     @Override
@@ -138,4 +142,44 @@ public class Framework implements GLEventListener, KeyListener {
 
     protected void keyboard(KeyEvent keyEvent) {
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseEvent e) {
+    }
+
 }

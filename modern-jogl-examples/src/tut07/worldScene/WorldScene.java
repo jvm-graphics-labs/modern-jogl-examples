@@ -29,6 +29,7 @@ import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
+import one.util.streamex.StreamEx;
 import org.xml.sax.SAXException;
 
 /**
@@ -43,7 +44,7 @@ public class WorldScene extends Framework {
         "UnitCubeColor.xml", "UnitPlane.xml"};
 
     public static void main(String[] args) {
-        WorldScene worldScene = new WorldScene("Tutorial 07 - World Scene");
+        new WorldScene("Tutorial 07 - World Scene");
     }
 
     public WorldScene(String title) {
@@ -78,22 +79,6 @@ public class WorldScene extends Framework {
                 Logger.getLogger(WorldScene.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-//        for (Attribute attribute : meshes[Mesh_.CYLINDER].getAttribs()) {
-//            int size = attribute.getDataArray().capacity();
-//            System.out.println("Attribute " + attribute.getIndex() + ", size " + size);
-//            for (int j = 0; j < size; j += Float.BYTES * attribute.getSize()) {
-//                for (int i = 0; i < attribute.getSize(); i++) {
-//                    System.out.print(attribute.getDataArray().getFloat(j + i * Float.BYTES) + " ");
-//                }
-//                System.out.println("");
-//            }
-//        }
-//        for (RenderCmd indexRenderCmd : meshes[Mesh_.CYLINDER].getIndexData()) {
-//            System.out.println("");
-//            for (int i = 0; i < indexRenderCmd.dataArray.capacity(); i += Short.BYTES) {
-//                System.out.print(indexRenderCmd.dataArray.getShort(i) + " ");
-//            }
-//        }
 
         gl3.glEnable(GL_CULL_FACE);
         gl3.glCullFace(GL_BACK);
@@ -487,10 +472,8 @@ public class WorldScene extends Framework {
         gl3.glDeleteProgram(objectColor.theProgram);
         gl3.glDeleteProgram(uniformColorTint.theProgram);
 
-        for (Mesh mesh : meshes) {
-            mesh.dispose(gl3);
-        }
-
+        StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl3));
+        
         BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
 

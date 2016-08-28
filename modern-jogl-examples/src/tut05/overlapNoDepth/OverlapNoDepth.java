@@ -41,7 +41,7 @@ public class OverlapNoDepth extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        OverlapNoDepth overlapNoDepth = new OverlapNoDepth("Tutorial 05 - Overlap No Depth");
+        new OverlapNoDepth("Tutorial 05 - Overlap No Depth");
     }
 
     public OverlapNoDepth(String title) {

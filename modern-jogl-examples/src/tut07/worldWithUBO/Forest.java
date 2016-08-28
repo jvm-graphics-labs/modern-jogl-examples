@@ -5,11 +5,6 @@
  */
 package tut07.worldWithUBO;
 
-import tut07.worldScene.*;
-import com.jogamp.opengl.GL3;
-import framework.component.Mesh;
-import framework.glutil.MatrixStack_;
-
 /**
  *
  * @author elect

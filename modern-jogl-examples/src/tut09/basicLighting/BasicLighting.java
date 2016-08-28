@@ -31,6 +31,7 @@ import framework.glutil.ViewScale;
 import glm.mat._3.Mat3;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
+import glm.vec._2.i.Vec2i;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import java.io.IOException;
@@ -231,6 +232,29 @@ public class BasicLighting extends Framework {
                 drawColoredCyl = !drawColoredCyl;
                 break;
         }
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent e) {
+        viewPole.mousePressed(e);
+        objectPole.mousePressed(e);
+    }
+    
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        viewPole.mouseMove(e);
+        objectPole.mouseMove(e);
+    }
+    
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        viewPole.mouseReleased(e);
+        objectPole.mouseReleased(e);
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseEvent e) {
+        viewPole.mouseWheel(e);
     }
 
     @Override

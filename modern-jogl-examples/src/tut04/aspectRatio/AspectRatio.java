@@ -37,7 +37,7 @@ public class AspectRatio extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard-colors";
 
     public static void main(String[] args) {
-        AspectRatio aspectRatio = new AspectRatio("Tutorial 04 - Aspect Ratio");
+        new AspectRatio("Tutorial 04 - Aspect Ratio");
     }
 
     public AspectRatio(String title) {

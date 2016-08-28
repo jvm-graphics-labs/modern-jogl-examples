@@ -45,7 +45,7 @@ public class Translation extends Framework {
     private final String FRAG_SHADER_SOURCE = "color-passthrough";
 
     public static void main(String[] args) {
-        Translation translation = new Translation("Tutorial 06 - Translation");
+        new Translation("Tutorial 06 - Translation");
     }
 
     public Translation(String title) {

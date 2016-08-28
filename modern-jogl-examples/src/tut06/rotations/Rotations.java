@@ -45,7 +45,7 @@ public class Rotations extends Framework {
     private final String FRAG_SHADER_SOURCE = "color-passthrough";
 
     public static void main(String[] args) {
-        Rotations rotations = new Rotations("Tutorial 06 - Rotations");
+        new Rotations("Tutorial 06 - Rotations");
     }
 
     public Rotations(String title) {

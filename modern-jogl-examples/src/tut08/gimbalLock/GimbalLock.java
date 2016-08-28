@@ -31,6 +31,7 @@ import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
+import one.util.streamex.IntStreamEx;
 import org.xml.sax.SAXException;
 
 /**
@@ -45,7 +46,7 @@ public class GimbalLock extends Framework {
     private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
 
     public static void main(String[] args) {
-        GimbalLock gimbalLock = new GimbalLock("Tutorial 08 - Gimbal Lock");
+        new GimbalLock("Tutorial 08 - Gimbal Lock");
     }
 
     public GimbalLock(String title) {
@@ -231,9 +232,7 @@ public class GimbalLock extends Framework {
         gl3.glDeleteProgram(theProgram);
 
         object.dispose(gl3);
-        for (int loop = 0; loop < Gimbal.MAX; loop++) {
-            gimbals[loop].dispose(gl3);
-        }
+        IntStreamEx.range(Gimbal.MAX).forEach(i -> gimbals[i].dispose(gl3));
 
         BufferUtils.destroyDirectBuffer(matrixBuffer);
     }

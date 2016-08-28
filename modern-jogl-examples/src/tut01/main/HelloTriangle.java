@@ -35,7 +35,7 @@ public class HelloTriangle extends Framework {
     private final String FRAG_SHADER_SOURCE = "fragment-shader";
 
     public static void main(String[] args) {
-        HelloTriangle helloTriangle = new HelloTriangle("Tutorial 01 - Hello Triangle");
+        new HelloTriangle("Tutorial 01 - Hello Triangle");
     }
 
     public HelloTriangle(String title) {

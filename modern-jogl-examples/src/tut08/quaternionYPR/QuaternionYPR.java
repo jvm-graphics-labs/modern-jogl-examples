@@ -43,7 +43,7 @@ public class QuaternionYPR extends Framework {
             SHIP_SRC = "Ship.xml";
 
     public static void main(String[] args) {
-        QuaternionYPR quaternionYPR = new QuaternionYPR("Tutorial 08 - Quaternion YPR");
+        new QuaternionYPR("Tutorial 08 - Quaternion YPR");
     }
 
     public QuaternionYPR(String title) {

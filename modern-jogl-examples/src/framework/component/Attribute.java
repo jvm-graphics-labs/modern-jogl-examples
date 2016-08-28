@@ -26,11 +26,11 @@ import org.w3c.dom.Element;
  */
 public class Attribute {
 
-    int index = Integer.MAX_VALUE;
-    AttributeType attribType = null;
-    int size = -1;
-    boolean isIntegral = false;
-    ByteBuffer dataArray;
+    private int index = Integer.MAX_VALUE;
+    private AttributeType attribType = null;
+    private int size = -1;
+    private boolean isIntegral = false;
+    private ByteBuffer dataArray;
 
     public Attribute(Element element) {
 
@@ -60,12 +60,12 @@ public class Attribute {
                 default:
                     throw new Error("Incorrect 'integral' value for the 'attribute' (" + integralAttrib + ").");
             }
-            if (attribType.normalized) {
+            if (attribType.normalized()) {
                 throw new Error("Attribute cannot be both 'integral' and a normalized 'type'.");
             }
-            if (attribType.glType == GL_FLOAT
-                    || attribType.glType == GL_HALF_FLOAT
-                    || attribType.glType == GL_DOUBLE) {
+            if (attribType.glType() == GL_FLOAT
+                    || attribType.glType() == GL_HALF_FLOAT
+                    || attribType.glType() == GL_DOUBLE) {
                 throw new Error("Attribute cannot be both 'integral' and a floating-point 'type'.");
             }
         }
@@ -87,14 +87,14 @@ public class Attribute {
             throw new Error("The attribute's data must be a multiple of its size in elements.");
         }
 
-        dataArray = GLBuffers.newDirectByteBuffer(numberOfObjects * attribType.numBytes);
+        dataArray = GLBuffers.newDirectByteBuffer(numberOfObjects * attribType.numBytes());
 
         stringTokenizer = new StringTokenizer(textContent);
 
         for (int i = 0; i < numberOfObjects; i++) {
             String s = (String) stringTokenizer.nextElement();
 //            System.out.println("s[" + i + "]: " + s);
-            switch (attribType.glType) {
+            switch (attribType.glType()) {
                 case GL_FLOAT:
                 case GL_HALF_FLOAT:
                     dataArray.putFloat(Float.parseFloat(s));
@@ -124,13 +124,13 @@ public class Attribute {
 //        System.out.println("glEnableVertexAttribArray(" + index + ")");
         gl3.glEnableVertexAttribArray(index);
         if (isIntegral) {
-            gl3.glVertexAttribIPointer(index, size, attribType.glType, size * attribType.numBytes, offset);
+            gl3.glVertexAttribIPointer(index, size, attribType.glType(), size * attribType.numBytes(), offset);
         } else {
 //            System.out.println("glVertexAttribPointer(" + index + ", " + size + ", " + (attribType.glType == GL_FLOAT
 //                    ? "GL_FLOAT" : attribType.glType) + ", " + attribType.normalized + ", "
 //                    + (size * attribType.numBytes) + ", " + offset + ")");
-            gl3.glVertexAttribPointer(index, size, attribType.glType, attribType.normalized,
-                    size * attribType.numBytes, offset);
+            gl3.glVertexAttribPointer(index, size, attribType.glType(), attribType.normalized(),
+                    size * attribType.numBytes(), offset);
         }
     }
 
@@ -139,6 +139,14 @@ public class Attribute {
     }
 
     public int numElements() {
-        return dataArray.capacity() / size / attribType.numBytes;
+        return dataArray.capacity() / size / attribType.numBytes();
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public ByteBuffer dataArray() {
+        return dataArray;
     }
 }

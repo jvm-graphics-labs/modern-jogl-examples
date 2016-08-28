@@ -45,7 +45,7 @@ public class DepthClamping extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        DepthClamping depthBuffer = new DepthClamping("Tutorial 05 - Depth Clamping");
+        new DepthClamping("Tutorial 05 - Depth Clamping");
     }
 
     public DepthClamping(String title) {

@@ -45,7 +45,7 @@ public class CameraRelative extends Framework {
             SHIP_SCR = "Ship.xml", PLANE_SRC = "UnitPlane.xml";
 
     public static void main(String[] args) {
-        CameraRelative cameraRelative = new CameraRelative("Tutorial 08 - Camera Relative");
+        new CameraRelative("Tutorial 08 - Camera Relative");
     }
 
     public CameraRelative(String title) {

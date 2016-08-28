@@ -6,8 +6,6 @@
 package framework.component;
 
 import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_TRIANGLE_FAN;
-import static com.jogamp.opengl.GL.GL_TRIANGLE_STRIP;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
@@ -23,15 +21,15 @@ import org.w3c.dom.Element;
  */
 public class RenderCmd {
 
-    boolean isIndexedCmd;
-    int primType;
-    int start;
-    int elemCount;
+    private boolean isIndexedCmd;
+    private int primType;
+    private int start;
+    private int elemCount;
     //Only if isIndexedCmd is true.
-    int indexDataType;
-    int primRestart;
-    AttributeType attribType;
-    ByteBuffer dataArray;
+    private int indexDataType;
+    private int primRestart;
+    private AttributeType attribType;
+    private ByteBuffer dataArray;
 
     private RenderCmd() {
     }
@@ -43,7 +41,7 @@ public class RenderCmd {
         String cmdName = element.getAttribute("cmd");
         PrimitiveType primitiveType = PrimitiveType.get(cmdName);
 
-        cmd.primType = primitiveType.glPrimType;
+        cmd.primType = primitiveType.glPrimType();
 
         if (indices) {
             processIndices(element, cmd);
@@ -80,14 +78,14 @@ public class RenderCmd {
             throw new Error("The index element must have an array of values.");
         }
 
-        cmd.dataArray = GLBuffers.newDirectByteBuffer(numberOfObjects * cmd.attribType.numBytes);
+        cmd.dataArray = GLBuffers.newDirectByteBuffer(numberOfObjects * cmd.attribType.numBytes());
 
         stringTokenizer = new StringTokenizer(textContent);
 
         for (int i = 0; i < numberOfObjects; i++) {
             String s = (String) stringTokenizer.nextElement();
 //            System.out.println("s[" + i + "]: " + s);
-            switch (cmd.attribType.glType) {
+            switch (cmd.attribType.glType()) {
                 case GL_UNSIGNED_INT:
                     cmd.dataArray.putInt(Integer.parseInt(s));
                     break;
@@ -129,9 +127,33 @@ public class RenderCmd {
 //                    : primType == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" : primType) + ", " + elemCount + ", "
 //                    + (indexDataType == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" : indexDataType) + ", "
 //                    + (start * attribType.numBytes) + ")");
-            gl3.glDrawElements(primType, elemCount, indexDataType, start * attribType.numBytes);
+            gl3.glDrawElements(primType, elemCount, indexDataType, start * attribType.numBytes());
         } else {
             gl3.glDrawArrays(primType, start, elemCount);
         }
+    }
+
+    public boolean isIndexedCmd() {
+        return isIndexedCmd;
+    }
+
+    public void start(int start) {
+        this.start = start;
+    }
+
+    public void elemCount(int elemCount) {
+        this.elemCount = elemCount;
+    }
+    
+    public ByteBuffer dataArray() {
+        return dataArray;
+    }
+    
+    public AttributeType attribType() {
+        return attribType;
+    }
+    
+    public void indexDataType(int indexDataType) {
+        this.indexDataType = indexDataType;
     }
 }

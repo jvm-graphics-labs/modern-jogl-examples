@@ -45,7 +45,7 @@ public class Scale extends Framework {
     private final String FRAG_SHADER_SOURCE = "color-passthrough";
 
     public static void main(String[] args) {
-        Scale scale = new Scale("Tutorial 06 - Scale");
+        new Scale("Tutorial 06 - Scale");
     }
 
     public Scale(String title) {

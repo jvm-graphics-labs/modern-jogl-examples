@@ -43,7 +43,7 @@ public class VertexClipping extends Framework {
     private final String SHADERS_SOURCE = "standard";
 
     public static void main(String[] args) {
-        VertexClipping overlapNoDepth = new VertexClipping("Tutorial 05 - Vertex Clipping");
+        new VertexClipping("Tutorial 05 - Vertex Clipping");
     }
 
     public VertexClipping(String title) {

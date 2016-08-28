@@ -5,9 +5,7 @@
  */
 package framework.component;
 
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_BYTE;
-import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_HALF_FLOAT;
 import static com.jogamp.opengl.GL.GL_SHORT;
@@ -24,10 +22,10 @@ import java.nio.ByteBuffer;
  */
 public class AttributeType {
 
-    final String nameFromFile;
-    final boolean normalized;
-    final int glType;
-    final int numBytes;
+    private final String nameFromFile;
+    private final boolean normalized;
+    private final int glType;
+    private final int numBytes;
 
     private AttributeType(String nameFromFile, boolean normalized, int glType, int numBytes) {
         this.nameFromFile = nameFromFile;
@@ -67,4 +65,16 @@ public class AttributeType {
         new AttributeType("ubyte", false, GL_UNSIGNED_BYTE, Byte.BYTES),
         new AttributeType("norm-byte", true, GL_BYTE, Byte.BYTES),
         new AttributeType("norm-ubyte", true, GL_UNSIGNED_BYTE, Byte.BYTES)};
+    
+    public boolean normalized() {
+        return normalized;
+    }
+    
+    public int glType() {
+        return glType;
+    }
+    
+    public int numBytes() {
+        return numBytes;
+    }
 }

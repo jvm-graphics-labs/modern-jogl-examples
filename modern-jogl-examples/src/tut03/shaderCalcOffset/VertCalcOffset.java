@@ -34,7 +34,7 @@ public class VertCalcOffset extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard";
 
     public static void main(String[] args) {
-        VertCalcOffset vertCalcOffset = new VertCalcOffset("Tutorial 03 - Shader Calc Offset");
+        new VertCalcOffset("Tutorial 03 - Shader Calc Offset");
     }
 
     public VertCalcOffset(String title) {

@@ -34,7 +34,7 @@ public class FragChangeColor extends Framework{
     private final String FRAG_SHADER_SOURCE = "calc-color";
 
     public static void main(String[] args) {
-        FragChangeColor fragChangeColor = new FragChangeColor("Tutorial 03 - Frag Change Color");
+        new FragChangeColor("Tutorial 03 - Frag Change Color");
     }
 
     public FragChangeColor(String title) {

@@ -37,7 +37,7 @@ public class OrthoCube extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard-colors";
 
     public static void main(String[] args) {
-        OrthoCube orthoCube = new OrthoCube("Tutorial 04 - Ortho Cube");
+        new OrthoCube("Tutorial 04 - Ortho Cube");
     }
 
     public OrthoCube(String title) {

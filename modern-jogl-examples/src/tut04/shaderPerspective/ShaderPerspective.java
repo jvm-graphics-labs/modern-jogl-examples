@@ -37,7 +37,7 @@ public class ShaderPerspective extends Framework {
     private final String FRAG_SHADER_SOURCE = "standard-colors";
 
     public static void main(String[] args) {
-        ShaderPerspective shaderPerspective = new ShaderPerspective("Tutorial 04 - Shader Perspective");
+        new ShaderPerspective("Tutorial 04 - Shader Perspective");
     }
 
     public ShaderPerspective(String title) {

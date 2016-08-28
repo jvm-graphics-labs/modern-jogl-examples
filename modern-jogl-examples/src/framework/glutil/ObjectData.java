@@ -13,12 +13,24 @@ import glm.vec._3.Vec3;
  */
 public class ObjectData {
 
-    Vec3 position;
-    Quat orientation;
+    private Vec3 position;
+    private Quat orientation;
 
     public ObjectData(Vec3 position, Quat orientation) {
 
         this.position = position;
+        this.orientation = orientation;
+    }
+
+    public Vec3 position() {
+        return position;
+    }
+
+    public Quat orientation() {
+        return orientation;
+    }
+
+    public void orientation(Quat orientation) {
         this.orientation = orientation;
     }
 }

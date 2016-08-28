@@ -5,12 +5,10 @@
 package framework.glutil;
 
 import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.MouseEvent;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import javax.swing.SwingUtilities;
 import glm.vec._2.i.Vec2i;
 import glm.vec._3.Vec3;
 
@@ -93,6 +91,7 @@ public class ViewPole extends ViewProvider {
      *
      * @return
      */
+    @Override
     public Mat4 calcMatrix() {
 
         Mat4 theMat = new Mat4(1.0f);
@@ -104,16 +103,16 @@ public class ViewPole extends ViewProvider {
          * that the camera point is directly behind us by the radius number of
          * units.
          */
-        theMat.translate(0.0f, 0.0f, -currView.radius);
+        theMat.translate(0.0f, 0.0f, -currView.radius());
 
         //Rotate the world to look in the right direction..
-        Quat fullRotation = glm.angleAxis_(currView.degSpinRotation, new Vec3(0.0f, 0.0f, 1.0f));
-        fullRotation.mul(currView.orient);
+        Quat fullRotation = glm.angleAxis_(currView.degSpinRotation(), new Vec3(0.0f, 0.0f, 1.0f));
+        fullRotation.mul(currView.orient());
 
         theMat.mul(Mat4.cast_(fullRotation));
 
         // Translate the world by the negation of the lookat point, placing the origin at the lookat point.
-        theMat.translate(currView.targetPos.negate_());
+        theMat.translate(currView.targetPos().negate_());
 
         return theMat;
     }
@@ -125,15 +124,15 @@ public class ViewPole extends ViewProvider {
      * the view per window space pixel. The scale is the same for all mouse
      * movements.
      */
-    public void setRotationScale(float rotateScale) {
-        viewScale.rotationScale = rotateScale;
+    public void rotationScale(float rotateScale) {
+        viewScale.rotationScale(rotateScale);
     }
 
     /**
      * @return Gets the current scaling factor for orientation changes.
      */
-    public float getRotationScale() {
-        return viewScale.rotationScale;
+    public float rotationScale() {
+        return viewScale.rotationScale();
     }
 
     /**
@@ -154,35 +153,34 @@ public class ViewPole extends ViewProvider {
 
     public void processXchange(int xDiff) {
 
-        float degAngleDiff = (xDiff * viewScale.rotationScale);
+        float degAngleDiff = (xDiff * viewScale.rotationScale());
 
         //Rotate about the world-space Y axis.
-        currView.orient = startDragOrient.mul_(glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)));
+        currView.orient(startDragOrient.mul_(glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f))));
     }
 
     public void processYchange(int yDiff) {
 
-        float degAngleDiff = (yDiff * viewScale.rotationScale);
+        float degAngleDiff = (yDiff * viewScale.rotationScale());
 
         //Rotate about the world-space X axis.
-        currView.orient = glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)).mul(startDragOrient);
+        currView.orient(glm.angleAxis_(degAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)).mul(startDragOrient));
     }
 
     private void processXYchange(Vec2i diff) {
 
-        float degXAngleDiff = diff.x * viewScale.rotationScale;
-        float degYAngleDiff = diff.y * viewScale.rotationScale;
-
+        float degXAngleDiff = diff.x * viewScale.rotationScale();
+        float degYAngleDiff = diff.y * viewScale.rotationScale();
         // Rotate about the world-space Y axis.
-        currView.orient = startDragOrient.mul_(glm.angleAxis_(degXAngleDiff, new Vec3(0.0f, 1.0f, 0.0f)));
+        currView.orient(startDragOrient.mul_(glm.angleAxis_(degXAngleDiff, new Vec3(0.0f, 1.0f, 0.0f))));
         //Rotate about the local-space X axis.
-        currView.orient = glm.angleAxis_(degYAngleDiff, new Vec3(1.0f, 0.0f, 0.0f)).mul(currView.orient);
+        currView.orient(glm.angleAxis_(degYAngleDiff, new Vec3(1.0f, 0.0f, 0.0f)).mul(currView.orient()));
     }
 
     private void processSpinAxis(Vec2i diff) {
 
-        float degSpinDiff = diff.x * viewScale.rotationScale;
-        currView.degSpinRotation = degSpinDiff + degStartDragSpin;
+        float degSpinDiff = diff.x * viewScale.rotationScale();
+        currView.degSpinRotation(degSpinDiff + degStartDragSpin);
     }
 
     private void beginDragRotate(Vec2i start, int rotMode) {
@@ -191,9 +189,9 @@ public class ViewPole extends ViewProvider {
 
         startDragMouseLoc = start;
 
-        degStartDragSpin = currView.degSpinRotation;
+        degStartDragSpin = currView.degSpinRotation();
 
-        startDragOrient = currView.orient;
+        startDragOrient = currView.orient();
 
         isDragging = true;
     }
@@ -242,26 +240,26 @@ public class ViewPole extends ViewProvider {
         if (keepResults) {
             onDragRotate(mouseEvent);
         } else {
-            currView.orient = startDragOrient;
+            currView.orient(startDragOrient);
         }
         isDragging = false;
     }
 
     private void moveCloser(boolean largeStep) {
 
-        currView.radius -= largeStep ? viewScale.largeRadiusDelta : viewScale.smallRadiusDelta;
+        currView.radius(currView.radius() - (largeStep ? viewScale.largeRadiusDelta() : viewScale.smallRadiusDelta()));
 
-        if (currView.radius < viewScale.minRadius) {
-            currView.radius = viewScale.minRadius;
+        if (currView.radius() < viewScale.minRadius()) {
+            currView.radius(viewScale.minRadius());
         }
     }
 
     private void moveAway(boolean largeStep) {
 
-        currView.radius += largeStep ? viewScale.largeRadiusDelta : viewScale.smallRadiusDelta;
+        currView.radius(currView.radius() + (largeStep ? viewScale.largeRadiusDelta() : viewScale.smallRadiusDelta()));
 
-        if (currView.radius > viewScale.maxRadius) {
-            currView.radius = viewScale.maxRadius;
+        if (currView.radius() > viewScale.maxRadius()) {
+            currView.radius(viewScale.maxRadius());
         }
     }
 
@@ -309,18 +307,18 @@ public class ViewPole extends ViewProvider {
         }
     }
 
-    public void mouseWheel(MouseWheelEvent mouseWheelEvent) {
+    public void mouseWheel(MouseEvent mouseEvent) {
 
-        if (mouseWheelEvent.getWheelRotation() < 0) {
-            moveCloser(!mouseWheelEvent.isShiftDown());
+        if (mouseEvent.getRotation()[1] < 0) {
+            moveCloser(!mouseEvent.isShiftDown());
         } else {
-            moveAway(!mouseWheelEvent.isShiftDown());
+            moveAway(!mouseEvent.isShiftDown());
         }
     }
 
     public void charPress(KeyEvent keyEvent) {
 
-        float offset = keyEvent.isShiftDown() ? viewScale.smallPosOffset : viewScale.largePosOffset;
+        float offset = keyEvent.isShiftDown() ? viewScale.smallPosOffset() : viewScale.largePosOffset();
 
         if (rightKeyboardCtrls) {
 
@@ -385,7 +383,7 @@ public class ViewPole extends ViewProvider {
         Quat invOrient = orientation.conjugate();
         Vec3 worldOffset = invOrient.mul(cameraOffset);
 
-        currView.targetPos.add(worldOffset);
+        currView.targetPos().add(worldOffset);
     }
 
     private interface RotateMode {

@@ -6,6 +6,7 @@
 package framework.component;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -13,24 +14,23 @@ import java.util.ArrayList;
  */
 public class Pair {
 
-    String name = "";
-    ArrayList<Integer> attributes = new ArrayList<>();
+    private String name = "";
+    private List<Integer> attributes = new ArrayList<>();
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
+    public void name(String name) {
         this.name = name;
     }
 
-    public ArrayList<Integer> getAttributes() {
+    public List<Integer> attributes() {
         return attributes;
     }
 
-    public void setAttributes(ArrayList<Integer> attributes) {
+    public void attributes(ArrayList<Integer> attributes) {
         this.attributes = attributes;
     }
 
-    
 }

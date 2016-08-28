@@ -42,7 +42,7 @@ public class Interpolation extends Framework {
             SHIP_SRC = "Ship.xml";
 
     public static void main(String[] args) {
-        Interpolation interpolation = new Interpolation("Tutorial 08 - Interpolation");
+        new Interpolation("Tutorial 08 - Interpolation");
     }
 
     public Interpolation(String title) {

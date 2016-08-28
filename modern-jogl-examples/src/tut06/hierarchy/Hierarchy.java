@@ -43,7 +43,7 @@ public class Hierarchy extends Framework {
     private final String FRAG_SHADER_SOURCE = "color-passthrough";
 
     public static void main(String[] args) {
-        Hierarchy hierarchy = new Hierarchy("Tutorial 06 - Hierarchy");
+        new Hierarchy("Tutorial 06 - Hierarchy");
     }
 
     public Hierarchy(String title) {
