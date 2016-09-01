@@ -66,13 +66,7 @@ public class AmbientLighting extends Framework {
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    private int projectionBlockIndex;
-    private int[] projectionUBO;
-
     private Vec4 lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
-
-    private boolean drawColoredCylinder;
-    private boolean ambientLighting;
 
     private ViewData initialViewData = new ViewData(
             new Vec3(0.0f, 0.5f, 0.0f),
