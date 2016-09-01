@@ -11,7 +11,7 @@ import framework.jglm.Vec3;
 import framework.jglm.Vec4;
 
 /**
- *
+ *@deprecated 
  * @author gbarbieri
  */
 public class MatrixStack {

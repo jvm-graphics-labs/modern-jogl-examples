@@ -15,17 +15,16 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack_;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
+import glutil.MatrixStack;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
@@ -154,7 +153,7 @@ public class GimbalLock extends Framework {
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        MatrixStack_ currMatrix = new MatrixStack_()
+        MatrixStack currMatrix = new MatrixStack()
                 .translate(new Vec3(0.0f, 0.0f, -200.0f))
                 .rotateX(angles.angleX);
         drawGimbal(gl3, currMatrix, GimbalAxis.X, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
@@ -176,7 +175,7 @@ public class GimbalLock extends Framework {
         gl3.glUseProgram(0);
     }
 
-    private void drawGimbal(GL3 gl3, MatrixStack_ matrixStack, GimbalAxis axis, Vec4 baseColor) {
+    private void drawGimbal(GL3 gl3, MatrixStack matrixStack, GimbalAxis axis, Vec4 baseColor) {
 
         if (!drawGimbals) {
             return;

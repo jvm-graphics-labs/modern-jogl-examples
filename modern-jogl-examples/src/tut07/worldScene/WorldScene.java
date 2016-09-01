@@ -17,13 +17,11 @@ import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import framework.BufferUtils;
 import framework.Framework;
-import framework.component.Attribute;
 import framework.component.Mesh;
-import framework.component.RenderCmd;
-import framework.glutil.MatrixStack_;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
+import glutil.MatrixStack;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
@@ -106,7 +104,7 @@ public class WorldScene extends Framework {
 
         final Vec3 camPos = resolveCamPosition();
 
-        new MatrixStack_()
+        new MatrixStack()
                 .setMatrix(calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f)))
                 .top().toDfb(matrixBuffer);
 
@@ -119,7 +117,7 @@ public class WorldScene extends Framework {
 
         gl3.glUseProgram(0);
 
-        MatrixStack_ modelMatrix = new MatrixStack_();
+        MatrixStack modelMatrix = new MatrixStack();
 
         //  Render the ground plane
         {
@@ -208,7 +206,7 @@ public class WorldScene extends Framework {
         return rotationMat.mul(translationMat);
     }
 
-    private void drawForest(GL3 gl3, MatrixStack_ modelMatrix_) {
+    private void drawForest(GL3 gl3, MatrixStack modelMatrix_) {
 
         for (Forest.Tree tree : Forest.trees) {
         modelMatrix_
@@ -219,7 +217,7 @@ public class WorldScene extends Framework {
         }
     }
 
-    private void drawTree(GL3 gl3, MatrixStack_ modelStack_, float trunkHeight, float coneHeight) {
+    private void drawTree(GL3 gl3, MatrixStack modelStack_, float trunkHeight, float coneHeight) {
 
         //  Draw trunk
         {
@@ -258,7 +256,7 @@ public class WorldScene extends Framework {
         }
     }
 
-    private void drawParthenon(GL3 gl3, MatrixStack_ modelMatrix_) {
+    private void drawParthenon(GL3 gl3, MatrixStack modelMatrix_) {
 
         final float parthenonWidth = 14.0f;
         final float parthenonLength = 20.0f;
@@ -387,7 +385,7 @@ public class WorldScene extends Framework {
     }
 
     //Columns are 1x1 in the X/Z, and fHieght units in the Y.
-    private void drawColumn(GL3 gl3, MatrixStack_ modelMatrix, float parthenonColumnHeight) {
+    private void drawColumn(GL3 gl3, MatrixStack modelMatrix, float parthenonColumnHeight) {
 
         final float columnBaseHeight = 0.25f;
 
@@ -450,7 +448,7 @@ public class WorldScene extends Framework {
 
         float zNear = 1.0f, zFar = 1000.0f;
 
-        new MatrixStack_()
+        new MatrixStack()
                 .setMatrix(glm.perspective_(45.0f, w / (float) h, zNear, zFar))
                 .top().toDfb(matrixBuffer);
 

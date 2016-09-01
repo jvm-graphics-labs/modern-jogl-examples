@@ -21,10 +21,10 @@ import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack_;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
+import glutil.MatrixStack;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
@@ -135,9 +135,9 @@ public class QuaternionYPR extends Framework {
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        MatrixStack_ matrixStack = new MatrixStack_()
+        MatrixStack matrixStack = new MatrixStack()
                 .translate(new Vec3(0.0f, 0.0f, -200.0f))
-                .applyMat(Mat4.cast_(orientation));
+                .applyMatrix(Mat4.cast_(orientation));
 
         gl3.glUseProgram(theProgram);
 

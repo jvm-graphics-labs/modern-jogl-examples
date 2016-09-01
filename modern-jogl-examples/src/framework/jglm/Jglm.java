@@ -7,7 +7,7 @@ package framework.jglm;
 import static framework.glutil.MatrixStack.calculateFrustumScale;
 
 /**
- *
+ * @deprecated 
  * @author gbarbieri
  */
 public class Jglm {

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut09.basicLighting;
+package tut09.ambientLighting;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import tut09.basicLighting.BasicLighting;
 import view.ObjectData;
 import view.ObjectPole;
 import view.ViewData;
@@ -45,28 +46,33 @@ import view.ViewScale;
  *
  * @author gbarbieri
  */
-public class BasicLighting extends Framework {
+public class AmbientLighting extends Framework {
 
-    private final String SHADERS_ROOT = "/tut09/basicLighting/shaders", DATA_ROOT = "/tut09/basicLighting/data/",
-            WHITE_VERT_SHADER_SRC = "dir-vertex-lighting-pn", COLOR_VERT_SHADER_SRC = "dir-vertex-lighting-pcn",
+    private final String SHADERS_ROOT = "/tut09/ambientLighting/shaders", DATA_ROOT = "/tut09/ambientLighting/data/",
+            DIR_PN_SHADER_SRC = "dir-vertex-lighting-pn", DIR_PCN_SHADER_SRC = "dir-vertex-lighting-pcn",
+            DIR_AMB_PN_SHADER_SRC = "dir-amb-vertex-lighting-pn", DIR_AMB_PCN_SHADER_SRC = "dir-amb-vertex-lighting-pcn",
             FRAG_SHADER_SRC = "color-passthrough", CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
 
     public static void main(String[] args) {
-        new BasicLighting("Tutorial 09 - Basic Lighting");
+        new AmbientLighting("Tutorial 09 - Ambient Lighting");
     }
 
-    public BasicLighting(String title) {
-        super(title);
-    }
+    private ProgramData whiteDiffuseColor;
+    private ProgramData vertexDiffuseColor;
+    private ProgramData whiteAmbDiffuseColor;
+    private ProgramData vertexAmbDiffuseColor;
 
-    ProgramData whiteDiffuseColor, vertexDiffuseColor;
-    private Mesh cylinderMesh, planeMesh;
+    private Mesh cylinder, plane;
+
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
-    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
-            vecBuffer = GLBuffers.newDirectFloatBuffer(4);
+    private int projectionBlockIndex;
+    private int[] projectionUBO;
+
+    private Vec4 lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
+
+    private boolean drawColoredCylinder;
+    private boolean ambientLighting;
 
     private ViewData initialViewData = new ViewData(
             new Vec3(0.0f, 0.5f, 0.0f),
@@ -88,9 +94,14 @@ public class BasicLighting extends Framework {
 
     private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
 
-    private Vec4 lightDirection = new Vec4(0.866f, 0.5f, 0.0f, 0.0f);
+    private boolean drawColoredCyl = true, showAmbient = false;
 
-    private boolean drawColoredCyl = true;
+    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
+            vecBuffer = GLBuffers.newDirectFloatBuffer(4);
+
+    public AmbientLighting(String title) {
+        super(title);
+    }
 
     @Override
     public void init(GL3 gl3) {
@@ -98,8 +109,8 @@ public class BasicLighting extends Framework {
         initializeProgram(gl3);
 
         try {
-            cylinderMesh = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
-            planeMesh = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+            cylinder = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
+            plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(BasicLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -126,8 +137,10 @@ public class BasicLighting extends Framework {
     }
 
     private void initializeProgram(GL3 gl3) {
-        whiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, WHITE_VERT_SHADER_SRC, FRAG_SHADER_SRC);
-        vertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, COLOR_VERT_SHADER_SRC, FRAG_SHADER_SRC);
+        whiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, DIR_PN_SHADER_SRC, FRAG_SHADER_SRC);
+        vertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, DIR_PCN_SHADER_SRC, FRAG_SHADER_SRC);
+        whiteAmbDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, DIR_AMB_PN_SHADER_SRC, FRAG_SHADER_SRC);
+        vertexAmbDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, DIR_AMB_PCN_SHADER_SRC, FRAG_SHADER_SRC);
     }
 
     @Override
@@ -140,65 +153,66 @@ public class BasicLighting extends Framework {
 
         Vec4 lightDirCameraSpace = modelMatrix.top().mul_(lightDirection);
 
-        gl3.glUseProgram(whiteDiffuseColor.theProgram);
-        gl3.glUniform3fv(whiteDiffuseColor.dirToLightUnif, 1, lightDirCameraSpace.toDfb(vecBuffer));
-        gl3.glUseProgram(vertexDiffuseColor.theProgram);
-        gl3.glUniform3fv(vertexDiffuseColor.dirToLightUnif, 1, lightDirCameraSpace.toDfb(vecBuffer));
+        ProgramData whiteDiffuse = showAmbient ? whiteAmbDiffuseColor : whiteDiffuseColor;
+        ProgramData vertexDiffuse = showAmbient ? vertexAmbDiffuseColor : vertexDiffuseColor;
+
+        if (showAmbient) {
+
+            gl3.glUseProgram(whiteDiffuse.theProgram);
+            gl3.glUniform4f(whiteDiffuse.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+            gl3.glUniform4f(whiteDiffuse.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+            gl3.glUseProgram(vertexDiffuse.theProgram);
+            gl3.glUniform4f(vertexDiffuse.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+            gl3.glUniform4f(vertexDiffuse.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+
+        } else {
+
+            gl3.glUseProgram(whiteDiffuse.theProgram);
+            gl3.glUniform4f(whiteDiffuse.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+            gl3.glUseProgram(vertexDiffuse.theProgram);
+            gl3.glUniform4f(vertexDiffuse.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
+        gl3.glUseProgram(whiteDiffuse.theProgram);
+        gl3.glUniform3fv(whiteDiffuse.dirToLightUnif, 1, lightDirCameraSpace.toDfb(vecBuffer));
+        gl3.glUseProgram(vertexDiffuse.theProgram);
+        gl3.glUniform3fv(vertexDiffuse.dirToLightUnif, 1, lightDirCameraSpace.toDfb(vecBuffer));
         gl3.glUseProgram(0);
 
+        //Render the ground plane.
         {
-            modelMatrix.push();
+            gl3.glUseProgram(whiteDiffuse.theProgram);
+            gl3.glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matrixBuffer));
+            Mat3 normMatrix = new Mat3(modelMatrix.top());
+            gl3.glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matrixBuffer));
+            plane.render(gl3);
+            gl3.glUseProgram(0);
+        }
+        //Render the Cylinder
+        {
+            modelMatrix.push()
+                    .applyMatrix(objectPole.calcMatrix());
 
-            //  Render the ground plane
-            {
-                modelMatrix
-                        .push()
-                        .top().toDfb(matrixBuffer);
-
-                gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
-                Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                        normalMatrix.toDfb(matrixBuffer));
-                gl3.glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-                planeMesh.render(gl3);
-                gl3.glUseProgram(0);
-
-                modelMatrix.pop();
-            }
-
-            //  Render the Cylinder
-            {
-                modelMatrix
-                        .push()
-                        .applyMatrix(objectPole.calcMatrix())
-                        .top().toDfb(matrixBuffer);
-
-                if (drawColoredCyl) {
-
-                    gl3.glUseProgram(vertexDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
-                    Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                    gl3.glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normalMatrix.toDfb(matrixBuffer));
-                    gl3.glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-                    cylinderMesh.render(gl3, "lit-color");
-
-                } else {
-
-                    gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
-                    Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                    gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normalMatrix.toDfb(matrixBuffer));
-                    gl3.glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-                    cylinderMesh.render(gl3, "lit");
-                }
-                gl3.glUseProgram(0);
-
-                modelMatrix.pop();
+            if (drawColoredCyl) {
+                gl3.glUseProgram(vertexDiffuse.theProgram);
+                gl3.glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false,
+                        modelMatrix.top().toDfb(matrixBuffer));
+                Mat3 normMatrix = new Mat3(modelMatrix.top());
+                gl3.glUniformMatrix3fv(vertexDiffuse.normalModelToCameraMatrixUnif, 1, false,
+                        normMatrix.toDfb(matrixBuffer));
+                cylinder.render(gl3, "lit-color");
+            } else {
+                gl3.glUseProgram(whiteDiffuse.theProgram);
+                gl3.glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false,
+                        modelMatrix.top().toDfb(matrixBuffer));
+                Mat3 normMatrix = new Mat3(modelMatrix.top());
+                gl3.glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false,
+                        normMatrix.toDfb(matrixBuffer));
+                cylinder.render(gl3, "lit");
             }
             modelMatrix.pop();
+
+            gl3.glUseProgram(0);
         }
     }
 
@@ -222,7 +236,7 @@ public class BasicLighting extends Framework {
 
         switch (e.getKeyCode()) {
 
-            case KeyEvent.VK_ESCAPE:
+            case com.jogamp.newt.event.KeyEvent.VK_ESCAPE:
                 animator.remove(glWindow);
                 glWindow.destroy();
                 break;
@@ -230,21 +244,26 @@ public class BasicLighting extends Framework {
             case KeyEvent.VK_SPACE:
                 drawColoredCyl = !drawColoredCyl;
                 break;
+
+            case KeyEvent.VK_T:
+                showAmbient = !showAmbient;
+                System.out.println("Ambient Lighting " + (showAmbient ? "On." : "Off"));
+                break;
         }
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
         viewPole.mousePressed(e);
         objectPole.mousePressed(e);
     }
-    
+
     @Override
     public void mouseDragged(MouseEvent e) {
         viewPole.mouseMove(e);
         objectPole.mouseMove(e);
     }
-    
+
     @Override
     public void mouseReleased(MouseEvent e) {
         viewPole.mouseReleased(e);
@@ -262,8 +281,8 @@ public class BasicLighting extends Framework {
         gl3.glDeleteProgram(vertexDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
 
-        cylinderMesh.dispose(gl3);
-        planeMesh.dispose(gl3);
+        cylinder.dispose(gl3);
+        plane.dispose(gl3);
 
         BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
         BufferUtils.destroyDirectBuffer(matrixBuffer);

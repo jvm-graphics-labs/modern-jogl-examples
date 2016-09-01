@@ -5,10 +5,10 @@
  */
 package tut08.interpolation;
 
-import framework.glutil.Timer;
 import glm.glm;
 import glm.quat.Quat;
 import glm.vec._4.Vec4;
+import glutil.Timer;
 
 /**
  *

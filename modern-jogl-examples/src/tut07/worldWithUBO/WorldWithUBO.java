@@ -22,10 +22,10 @@ import framework.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack_;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
+import glutil.MatrixStack;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -118,14 +118,14 @@ public class WorldWithUBO extends Framework {
 
         final Vec3 camPos = resolveCamPosition();
 
-        MatrixStack_ camMatrix = new MatrixStack_()
+        MatrixStack camMatrix = new MatrixStack()
                 .setMatrix(calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f)));
 
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesUBO.get(0));
         gl3.glBufferSubData(GL_UNIFORM_BUFFER, Mat4.SIZE, Mat4.SIZE, camMatrix.top().toDfb(matrixBuffer));
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        MatrixStack_ modelMatrix = new MatrixStack_();
+        MatrixStack modelMatrix = new MatrixStack();
 
         //  Render the ground plane
         {
@@ -213,7 +213,7 @@ public class WorldWithUBO extends Framework {
         return rotationMat.mul(translationMat);
     }
 
-    private void drawForest(GL3 gl3, MatrixStack_ modelMatrix_) {
+    private void drawForest(GL3 gl3, MatrixStack modelMatrix_) {
 
         for (Forest.Tree tree : Forest.trees) {
 
@@ -225,7 +225,7 @@ public class WorldWithUBO extends Framework {
         }
     }
 
-    private void drawTree(GL3 gl3, MatrixStack_ modelStack_, float trunkHeight, float coneHeight) {
+    private void drawTree(GL3 gl3, MatrixStack modelStack_, float trunkHeight, float coneHeight) {
 
         //  Draw trunk
         {
@@ -264,7 +264,7 @@ public class WorldWithUBO extends Framework {
         }
     }
 
-    private void drawParthenon(GL3 gl3, MatrixStack_ modelMatrix_) {
+    private void drawParthenon(GL3 gl3, MatrixStack modelMatrix_) {
 
         final float parthenonWidth = 14.0f;
         final float parthenonLength = 20.0f;
@@ -393,7 +393,7 @@ public class WorldWithUBO extends Framework {
     }
 
     //Columns are 1x1 in the X/Z, and fHieght units in the Y.
-    private void drawColumn(GL3 gl3, MatrixStack_ modelMatrix, float parthenonColumnHeight) {
+    private void drawColumn(GL3 gl3, MatrixStack modelMatrix, float parthenonColumnHeight) {
 
         final float columnBaseHeight = 0.25f;
 
@@ -456,7 +456,7 @@ public class WorldWithUBO extends Framework {
 
         float zNear = 1.0f, zFar = 1000.0f;
 
-        MatrixStack_ perspMatrix = new MatrixStack_()
+        MatrixStack perspMatrix = new MatrixStack()
                 .setMatrix(glm.perspective_(45.0f, w / (float) h, zNear, zFar));
                 
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesUBO.get(0));

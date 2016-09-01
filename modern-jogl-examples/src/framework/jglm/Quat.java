@@ -26,10 +26,14 @@
  * those of the authors and should not be interpreted as representing official
  * policies, either expressed or implied, of JogAmp Community.
  */
+
 package framework.jglm;
 
 import com.jogamp.opengl.math.FloatUtil;
-
+/**
+ * @deprecated 
+ * @author elect
+ */
 public class Quat {
 
     protected float x, y, z, w;

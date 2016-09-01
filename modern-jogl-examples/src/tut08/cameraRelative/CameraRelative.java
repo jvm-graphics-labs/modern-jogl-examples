@@ -15,18 +15,17 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
-import framework.glutil.MatrixStack_;
 import glm.glm;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
+import glutil.MatrixStack;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
@@ -138,7 +137,7 @@ public class CameraRelative extends Framework {
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        MatrixStack_ currMatrix = new MatrixStack_();
+        MatrixStack currMatrix = new MatrixStack();
 
         Vec3 camPos = resolveCamPosition();
 
@@ -162,7 +161,7 @@ public class CameraRelative extends Framework {
         {
             currMatrix.push()
                     .translate(camTarget)
-                    .applyMat(Mat4.cast_(orientation))
+                    .applyMatrix(Mat4.cast_(orientation))
                     .rotateX(-90.0f);
 
             gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);

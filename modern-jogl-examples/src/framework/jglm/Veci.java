@@ -5,7 +5,7 @@
 package framework.jglm;
 
 /**
- *
+ *@deprecated 
  * @author gbarbieri
  */
 public class Veci {
