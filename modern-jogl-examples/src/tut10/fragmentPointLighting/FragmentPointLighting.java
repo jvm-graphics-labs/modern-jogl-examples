@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut10.vertexPointLighting;
+package tut10.fragmentPointLighting;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
@@ -20,6 +20,7 @@ import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import framework.BufferUtils;
 import framework.Framework;
+import static framework.Framework.matBuffer;
 import framework.Semantic;
 import framework.component.Mesh;
 import glm.mat._4.Mat4;
@@ -44,23 +45,24 @@ import view.ViewScale;
  *
  * @author gbarbieri
  */
-public class VertexPointLighting extends Framework {
+public class FragmentPointLighting extends Framework {
 
-    private final String SHADERS_ROOT = "/tut10/vertexPointLighting/shaders",
-            POS_VERTEX_LIGHTING_PN_SHADER_SRC = "pos-vertex-lighting-pn",
-            POS_VERTEX_LIGHTING_PCN_SHADER_SRC = "pos-vertex-lighting-pcn",
-            POS_TRANSFORM_SHADER_SRC = "pos-transform", COLOR_PASSTHROUGH_SHADER_SRC = "color-passthrough",
-            UNIFORM_COLOR_SHADER_SRC = "uniform-color", MESHES_ROOT = "/tut10/data/",
+    private final String SHADERS_ROOT = "/tut10/fragmentPointLighting/shaders", MESHES_ROOT = "/tut10/data/",
+            MODEL_POS_VERTEX_LIGHTING_PN_SHADER_SRC = "model-pos-vertex-lighting-pn",
+            MODEL_POS_VERTEX_LIGHTING_PCN_SHADER_SRC = "model-pos-vertex-lighting-pcn",
+            COLOR_PASSTHROUGH_SHADER_SRC = "color-passthrough",
+            FRAGMENT_LIGHTING_PN_SHADER_SRC = "fragment-lighting-pn",
+            FRAGMENT_LIGHTING_PCN_SHADER_SRC = "fragment-lighting-pcn",
+            FRAGMENT_LIGHTING_SHADER_SRC = "fragment-lighting",
+            POS_TRANSFORM_SHADER_SRC = "pos-transform", UNIFORM_COLOR_SHADER_SRC = "uniform-color",
             CYLINDER_MESH_SRC = "UnitCylinder.xml", PLANE_MESH_SRC = "LargePlane.xml", CUBE_MESH_SRC = "UnitCube.xml";
 
     public static void main(String[] args) {
-        new VertexPointLighting("Tutorial 10 - Vertex Point Lighting");
+        new FragmentPointLighting("Tutorial 10 - Fragment Point Lighting");
     }
 
-    private ProgramData whiteDiffuseColor, vertexDiffuseColor;
+    private ProgramData whiteDiffuseColor, vertexDiffuseColor, fragWhiteDiffuseColor, fragVertexDiffuseColor;
     private UnlitProgData unlit;
-
-    private Mesh cylinder, plane, cube;
 
     private ViewData initialViewData = new ViewData(
             new Vec3(0.0f, 0.5f, 0.0f),
@@ -79,13 +81,16 @@ public class VertexPointLighting extends Framework {
     private ViewPole viewPole = new ViewPole(initialViewData, viewScale, MouseEvent.BUTTON1);
     private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
 
+    private Mesh cylinder, plane, cube;
+
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    private boolean drawColoredCyl = false, drawLight = false;
+    private boolean useFragmentLighting = true, drawColoredCyl = false, drawLight = false, scaleCyl = false;
     private float lightHeight = 1.5f, lightRadius = 1.0f;
+
     private Timer lightTimer = new Timer(Timer.Type.LOOP, 5.0f);
 
-    public VertexPointLighting(String title) {
+    private FragmentPointLighting(String title) {
         super(title);
     }
 
@@ -99,7 +104,7 @@ public class VertexPointLighting extends Framework {
             plane = new Mesh(MESHES_ROOT + PLANE_MESH_SRC, gl3);
             cube = new Mesh(MESHES_ROOT + CUBE_MESH_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
-            Logger.getLogger(VertexPointLighting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FragmentPointLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         gl3.glEnable(GL_CULL_FACE);
@@ -124,37 +129,41 @@ public class VertexPointLighting extends Framework {
     }
 
     private void initializePrograms(GL3 gl3) {
-        whiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, POS_VERTEX_LIGHTING_PN_SHADER_SRC, COLOR_PASSTHROUGH_SHADER_SRC);
-        vertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, POS_VERTEX_LIGHTING_PCN_SHADER_SRC, COLOR_PASSTHROUGH_SHADER_SRC);
+        whiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, MODEL_POS_VERTEX_LIGHTING_PN_SHADER_SRC,
+                COLOR_PASSTHROUGH_SHADER_SRC);
+        vertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, MODEL_POS_VERTEX_LIGHTING_PCN_SHADER_SRC,
+                COLOR_PASSTHROUGH_SHADER_SRC);
+        fragWhiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, FRAGMENT_LIGHTING_PN_SHADER_SRC,
+                FRAGMENT_LIGHTING_SHADER_SRC);
+        fragVertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, FRAGMENT_LIGHTING_PCN_SHADER_SRC,
+                FRAGMENT_LIGHTING_SHADER_SRC);
         unlit = new UnlitProgData(gl3, SHADERS_ROOT, POS_TRANSFORM_SHADER_SRC, UNIFORM_COLOR_SHADER_SRC);
     }
 
     @Override
     public void display(GL3 gl3) {
 
+        lightTimer.update();
+
         gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
-
-        lightTimer.update();
 
         MatrixStack modelMatrix = new MatrixStack();
         modelMatrix.setMatrix(viewPole.calcMatrix());
 
-        Vec4 worldLightPosition = calcLightPosition();
+        Vec4 worldLightPos = calcLightPosition();
 
-        Vec4 lightPosCameraSpace = modelMatrix.top().mul_(worldLightPosition);
+        Vec4 lightPosCameraSpace = modelMatrix.top().mul_(worldLightPos);
 
-        gl3.glUseProgram(whiteDiffuseColor.theProgram);
-        gl3.glUniform3fv(whiteDiffuseColor.lightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
-        gl3.glUseProgram(vertexDiffuseColor.theProgram);
-        gl3.glUniform3fv(vertexDiffuseColor.lightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
+        ProgramData whiteProgram = useFragmentLighting ? fragWhiteDiffuseColor : whiteDiffuseColor;
+        ProgramData vertColorProgram = useFragmentLighting ? fragVertexDiffuseColor : vertexDiffuseColor;
 
-        gl3.glUseProgram(whiteDiffuseColor.theProgram);
-        gl3.glUniform4f(whiteDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl3.glUniform4f(whiteDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl3.glUseProgram(vertexDiffuseColor.theProgram);
-        gl3.glUniform4f(vertexDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl3.glUniform4f(vertexDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUseProgram(whiteProgram.theProgram);
+        gl3.glUniform4f(whiteProgram.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(whiteProgram.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUseProgram(vertColorProgram.theProgram);
+        gl3.glUniform4f(vertColorProgram.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(vertColorProgram.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
         gl3.glUseProgram(0);
 
         {
@@ -162,34 +171,49 @@ public class VertexPointLighting extends Framework {
 
             //Render the ground plane.
             {
-                modelMatrix.push().top().toDfb(matBuffer);
+                modelMatrix.push();
 
-                gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
-                modelMatrix.top().toMat3_().toDfb(matBuffer);
-                gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer);
+                gl3.glUseProgram(whiteProgram.theProgram);
+                gl3.glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+
+                Mat4 invTransform = modelMatrix.top().inverse_();
+                Vec4 lightPosModelSpace = invTransform.mul_(lightPosCameraSpace);
+                gl3.glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.toDfb(vecBuffer));
+
                 plane.render(gl3);
                 gl3.glUseProgram(0);
 
                 modelMatrix.pop();
             }
-            modelMatrix.pop();
 
             //Render the Cylinder
             {
-                modelMatrix.push().applyMatrix(objectPole.calcMatrix()).top().toDfb(matBuffer);
+                modelMatrix.push();
+
+                modelMatrix.applyMatrix(objectPole.calcMatrix());
+
+                if (scaleCyl) {
+                    modelMatrix.scale(1.0f, 1.0f, 0.2f);
+                }
+
+                Mat4 invTransform = modelMatrix.top().inverse_();
+                Vec4 lightPosModelSpace = invTransform.mul_(lightPosCameraSpace);
 
                 if (drawColoredCyl) {
-                    gl3.glUseProgram(vertexDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
-                    modelMatrix.top().toMat3_().toDfb(matBuffer);
-                    gl3.glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer);
+                    gl3.glUseProgram(vertColorProgram.theProgram);
+                    gl3.glUniformMatrix4fv(vertColorProgram.modelToCameraMatrixUnif, 1, false,
+                            modelMatrix.top().toDfb(matBuffer));
+
+                    gl3.glUniform3fv(vertColorProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.toDfb(vecBuffer));
+
                     cylinder.render(gl3, "lit-color");
                 } else {
-                    gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
-                    modelMatrix.top().toMat3_().toDfb(matBuffer);
-                    gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer);
+                    gl3.glUseProgram(whiteProgram.theProgram);
+                    gl3.glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false,
+                            modelMatrix.top().toDfb(matBuffer));
+
+                    gl3.glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.toDfb(vecBuffer));
+
                     cylinder.render(gl3, "lit");
                 }
                 gl3.glUseProgram(0);
@@ -197,10 +221,11 @@ public class VertexPointLighting extends Framework {
                 modelMatrix.pop();
             }
 
-            //Render the light
             if (drawLight) {
 
-                modelMatrix.push().translate(worldLightPosition).scale(0.1f, 0.1f, 0.1f);
+                modelMatrix.push();
+
+                modelMatrix.translate(worldLightPos).scale(0.1f, 0.1f, 0.1f);
 
                 gl3.glUseProgram(unlit.theProgram);
                 gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
@@ -209,6 +234,7 @@ public class VertexPointLighting extends Framework {
 
                 modelMatrix.pop();
             }
+            modelMatrix.pop();
         }
     }
 
@@ -292,7 +318,12 @@ public class VertexPointLighting extends Framework {
             case KeyEvent.VK_Y:
                 drawLight = !drawLight;
                 break;
-
+            case KeyEvent.VK_T:
+                scaleCyl = !scaleCyl;
+                break;
+            case KeyEvent.VK_H:
+                useFragmentLighting = !useFragmentLighting;
+                break;
             case KeyEvent.VK_B:
                 lightTimer.togglePause();
                 break;
