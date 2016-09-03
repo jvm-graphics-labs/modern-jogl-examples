@@ -29,7 +29,6 @@ import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import glutil.MatrixStack;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,9 +89,6 @@ public class AmbientLighting extends Framework {
 
     private boolean drawColoredCyl = true, showAmbient = false;
 
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
-            vecBuffer = GLBuffers.newDirectFloatBuffer(4);
-
     public AmbientLighting(String title) {
         super(title);
     }
@@ -106,7 +102,7 @@ public class AmbientLighting extends Framework {
             cylinder = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
             plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
-            Logger.getLogger(BasicLighting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AmbientLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         gl3.glEnable(GL_CULL_FACE);
@@ -176,9 +172,9 @@ public class AmbientLighting extends Framework {
         //Render the ground plane.
         {
             gl3.glUseProgram(whiteDiffuse.theProgram);
-            gl3.glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
             Mat3 normMatrix = new Mat3(modelMatrix.top());
-            gl3.glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matrixBuffer));
+            gl3.glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
             plane.render(gl3);
             gl3.glUseProgram(0);
         }
@@ -189,19 +185,19 @@ public class AmbientLighting extends Framework {
 
             if (drawColoredCyl) {
                 gl3.glUseProgram(vertexDiffuse.theProgram);
-                gl3.glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false,
-                        modelMatrix.top().toDfb(matrixBuffer));
+                gl3.glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false, 
+                        modelMatrix.top().toDfb(matBuffer));
                 Mat3 normMatrix = new Mat3(modelMatrix.top());
                 gl3.glUniformMatrix3fv(vertexDiffuse.normalModelToCameraMatrixUnif, 1, false,
-                        normMatrix.toDfb(matrixBuffer));
+                        normMatrix.toDfb(matBuffer));
                 cylinder.render(gl3, "lit-color");
             } else {
                 gl3.glUseProgram(whiteDiffuse.theProgram);
                 gl3.glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false,
-                        modelMatrix.top().toDfb(matrixBuffer));
+                        modelMatrix.top().toDfb(matBuffer));
                 Mat3 normMatrix = new Mat3(modelMatrix.top());
                 gl3.glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false,
-                        normMatrix.toDfb(matrixBuffer));
+                        normMatrix.toDfb(matBuffer));
                 cylinder.render(gl3, "lit");
             }
             modelMatrix.pop();
@@ -219,18 +215,18 @@ public class AmbientLighting extends Framework {
         perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar);
 
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
-        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().toDfb(matrixBuffer));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().toDfb(matBuffer));
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         gl3.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void keyboard(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
 
         switch (e.getKeyCode()) {
 
-            case com.jogamp.newt.event.KeyEvent.VK_ESCAPE:
+            case KeyEvent.VK_ESCAPE:
                 animator.remove(glWindow);
                 glWindow.destroy();
                 break;
@@ -274,12 +270,12 @@ public class AmbientLighting extends Framework {
 
         gl3.glDeleteProgram(vertexDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
+        gl3.glDeleteProgram(vertexAmbDiffuseColor.theProgram);
+        gl3.glDeleteProgram(whiteAmbDiffuseColor.theProgram);
 
         cylinder.dispose(gl3);
         plane.dispose(gl3);
 
         BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
-        BufferUtils.destroyDirectBuffer(vecBuffer);
     }
 }

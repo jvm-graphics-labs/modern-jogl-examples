@@ -15,7 +15,6 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
@@ -25,7 +24,6 @@ import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import glutil.MatrixStack;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,7 +51,6 @@ public class Interpolation extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif, baseColorUnif;
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
     private Orientation orient = new Orientation();
 
     @Override
@@ -109,7 +106,7 @@ public class Interpolation extends Framework {
         cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
     }
 
@@ -131,7 +128,7 @@ public class Interpolation extends Framework {
                 .rotateX(-90.0f);
         //Set the base color for this object.
         gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().toDfb(matBuffer));
 
         ship.render(gl3, "tint");
 
@@ -145,14 +142,14 @@ public class Interpolation extends Framework {
         cameraToClipMatrix.m11 = frustumScale;
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
 
         gl3.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void keyboard(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
 
         switch (e.getKeyCode()) {
 
@@ -197,6 +194,6 @@ public class Interpolation extends Framework {
 
         ship.dispose(gl3);
 
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
+        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 }

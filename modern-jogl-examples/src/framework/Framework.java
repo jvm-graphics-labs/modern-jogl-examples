@@ -36,6 +36,8 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
     protected Vec2i windowSize = new Vec2i(500);
     protected FloatBuffer clearColor = GLBuffers.newDirectFloatBuffer(4),
             clearDepth = GLBuffers.newDirectFloatBuffer(1);
+    public static FloatBuffer matBuffer = GLBuffers.newDirectFloatBuffer(16),
+            vecBuffer = GLBuffers.newDirectFloatBuffer(4);
 
     public Framework(String title) {
         initGL(title);
@@ -123,6 +125,8 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
         BufferUtils.destroyDirectBuffer(clearColor);
         BufferUtils.destroyDirectBuffer(clearDepth);
+        BufferUtils.destroyDirectBuffer(matBuffer);
+        BufferUtils.destroyDirectBuffer(vecBuffer);
 
         System.exit(0);
     }
@@ -133,14 +137,11 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        keyboard(e);
+
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-    }
-
-    protected void keyboard(KeyEvent keyEvent) {
     }
 
     @Override

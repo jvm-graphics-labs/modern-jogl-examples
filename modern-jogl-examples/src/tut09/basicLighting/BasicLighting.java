@@ -65,8 +65,6 @@ public class BasicLighting extends Framework {
 
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16),
-            vecBuffer = GLBuffers.newDirectFloatBuffer(4);
 
     private ViewData initialViewData = new ViewData(
             new Vec3(0.0f, 0.5f, 0.0f),
@@ -153,13 +151,13 @@ public class BasicLighting extends Framework {
             {
                 modelMatrix
                         .push()
-                        .top().toDfb(matrixBuffer);
+                        .top().toDfb(matBuffer);
 
                 gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
+                gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
                 Mat3 normalMatrix = new Mat3(modelMatrix.top());
                 gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                        normalMatrix.toDfb(matrixBuffer));
+                        normalMatrix.toDfb(matBuffer));
                 gl3.glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
                 planeMesh.render(gl3);
                 gl3.glUseProgram(0);
@@ -172,25 +170,25 @@ public class BasicLighting extends Framework {
                 modelMatrix
                         .push()
                         .applyMatrix(objectPole.calcMatrix())
-                        .top().toDfb(matrixBuffer);
+                        .top().toDfb(matBuffer);
 
                 if (drawColoredCyl) {
 
                     gl3.glUseProgram(vertexDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
+                    gl3.glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
                     Mat3 normalMatrix = new Mat3(modelMatrix.top());
                     gl3.glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normalMatrix.toDfb(matrixBuffer));
+                            normalMatrix.toDfb(matBuffer));
                     gl3.glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
                     cylinderMesh.render(gl3, "lit-color");
 
                 } else {
 
                     gl3.glUseProgram(whiteDiffuseColor.theProgram);
-                    gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matrixBuffer);
+                    gl3.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
                     Mat3 normalMatrix = new Mat3(modelMatrix.top());
                     gl3.glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normalMatrix.toDfb(matrixBuffer));
+                            normalMatrix.toDfb(matBuffer));
                     gl3.glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f);
                     cylinderMesh.render(gl3, "lit");
                 }
@@ -211,14 +209,14 @@ public class BasicLighting extends Framework {
         perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar);
 
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
-        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().toDfb(matrixBuffer));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().toDfb(matBuffer));
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         gl3.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void keyboard(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
 
         switch (e.getKeyCode()) {
 
@@ -266,7 +264,5 @@ public class BasicLighting extends Framework {
         planeMesh.dispose(gl3);
 
         BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
-        BufferUtils.destroyDirectBuffer(vecBuffer);
     }
 }

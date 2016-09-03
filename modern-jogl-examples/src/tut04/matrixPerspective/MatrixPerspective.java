@@ -255,7 +255,7 @@ public class MatrixPerspective extends Framework {
     }
 
     @Override
-    protected void keyboard(KeyEvent keyEvent) {
+    public void keyPressed(KeyEvent keyEvent) {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:

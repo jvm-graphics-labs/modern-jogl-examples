@@ -15,7 +15,6 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
@@ -26,7 +25,6 @@ import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glutil.MatrixStack;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
@@ -67,7 +65,6 @@ public class QuaternionYPR extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif, baseColorUnif;
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
     private GimbalAngles angles = new GimbalAngles();
     private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
     private boolean rightMultiply = true;
@@ -125,7 +122,7 @@ public class QuaternionYPR extends Framework {
         cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
     }
 
@@ -146,7 +143,7 @@ public class QuaternionYPR extends Framework {
                 .rotateX(-90.0f);
 
         gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().toDfb(matBuffer));
 
         ship.render(gl3, "tint");
 
@@ -160,7 +157,7 @@ public class QuaternionYPR extends Framework {
         cameraToClipMatrix.m11 = frustumScale;
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
 
         gl3.glViewport(0, 0, w, h);
@@ -172,8 +169,6 @@ public class QuaternionYPR extends Framework {
         gl3.glDeleteProgram(theProgram);
 
         ship.dispose(gl3);
-
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
 
     private void offsetOrientation(Vec3 axis, float angDeg) {
@@ -195,7 +190,7 @@ public class QuaternionYPR extends Framework {
     }
 
     @Override
-    public void keyboard(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
 
         final float smallAngleIncrement = 9.0f;
 

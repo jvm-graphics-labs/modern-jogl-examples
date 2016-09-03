@@ -1,8 +1,13 @@
 #version 330
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 diffuseColor;
-layout(location = 2) in vec3 normal;
+// Attribute
+#define POSITION    0
+#define COLOR       1
+#define NORMAL      2
+
+layout (location = POSITION) in vec3 position;
+layout (location = COLOR) in vec4 diffuseColor;
+layout (location = NORMAL) in vec3 normal;
 
 smooth out vec4 interpColor;
 
@@ -24,7 +29,6 @@ void main()
     vec3 normalCamSpace = normalize(normalModelToCameraMatrix * normal);
 
     float cosIncidenceAngle = dot(normalCamSpace, dirToLight);
-
     cosIncidenceAngle = clamp(cosIncidenceAngle, 0, 1);
 
     interpColor = lightIntensity * diffuseColor * cosIncidenceAngle;

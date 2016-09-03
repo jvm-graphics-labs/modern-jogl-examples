@@ -1,8 +1,11 @@
 #version 330
 
+// Outputs
+#define FRAG_COLOR  0
+
 smooth in vec4 interpColor;
 
-out vec4 outputColor;
+layout (location = FRAG_COLOR) out vec4 outputColor;
 
 void main()
 {

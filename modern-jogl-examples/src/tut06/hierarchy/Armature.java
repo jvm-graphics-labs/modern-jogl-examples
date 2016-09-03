@@ -10,6 +10,7 @@ import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import framework.BufferUtils;
+import framework.Framework;
 import glm.glm;
 import glm.vec._3.Vec3;
 import java.nio.FloatBuffer;
@@ -49,8 +50,6 @@ public class Armature {
     private final float STANDARD_ANGLE_INCREMENT = 11.25f;
     private final float SMALL_ANGLE_INCREMENT = 9.0f;
 
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
-
     public void draw(GL3 gl3, int theProgram, int vao, int modelToCameraMatrixUnif, int indexCount) {
 
         MatrixStack modelToCameraStack = new MatrixStack();
@@ -66,7 +65,8 @@ public class Armature {
             modelToCameraStack.push();
             modelToCameraStack.translate(posBaseLeft);
             modelToCameraStack.scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                    modelToCameraStack.top().toDfb(Framework.matBuffer));
             gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
         }
@@ -76,7 +76,8 @@ public class Armature {
             modelToCameraStack.push();
             modelToCameraStack.translate(posBaseRight);
             modelToCameraStack.scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                    modelToCameraStack.top().toDfb(Framework.matBuffer));
             gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
         }
@@ -97,7 +98,8 @@ public class Armature {
             modelToCameraStack.push();
             modelToCameraStack.translate(new Vec3(0.0f, 0.0f, sizeUpperArm / 2.0f - 1.0f));
             modelToCameraStack.scale(new Vec3(1.0f, 1.0f, sizeUpperArm / 2.0f));
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                    modelToCameraStack.top().toDfb(Framework.matBuffer));
             gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
         }
@@ -116,7 +118,8 @@ public class Armature {
         modelToCameraStack.push();
         modelToCameraStack.translate(new Vec3(0.0f, 0.0f, lengthLowerArm / 2.0f));
         modelToCameraStack.scale(new Vec3(widthLowerArm / 2.0f, widthLowerArm / 2.0f, lengthLowerArm / 2.0f));
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                modelToCameraStack.top().toDfb(Framework.matBuffer));
         gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
         modelToCameraStack.pop();
 
@@ -134,7 +137,8 @@ public class Armature {
 
         modelToCameraStack.push();
         modelToCameraStack.scale(new Vec3(widthWrist / 2.0f, widthWrist / 2.0f, lengthWrist / 2.0f));
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                modelToCameraStack.top().toDfb(Framework.matBuffer));
         gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
         modelToCameraStack.pop();
 
@@ -153,7 +157,8 @@ public class Armature {
         modelToCameraStack.push();
         modelToCameraStack.translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f));
         modelToCameraStack.scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                modelToCameraStack.top().toDfb(Framework.matBuffer));
         gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
         modelToCameraStack.pop();
 
@@ -166,7 +171,8 @@ public class Armature {
             modelToCameraStack.push();
             modelToCameraStack.translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f));
             modelToCameraStack.scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                    modelToCameraStack.top().toDfb(Framework.matBuffer));
             gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -183,7 +189,8 @@ public class Armature {
         modelToCameraStack.push();
         modelToCameraStack.translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f));
         modelToCameraStack.scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                modelToCameraStack.top().toDfb(Framework.matBuffer));
         gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
         modelToCameraStack.pop();
 
@@ -196,7 +203,8 @@ public class Armature {
             modelToCameraStack.push();
             modelToCameraStack.translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f));
             modelToCameraStack.scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, 
+                    modelToCameraStack.top().toDfb(Framework.matBuffer));
             gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -242,9 +250,5 @@ public class Armature {
         System.out.println("angWristPitch: " + angWristPitch);
         System.out.println("angWristRoll: " + angWristRoll);
         System.out.println("angFingerOpen: " + angFingerOpen);
-    }
-
-    public void dispose() {
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
     }
 }

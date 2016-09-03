@@ -162,7 +162,7 @@ public class HelloTriangle extends Framework {
      * @param keyEvent
      */
     @Override
-    protected void keyboard(KeyEvent keyEvent) {
+    public void keyPressed(KeyEvent keyEvent) {
         
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:

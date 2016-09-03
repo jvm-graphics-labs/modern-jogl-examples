@@ -59,7 +59,6 @@ public class Hierarchy extends Framework {
 
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
     private final int numberOfVertices = 24;
@@ -193,10 +192,10 @@ public class Hierarchy extends Framework {
         cameraToClipMatrix.m23 = -1.0f;
         cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
 
-        cameraToClipMatrix.toDfb(matrixBuffer);
+        cameraToClipMatrix.toDfb(matBuffer);
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, matrixBuffer);
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, matBuffer);
         gl3.glUseProgram(0);
     }
 
@@ -248,7 +247,7 @@ public class Hierarchy extends Framework {
         cameraToClipMatrix.m11 = frustumScale;
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
 
         gl3.glViewport(0, 0, w, h);
@@ -261,15 +260,13 @@ public class Hierarchy extends Framework {
         gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl3.glDeleteVertexArrays(1, vao);
 
-        armature.dispose();
-
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
+        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override
-    protected void keyboard(KeyEvent keyEvent) {
+    public void keyPressed(KeyEvent keyEvent) {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:

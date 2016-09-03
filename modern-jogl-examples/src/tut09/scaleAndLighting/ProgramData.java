@@ -5,7 +5,6 @@
  */
 package tut09.scaleAndLighting;
 
-import tut09.basicLighting.*;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import com.jogamp.opengl.GL3;

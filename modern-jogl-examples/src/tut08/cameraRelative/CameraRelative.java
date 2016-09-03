@@ -15,7 +15,6 @@ import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import framework.BufferUtils;
@@ -27,7 +26,6 @@ import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glutil.MatrixStack;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,7 +61,6 @@ public class CameraRelative extends Framework {
     private Mesh ship, plane;
     private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
     private Mat4 cameraToClipMatrix = new Mat4(0.0f);
-    private FloatBuffer matrixBuffer = GLBuffers.newDirectFloatBuffer(16);
 
     private Vec3 camTarget = new Vec3(0.0f, 10.0f, 0.0f);
     private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -127,7 +124,7 @@ public class CameraRelative extends Framework {
         cameraToClipMatrix.m32 = (2 * zFar * zNear) / (zNear - zFar);
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
     }
 
@@ -151,7 +148,7 @@ public class CameraRelative extends Framework {
                     .scale(new Vec3(100.0f, 1.0f, 100.0f));
 
             gl3.glUniform4f(baseColorUnif, 0.2f, 0.5f, 0.2f, 1.0f);
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matBuffer));
 
             plane.render(gl3);
 
@@ -165,7 +162,7 @@ public class CameraRelative extends Framework {
                     .rotateX(-90.0f);
 
             gl3.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matrixBuffer));
+            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().toDfb(matBuffer));
 
             ship.render(gl3, "tint");
 
@@ -217,7 +214,7 @@ public class CameraRelative extends Framework {
         cameraToClipMatrix.m11 = frustumScale;
 
         gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matrixBuffer));
+        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.toDfb(matBuffer));
         gl3.glUseProgram(0);
 
         gl3.glViewport(0, 0, w, h);
@@ -231,11 +228,11 @@ public class CameraRelative extends Framework {
         plane.dispose(gl3);
         ship.dispose(gl3);
 
-        BufferUtils.destroyDirectBuffer(matrixBuffer);
+        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override
-    public void keyboard(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
 
         final float smallAngleIncrement = 9.0f;
 
