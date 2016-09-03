@@ -34,9 +34,8 @@ import org.xml.sax.SAXException;
  */
 public class WorldScene extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut07/worldScene/shaders";
-    protected final String DATA_ROOT = "/tut07/worldScene/data/";
-    private final String[] MESHES_SOURCE = new String[]{"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml",
+    private final String SHADERS_ROOT = "/tut07/worldScene/shaders", MESHES_ROOT = "/tut07/data/";
+    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml",
         "UnitCubeColor.xml", "UnitPlane.xml"};
 
     public static void main(String[] args) {
@@ -69,7 +68,7 @@ public class WorldScene extends Framework {
 
         for (int i = 0; i < Mesh_.MAX; i++) {
             try {
-                meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+                meshes[i] = new Mesh(MESHES_ROOT + MESHES_SOURCE[i], gl3);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
                 Logger.getLogger(WorldScene.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -468,8 +467,6 @@ public class WorldScene extends Framework {
         gl3.glDeleteProgram(uniformColorTint.theProgram);
 
         StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl3));
-        
-        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override

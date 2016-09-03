@@ -27,7 +27,6 @@ import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 import glutil.MatrixStack;
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,9 +40,8 @@ import org.xml.sax.SAXException;
  */
 public class WorldWithUBO extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut07/worldWithUBO/shaders";
-    protected final String DATA_ROOT = "/tut07/worldWithUBO/data/";
-    private final String[] MESHES_SOURCE = new String[]{"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml",
+    private final String SHADERS_ROOT = "/tut07/worldWithUBO/shaders", MESHES_ROOT = "/tut07/data/";
+    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml",
         "UnitCubeColor.xml", "UnitPlane.xml"};
 
     public static void main(String[] args) {
@@ -77,7 +75,7 @@ public class WorldWithUBO extends Framework {
 
         for (int i = 0; i < Mesh_.MAX; i++) {
             try {
-                meshes[i] = new Mesh(DATA_ROOT + MESHES_SOURCE[i], gl3);
+                meshes[i] = new Mesh(MESHES_ROOT + MESHES_SOURCE[i], gl3);
             } catch (ParserConfigurationException | SAXException | IOException ex) {
                 Logger.getLogger(WorldWithUBO.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -476,7 +474,6 @@ public class WorldWithUBO extends Framework {
         
         StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl3));
         
-        BufferUtils.destroyDirectBuffer(matBuffer);
         BufferUtils.destroyDirectBuffer(globalMatricesUBO);
     }
 

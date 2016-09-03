@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
-import tut09.basicLighting.BasicLighting;
 import view.ObjectData;
 import view.ObjectPole;
 import view.ViewData;
@@ -47,7 +46,7 @@ import view.ViewScale;
  */
 public class AmbientLighting extends Framework {
 
-    private final String SHADERS_ROOT = "/tut09/ambientLighting/shaders", DATA_ROOT = "/tut09/ambientLighting/data/",
+    private final String SHADERS_ROOT = "/tut09/ambientLighting/shaders", MESHES_ROOT = "/tut09/data/",
             DIR_PN_SHADER_SRC = "dir-vertex-lighting-pn", DIR_PCN_SHADER_SRC = "dir-vertex-lighting-pcn",
             DIR_AMB_PN_SHADER_SRC = "dir-amb-vertex-lighting-pn", DIR_AMB_PCN_SHADER_SRC = "dir-amb-vertex-lighting-pcn",
             FRAG_SHADER_SRC = "color-passthrough", CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
@@ -99,8 +98,8 @@ public class AmbientLighting extends Framework {
         initializeProgram(gl3);
 
         try {
-            cylinder = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
-            plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+            cylinder = new Mesh(MESHES_ROOT + CYLINDER_SRC, gl3);
+            plane = new Mesh(MESHES_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(AmbientLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -185,7 +184,7 @@ public class AmbientLighting extends Framework {
 
             if (drawColoredCyl) {
                 gl3.glUseProgram(vertexDiffuse.theProgram);
-                gl3.glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false, 
+                gl3.glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false,
                         modelMatrix.top().toDfb(matBuffer));
                 Mat3 normMatrix = new Mat3(modelMatrix.top());
                 gl3.glUniformMatrix3fv(vertexDiffuse.normalModelToCameraMatrixUnif, 1, false,
@@ -272,6 +271,8 @@ public class AmbientLighting extends Framework {
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
         gl3.glDeleteProgram(vertexAmbDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteAmbDiffuseColor.theProgram);
+
+        gl3.glDeleteBuffers(1, projectionUniformBuffer);
 
         cylinder.dispose(gl3);
         plane.dispose(gl3);

@@ -46,7 +46,7 @@ import view.ViewScale;
  */
 public class ScaleAndLighting extends Framework {
 
-    private final String SHADERS_ROOT = "/tut09/scaleAndLighting/shaders", DATA_ROOT = "/tut09/scaleAndLighting/data/",
+    private final String SHADERS_ROOT = "/tut09/scaleAndLighting/shaders", MESHES_ROOT = "/tut09/data/",
             DIR_PN_SHADER_SRC = "dir-vertex-lighting-pn", DIR_PCN_SHADER_SRC = "dir-vertex-lighting-pcn",
             FRAG_SHADER_SRC = "color-passthrough", CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
 
@@ -92,12 +92,12 @@ public class ScaleAndLighting extends Framework {
 
     @Override
     public void init(GL3 gl3) {
-////
+        
         initializeProgram(gl3);
 
         try {
-            cylinder = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
-            plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+            cylinder = new Mesh(MESHES_ROOT + CYLINDER_SRC, gl3);
+            plane = new Mesh(MESHES_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(ScaleAndLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -240,6 +240,7 @@ public class ScaleAndLighting extends Framework {
             case KeyEvent.VK_T:
                 doInverseTranspose = !doInverseTranspose;
                 System.out.println(doInverseTranspose? "Doing Inverse Transpose." : "Bad Lighting.");
+                break;
         }
     }
 
@@ -249,6 +250,8 @@ public class ScaleAndLighting extends Framework {
         gl3.glDeleteProgram(vertexDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
 
+        gl3.glDeleteBuffers(1, projectionUniformBuffer);
+        
         cylinder.dispose(gl3);
         plane.dispose(gl3);
 

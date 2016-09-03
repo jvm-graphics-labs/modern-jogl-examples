@@ -3,14 +3,14 @@
 
 <mesh xmlns="http://www.arcsynthesis.com/gltut/mesh" >
 	<attribute index="0" type="float" size="3" > 
-        3 0 -3
-        3 0 3
-        -3 0 3
-        -3 0 -3
-        3 0 -3
-        3 0 3
-        -3 0 3
-        -3 0 -3</attribute>
+        0.5 0 -0.5
+        0.5 0 0.5
+        -0.5 0 0.5
+        -0.5 0 -0.5
+        0.5 0 -0.5
+        0.5 0 0.5
+        -0.5 0 0.5
+        -0.5 0 -0.5</attribute>
 	<attribute index="2" type="float" size="3" > 
         0 1 0
         0 1 0

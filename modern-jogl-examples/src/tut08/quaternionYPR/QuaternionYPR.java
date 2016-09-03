@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
  */
 public class QuaternionYPR extends Framework {
 
-    private final String SHADERS_ROOT = "/tut08/quaternionYPR/shaders", DATA_ROOT = "/tut08/quaternionYPR/data/",
+    private final String SHADERS_ROOT = "/tut08/quaternionYPR/shaders", MESHES_ROOT = "/tut08/data/",
             VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
             SHIP_SRC = "Ship.xml";
 
@@ -75,7 +75,7 @@ public class QuaternionYPR extends Framework {
         initializeProgram(gl3);
 
         try {
-            ship = new Mesh(DATA_ROOT + SHIP_SRC, gl3);
+            ship = new Mesh(MESHES_ROOT + SHIP_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(QuaternionYPR.class.getName()).log(Level.SEVERE, null, ex);
         }

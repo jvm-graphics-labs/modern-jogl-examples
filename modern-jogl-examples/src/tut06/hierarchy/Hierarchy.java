@@ -262,7 +262,6 @@ public class Hierarchy extends Framework {
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
-        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override

@@ -47,7 +47,7 @@ import view.ViewScale;
  */
 public class BasicLighting extends Framework {
 
-    private final String SHADERS_ROOT = "/tut09/basicLighting/shaders", DATA_ROOT = "/tut09/basicLighting/data/",
+    private final String SHADERS_ROOT = "/tut09/basicLighting/shaders", MESHES_ROOT = "/tut09/data/",
             WHITE_VERT_SHADER_SRC = "dir-vertex-lighting-pn", COLOR_VERT_SHADER_SRC = "dir-vertex-lighting-pcn",
             FRAG_SHADER_SRC = "color-passthrough", CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
 
@@ -59,7 +59,7 @@ public class BasicLighting extends Framework {
         super(title);
     }
 
-    ProgramData whiteDiffuseColor, vertexDiffuseColor;
+    private ProgramData whiteDiffuseColor, vertexDiffuseColor;
     private Mesh cylinderMesh, planeMesh;
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
@@ -96,8 +96,8 @@ public class BasicLighting extends Framework {
         initializeProgram(gl3);
 
         try {
-            cylinderMesh = new Mesh(DATA_ROOT + CYLINDER_SRC, gl3);
-            planeMesh = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+            cylinderMesh = new Mesh(MESHES_ROOT + CYLINDER_SRC, gl3);
+            planeMesh = new Mesh(MESHES_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(BasicLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -260,6 +260,8 @@ public class BasicLighting extends Framework {
         gl3.glDeleteProgram(vertexDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
 
+        gl3.glDeleteBuffers(1, projectionUniformBuffer);
+        
         cylinderMesh.dispose(gl3);
         planeMesh.dispose(gl3);
 

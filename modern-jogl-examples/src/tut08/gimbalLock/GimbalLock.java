@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  */
 public class GimbalLock extends Framework {
 
-    private final String SHADERS_ROOT = "/tut08/gimbalLock/shaders", DATA_ROOT = "/tut08/gimbalLock/data/",
+    private final String SHADERS_ROOT = "/tut08/gimbalLock/shaders", MESHES_ROOT = "/tut08/data/",
             VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
             SHIP_SRC = "Ship.xml";
     private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
@@ -90,9 +90,9 @@ public class GimbalLock extends Framework {
 
         try {
             for (int loop = 0; loop < Gimbal.MAX; loop++) {
-                gimbals[loop] = new Mesh(DATA_ROOT + GIMBALS_SCR[loop], gl3);
+                gimbals[loop] = new Mesh(MESHES_ROOT + GIMBALS_SCR[loop], gl3);
             }
-            object = new Mesh(DATA_ROOT + SHIP_SRC, gl3);
+            object = new Mesh(MESHES_ROOT + SHIP_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(GimbalLock.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -228,8 +228,6 @@ public class GimbalLock extends Framework {
 
         object.dispose(gl3);
         IntStreamEx.range(Gimbal.MAX).forEach(i -> gimbals[i].dispose(gl3));
-
-        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override

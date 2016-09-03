@@ -35,7 +35,7 @@ import org.xml.sax.SAXException;
  */
 public class Interpolation extends Framework {
 
-    private final String SHADERS_ROOT = "/tut08/interpolation/shaders", DATA_ROOT = "/tut08/interpolation/data/",
+    private final String SHADERS_ROOT = "/tut08/interpolation/shaders", MESHES_ROOT = "/tut08/data/",
             VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
             SHIP_SRC = "Ship.xml";
 
@@ -59,7 +59,7 @@ public class Interpolation extends Framework {
         initializeProgram(gl3);
 
         try {
-            ship = new Mesh(DATA_ROOT + SHIP_SRC, gl3);
+            ship = new Mesh(MESHES_ROOT + SHIP_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(Interpolation.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -193,7 +193,5 @@ public class Interpolation extends Framework {
         gl3.glDeleteProgram(theProgram);
 
         ship.dispose(gl3);
-
-        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 }

@@ -37,8 +37,8 @@ import org.xml.sax.SAXException;
  */
 public class CameraRelative extends Framework {
 
-    private final String SHADERS_ROOT = "/tut08/cameraRelative/shaders", DATA_ROOT = "/tut08/cameraRelative/data/",
-            VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform",
+    private final String SHADERS_ROOT = "/tut08/cameraRelative/shaders", MESHES_ROOT = "/tut08/data/",
+            VERT_SHADER_SRC = "pos-color-local-transform", FRAG_SHADER_SRC = "color-mult-uniform", 
             SHIP_SCR = "Ship.xml", PLANE_SRC = "UnitPlane.xml";
 
     public static void main(String[] args) {
@@ -75,8 +75,8 @@ public class CameraRelative extends Framework {
 
         initializeProgram(gl3);
         try {
-            ship = new Mesh(DATA_ROOT + SHIP_SCR, gl3);
-            plane = new Mesh(DATA_ROOT + PLANE_SRC, gl3);
+            ship = new Mesh(MESHES_ROOT + SHIP_SCR, gl3);
+            plane = new Mesh(MESHES_ROOT + PLANE_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
             Logger.getLogger(CameraRelative.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -227,8 +227,6 @@ public class CameraRelative extends Framework {
 
         plane.dispose(gl3);
         ship.dispose(gl3);
-
-        BufferUtils.destroyDirectBuffer(matBuffer);
     }
 
     @Override

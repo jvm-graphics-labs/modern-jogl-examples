@@ -13,7 +13,7 @@ import java.util.ArrayList;
  *
  * @author GBarbieri
  */
-public class MatrixStack {
+class MatrixStack {
     
     private Mat4 currMat = new Mat4(1.0f);
     private ArrayList<Mat4> matrices = new ArrayList<>();
