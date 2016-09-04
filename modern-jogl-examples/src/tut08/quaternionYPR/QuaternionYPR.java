@@ -17,7 +17,7 @@ import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
 import glm.mat._4.Mat4;

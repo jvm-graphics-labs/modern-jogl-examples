@@ -9,7 +9,7 @@ import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import framework.Framework;
 import glm.glm;
 import glm.vec._3.Vec3;

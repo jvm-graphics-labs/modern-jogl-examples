@@ -9,7 +9,7 @@ import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;

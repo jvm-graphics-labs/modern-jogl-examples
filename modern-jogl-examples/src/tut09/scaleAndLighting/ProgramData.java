@@ -16,7 +16,7 @@ import framework.Semantic;
  *
  * @author elect
  */
-public class ProgramData {
+class ProgramData {
 
     public int theProgram;
 

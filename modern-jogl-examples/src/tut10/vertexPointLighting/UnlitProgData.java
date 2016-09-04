@@ -16,7 +16,7 @@ import framework.Semantic;
  *
  * @author elect
  */
-public class UnlitProgData {
+class UnlitProgData {
 
     public int theProgram;
 

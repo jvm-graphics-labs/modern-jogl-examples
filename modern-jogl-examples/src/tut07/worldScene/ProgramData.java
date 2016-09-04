@@ -15,7 +15,7 @@ import com.jogamp.opengl.util.glsl.ShaderProgram;
  *
  * @author elect
  */
-public class ProgramData {
+class ProgramData {
 
     public int theProgram, modelToWorldMatrixUnif, worldToCameraMatrixUnif, cameraToClipMatrixUnif,
             baseColorUnif;

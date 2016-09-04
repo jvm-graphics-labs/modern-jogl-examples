@@ -5,7 +5,6 @@
  */
 package tut07.worldWithUBO;
 
-import tut07.worldScene.*;
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import com.jogamp.opengl.GL3;
@@ -17,7 +16,7 @@ import framework.Semantic;
  *
  * @author elect
  */
-public class ProgramData {
+class ProgramData {
 
     public int theProgram, modelToWorldMatrixUnif, globalUniformBlockIndex, baseColorUnif;
 

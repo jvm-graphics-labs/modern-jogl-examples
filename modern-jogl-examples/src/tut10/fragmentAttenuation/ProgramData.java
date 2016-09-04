@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut10.fragmentPointLighting;
+package tut10.fragmentAttenuation;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -16,15 +16,22 @@ import framework.Semantic;
  *
  * @author elect
  */
-class UnlitProgData {
+class ProgramData {
 
     public int theProgram;
 
-    public int objectColorUnif;
-
     public int modelToCameraMatrixUnif;
 
-    public UnlitProgData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
+    public int lightIntensityUnif;
+    public int ambientIntensityUnif;
+
+    public int normalModelToCameraMatrixUnif;
+    public int cameraSpaceLightPosUnif;
+    
+    public int lightAttenuationUnif;
+    public int bUseRSquareUnif;
+
+    public ProgramData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
@@ -44,11 +51,21 @@ class UnlitProgData {
         fragShaderCode.destroy(gl3);
 
         modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
-        
-        objectColorUnif = gl3.glGetUniformLocation(theProgram, "objectColor");
+        lightIntensityUnif = gl3.glGetUniformLocation(theProgram, "lightIntensity");
+        ambientIntensityUnif = gl3.glGetUniformLocation(theProgram, "ambientIntensity");
 
-        gl3.glUniformBlockBinding(theProgram, 
-                gl3.glGetUniformBlockIndex(theProgram, "Projection"), 
+        normalModelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
+        cameraSpaceLightPosUnif = gl3.glGetUniformLocation(theProgram, "cameraSpaceLightPos");
+        
+        lightAttenuationUnif = gl3.glGetUniformLocation(theProgram, "lightAttenuation");
+        bUseRSquareUnif = gl3.glGetUniformLocation(theProgram, "bUseRSquare");
+
+        gl3.glUniformBlockBinding(theProgram,
+                gl3.glGetUniformBlockIndex(theProgram, "Projection"),
                 Semantic.Uniform.PROJECTION);
+
+        gl3.glUniformBlockBinding(theProgram,
+                gl3.glGetUniformBlockIndex(theProgram, "UnProjection"),
+                Semantic.Uniform.UNPROJECTION);
     }
 }

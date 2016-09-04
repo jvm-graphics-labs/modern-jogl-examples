@@ -18,7 +18,7 @@ import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
 import framework.component.Mesh;

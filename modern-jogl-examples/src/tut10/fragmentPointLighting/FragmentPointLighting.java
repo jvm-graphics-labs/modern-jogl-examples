@@ -18,7 +18,7 @@ import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import framework.Framework;
 import static framework.Framework.matBuffer;
 import framework.Semantic;
@@ -338,6 +338,8 @@ public class FragmentPointLighting extends Framework {
 
         gl3.glDeleteProgram(vertexDiffuseColor.theProgram);
         gl3.glDeleteProgram(whiteDiffuseColor.theProgram);
+        gl3.glDeleteProgram(fragVertexDiffuseColor.theProgram);
+        gl3.glDeleteProgram(fragWhiteDiffuseColor.theProgram);
         gl3.glDeleteProgram(unlit.theProgram);
 
         gl3.glDeleteBuffers(1, projectionUniformBuffer);

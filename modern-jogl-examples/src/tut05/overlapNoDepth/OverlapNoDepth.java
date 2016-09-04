@@ -22,7 +22,7 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import framework.BufferUtils;
+import glutil.BufferUtils;
 import framework.Framework;
 import framework.Semantic;
 import glm.vec._3.Vec3;

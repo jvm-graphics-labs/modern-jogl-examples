@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut10.fragmentPointLighting;
+package tut11.phongLighting;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -21,7 +21,6 @@ class UnlitProgData {
     public int theProgram;
 
     public int objectColorUnif;
-
     public int modelToCameraMatrixUnif;
 
     public UnlitProgData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
@@ -43,12 +42,11 @@ class UnlitProgData {
         vertShaderCode.destroy(gl3);
         fragShaderCode.destroy(gl3);
 
-        modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
-        
         objectColorUnif = gl3.glGetUniformLocation(theProgram, "objectColor");
+        modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
 
-        gl3.glUniformBlockBinding(theProgram, 
-                gl3.glGetUniformBlockIndex(theProgram, "Projection"), 
+        gl3.glUniformBlockBinding(theProgram,
+                gl3.glGetUniformBlockIndex(theProgram, "Projection"),
                 Semantic.Uniform.PROJECTION);
     }
 }

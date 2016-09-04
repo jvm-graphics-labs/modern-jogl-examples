@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut11.phongLighting;
+package tut10.fragmentAttenuation;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
@@ -24,12 +24,14 @@ import framework.component.Mesh;
 import glm.mat._3.Mat3;
 import glm.mat._4.Mat4;
 import glm.quat.Quat;
+import glm.vec._2.i.Vec2i;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import glutil.BufferUtils;
 import glutil.MatrixStack;
 import glutil.Timer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,19 +47,20 @@ import view.ViewScale;
  *
  * @author gbarbieri
  */
-public class PhongLighting extends Framework {
+public class FragmentAttenuation extends Framework {
 
-    private final String SHADERS_ROOT = "/tut11/phongLighting/shaders", MESHES_ROOT = "/tut11/data/",
-            PN_SHADER_SRC = "pn", PCN_SHADER_SRC = "pcn", NO_PHONG_SHADER_SRC = "no-phong",
-            PHONG_LIGHTING_SHADER_SRC = "phong-lighting", PHONG_ONLY_SHADER_SRC = "phong-only",
+    private final String SHADERS_ROOT = "/tut10/fragmentAttenuation/shaders", MESHES_ROOT = "/tut10/data/",
+            FRAG_LIGHT_ATTEN_PN_SHADER_SRC = "frag-light-atten-pn",
+            FRAG_LIGHT_ATTEN_PCN_SHADER_SRC = "frag-light-atten-pcn",
+            FRAG_LIGHT_ATTEN_SHADER_SRC = "frag-light-atten",
             POS_TRANSFORM_SHADER_SRC = "pos-transform", UNIFORM_COLOR_SHADER_SRC = "uniform-color",
             CYLINDER_MESH_SRC = "UnitCylinder.xml", PLANE_MESH_SRC = "LargePlane.xml", CUBE_MESH_SRC = "UnitCube.xml";
 
     public static void main(String[] args) {
-        new PhongLighting("Tutorial 10 - Fragment Attenuation");
+        new FragmentAttenuation("Tutorial 10 - Fragment Attenuation");
     }
 
-    private ProgramData whiteNoPhong, colorNoPhong, whitePhong, colorPhong, whitePhongOnly, colorPhongOnly;
+    private ProgramData fragWhiteDiffuseColor, fragVertexDiffuseColor;
     private UnlitProgData unlit;
 
     private ViewData initialViewData = new ViewData(
@@ -79,18 +82,37 @@ public class PhongLighting extends Framework {
 
     private Mesh cylinder, plane, cube;
 
-    private LightingModel lightModel = LightingModel.DiffuseAndSpecular;
-
-    private boolean drawColoredCyl = false, drawLightSource = false, scaleCyl = false, drawDark = false;
-    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.2f, shininessFactor = 4.0f;
-
-    private Vec4 darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f), lightColor = new Vec4(1.0f);
+    private boolean drawColoredCyl = false, drawLight = false, scaleCyl = false, useRSquare = false;
+    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.0f;
 
     private Timer lightTimer = new Timer(Timer.Type.LOOP, 5.0f);
 
-    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
+    private interface Buffer {
 
-    public PhongLighting(String title) {
+        public static final int PROJECTION = 0;
+        public static final int UNPROJECTION = 1;
+        public static final int MAX = 2;
+    }
+
+    private class UnprojectionBlock {
+
+        public final static int SIZE = Mat4.SIZE + Vec2i.SIZE;
+
+        public Mat4 clipToCameraMatrix;
+        public Vec2i windowSize;
+
+        public ByteBuffer toDbb(ByteBuffer buffer) {
+            clipToCameraMatrix.toDbb(buffer, 0);
+            windowSize.toDbb(buffer, Mat4.SIZE);
+            return buffer;
+        }
+    }
+
+    private IntBuffer bufferName = GLBuffers.newDirectIntBuffer(Buffer.MAX);
+
+    private ByteBuffer unprojectBuffer = GLBuffers.newDirectByteBuffer(UnprojectionBlock.SIZE);
+
+    public FragmentAttenuation(String title) {
         super(title);
     }
 
@@ -104,7 +126,7 @@ public class PhongLighting extends Framework {
             plane = new Mesh(MESHES_ROOT + PLANE_MESH_SRC, gl3);
             cube = new Mesh(MESHES_ROOT + CUBE_MESH_SRC, gl3);
         } catch (ParserConfigurationException | SAXException | IOException ex) {
-            Logger.getLogger(PhongLighting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FragmentAttenuation.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         gl3.glEnable(GL_CULL_FACE);
@@ -117,29 +139,28 @@ public class PhongLighting extends Framework {
         gl3.glDepthRangef(0.0f, 1.0f);
         gl3.glEnable(GL_DEPTH_CLAMP);
 
-        gl3.glGenBuffers(1, projectionUniformBuffer);
+        gl3.glGenBuffers(Buffer.MAX, bufferName);
 
-        gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
         gl3.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.UNPROJECTION));
+        gl3.glBufferData(GL_UNIFORM_BUFFER, UnprojectionBlock.SIZE, null, GL_DYNAMIC_DRAW);
+
         //Bind the static buffers.
-        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer.get(0),
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName.get(Buffer.PROJECTION),
                 0, Mat4.SIZE);
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.UNPROJECTION, bufferName.get(Buffer.UNPROJECTION),
+                0, UnprojectionBlock.SIZE);
 
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
     private void initializePrograms(GL3 gl3) {
-
-        whiteNoPhong = new ProgramData(gl3, SHADERS_ROOT, PN_SHADER_SRC, NO_PHONG_SHADER_SRC);
-        colorNoPhong = new ProgramData(gl3, SHADERS_ROOT, PCN_SHADER_SRC, NO_PHONG_SHADER_SRC);
-
-        whitePhong = new ProgramData(gl3, SHADERS_ROOT, PN_SHADER_SRC, PHONG_LIGHTING_SHADER_SRC);
-        colorPhong = new ProgramData(gl3, SHADERS_ROOT, PCN_SHADER_SRC, PHONG_LIGHTING_SHADER_SRC);
-
-        whitePhongOnly = new ProgramData(gl3, SHADERS_ROOT, PN_SHADER_SRC, PHONG_ONLY_SHADER_SRC);
-        colorPhongOnly = new ProgramData(gl3, SHADERS_ROOT, PCN_SHADER_SRC, PHONG_ONLY_SHADER_SRC);
-
+        fragWhiteDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, FRAG_LIGHT_ATTEN_PN_SHADER_SRC,
+                FRAG_LIGHT_ATTEN_SHADER_SRC);
+        fragVertexDiffuseColor = new ProgramData(gl3, SHADERS_ROOT, FRAG_LIGHT_ATTEN_PCN_SHADER_SRC,
+                FRAG_LIGHT_ATTEN_SHADER_SRC);
         unlit = new UnlitProgData(gl3, SHADERS_ROOT, POS_TRANSFORM_SHADER_SRC, UNIFORM_COLOR_SHADER_SRC);
     }
 
@@ -157,41 +178,19 @@ public class PhongLighting extends Framework {
         Vec4 worldLightPos = calcLightPosition();
         Vec4 lightPosCameraSpace = modelMatrix.top().mul_(worldLightPos);
 
-        ProgramData whiteProg, colorProg;
+        gl3.glUseProgram(fragWhiteDiffuseColor.theProgram);
+        gl3.glUniform4f(fragWhiteDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(fragWhiteDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUniform3fv(fragWhiteDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
+        gl3.glUniform1f(fragWhiteDiffuseColor.lightAttenuationUnif, lightAttenuation);
+        gl3.glUniform1i(fragWhiteDiffuseColor.bUseRSquareUnif, useRSquare ? 1 : 0);
 
-        switch (lightModel) {
-
-            case PureDiffuse:
-                whiteProg = whiteNoPhong;
-                colorProg = colorNoPhong;
-                break;
-
-            case DiffuseAndSpecular:
-                whiteProg = whitePhong;
-                colorProg = colorPhong;
-                break;
-
-            default: // SpecularOnly
-                whiteProg = whitePhongOnly;
-                colorProg = colorPhongOnly;
-                break;
-        }
-
-        gl3.glUseProgram(whiteProg.theProgram);
-        gl3.glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl3.glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl3.glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
-        gl3.glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation);
-        gl3.glUniform1f(whiteProg.shininessFactorUnif, shininessFactor);
-        (drawDark ? darkColor : lightColor).toDfb(vecBuffer);
-        gl3.glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, vecBuffer);
-
-        gl3.glUseProgram(colorProg.theProgram);
-        gl3.glUniform4f(colorProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl3.glUniform4f(colorProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl3.glUniform3fv(colorProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
-        gl3.glUniform1f(colorProg.lightAttenuationUnif, lightAttenuation);
-        gl3.glUniform1f(whiteProg.shininessFactorUnif, shininessFactor);
+        gl3.glUseProgram(fragVertexDiffuseColor.theProgram);
+        gl3.glUniform4f(fragVertexDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(fragVertexDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUniform3fv(fragVertexDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
+        gl3.glUniform1f(fragVertexDiffuseColor.lightAttenuationUnif, lightAttenuation);
+        gl3.glUniform1i(fragVertexDiffuseColor.bUseRSquareUnif, useRSquare ? 1 : 0);
         gl3.glUseProgram(0);
 
         {
@@ -201,12 +200,15 @@ public class PhongLighting extends Framework {
             {
                 modelMatrix.push();
 
-                Mat3 normMatrix = modelMatrix.top().toMat3_().inverse().transpose();
+                Mat3 normMatrix = modelMatrix.top().toMat3_();
+                normMatrix.inverse().transpose();
 
-                gl3.glUseProgram(whiteProg.theProgram);
-                gl3.glUniformMatrix4fv(whiteProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+                gl3.glUseProgram(fragWhiteDiffuseColor.theProgram);
+                gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false,
+                        modelMatrix.top().toDfb(matBuffer));
 
-                gl3.glUniformMatrix3fv(whiteProg.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
+                gl3.glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
+                        normMatrix.toDfb(matBuffer));
                 plane.render(gl3);
                 gl3.glUseProgram(0);
 
@@ -215,38 +217,44 @@ public class PhongLighting extends Framework {
 
             //Render the Cylinder
             {
-                modelMatrix.push();
-
-                modelMatrix.applyMatrix(objectPole.calcMatrix());
+                modelMatrix.push()
+                        .applyMatrix(objectPole.calcMatrix());
 
                 if (scaleCyl) {
                     modelMatrix.scale(1.0f, 1.0f, 0.2f);
                 }
 
-                Mat3 normMatrix = modelMatrix.top().toMat3_().inverse().transpose();
-
-                ProgramData prog = drawColoredCyl ? colorProg : whiteProg;
-                gl3.glUseProgram(prog.theProgram);
-                gl3.glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
-
-                gl3.glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
+                Mat3 normMatrix = modelMatrix.top().toMat3_();
+                normMatrix.inverse().transpose();
 
                 if (drawColoredCyl) {
+                    gl3.glUseProgram(fragVertexDiffuseColor.theProgram);
+                    gl3.glUniformMatrix4fv(fragVertexDiffuseColor.modelToCameraMatrixUnif, 1, false,
+                            modelMatrix.top().toDfb(matBuffer));
+
+                    gl3.glUniformMatrix3fv(fragVertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
+                            normMatrix.toDfb(matBuffer));
                     cylinder.render(gl3, "lit-color");
                 } else {
+                    gl3.glUseProgram(fragWhiteDiffuseColor.theProgram);
+                    gl3.glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false,
+                            modelMatrix.top().toDfb(matBuffer));
+
+                    gl3.glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
+                            normMatrix.toDfb(matBuffer));
                     cylinder.render(gl3, "lit");
                 }
-
                 gl3.glUseProgram(0);
+
                 modelMatrix.pop();
             }
 
             //Render the light
-            if (drawLightSource) {
+            if (drawLight) {
 
-                modelMatrix.push();
-
-                modelMatrix.translate(worldLightPos).scale(0.1f, 0.1f, 0.1f);
+                modelMatrix.push()
+                        .translate(worldLightPos)
+                        .scale(0.1f, 0.1f, 0.1f);
 
                 gl3.glUseProgram(unlit.theProgram);
                 gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
@@ -255,6 +263,7 @@ public class PhongLighting extends Framework {
 
                 modelMatrix.pop();
             }
+            modelMatrix.pop();
         }
     }
 
@@ -278,8 +287,14 @@ public class PhongLighting extends Framework {
 
         Mat4 proj = perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar).top();
 
-        gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
+        UnprojectionBlock unprojData = new UnprojectionBlock();
+        unprojData.clipToCameraMatrix = perspMatrix.top().inverse_();
+        unprojData.windowSize = new Vec2i(w, h);
+
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
         gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, proj.toDfb(matBuffer));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.UNPROJECTION));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, unprojectBuffer.capacity(), unprojData.toDbb(unprojectBuffer));
         gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         gl3.glViewport(0, 0, w, h);
@@ -311,7 +326,7 @@ public class PhongLighting extends Framework {
     @Override
     public void keyPressed(KeyEvent e) {
 
-        boolean changedShininess = false, changedLightModel = false;
+        boolean changedAtten = false;
 
         switch (e.getKeyCode()) {
 
@@ -338,16 +353,24 @@ public class PhongLighting extends Framework {
                 break;
 
             case KeyEvent.VK_O:
-                shininessFactor += e.isShiftDown() ? 0.1f : 0.5f;
-                changedShininess = true;
+                if (e.isShiftDown()) {
+                    lightAttenuation *= 1.1f;
+                } else {
+                    lightAttenuation *= 1.5f;
+                }
+                changedAtten = true;
                 break;
             case KeyEvent.VK_U:
-                shininessFactor -= e.isShiftDown() ? 0.1f : 0.5f;
-                changedShininess = true;
+                if (e.isShiftDown()) {
+                    lightAttenuation /= 1.1f;
+                } else {
+                    lightAttenuation /= 1.5f;
+                }
+                changedAtten = true;
                 break;
 
             case KeyEvent.VK_Y:
-                drawLightSource = !drawLightSource;
+                drawLight = !drawLight;
                 break;
             case KeyEvent.VK_T:
                 scaleCyl = !scaleCyl;
@@ -357,51 +380,36 @@ public class PhongLighting extends Framework {
                 break;
 
             case KeyEvent.VK_H:
-                int model = lightModel.ordinal() + 1;
-                model %= LightingModel.values().length;
-                lightModel = LightingModel.values()[model];
-                changedLightModel = true;
+                useRSquare = !useRSquare;
+                System.out.println((useRSquare ? "Inverse Squared" : "Plain Inverse") + " Attenuation");
                 break;
         }
 
         if (lightRadius < 0.2f) {
             lightRadius = 0.2f;
         }
-        if (shininessFactor < 0.0f) {
-            shininessFactor = 0.0001f;
+        if (lightAttenuation < 0.1f) {
+            lightAttenuation = 0.1f;
         }
-        if (changedShininess) {
-            System.out.println("Shiny: " + shininessFactor);
-        }
-        if (changedLightModel) {
-            System.out.println(lightModel);
+        if (changedAtten) {
+            System.out.println("Atten: " + lightAttenuation);
         }
     }
 
     @Override
     public void end(GL3 gl3) {
 
-        gl3.glDeleteProgram(whiteNoPhong.theProgram);
-        gl3.glDeleteProgram(colorNoPhong.theProgram);
-        gl3.glDeleteProgram(whitePhong.theProgram);
-        gl3.glDeleteProgram(colorPhong.theProgram);
-        gl3.glDeleteProgram(whitePhongOnly.theProgram);
-        gl3.glDeleteProgram(colorPhongOnly.theProgram);
+        gl3.glDeleteProgram(fragVertexDiffuseColor.theProgram);
+        gl3.glDeleteProgram(fragWhiteDiffuseColor.theProgram);
         gl3.glDeleteProgram(unlit.theProgram);
 
-        gl3.glDeleteBuffers(1, projectionUniformBuffer);
+        gl3.glDeleteBuffers(Buffer.MAX, bufferName);
 
         cylinder.dispose(gl3);
         plane.dispose(gl3);
         cube.dispose(gl3);
 
-        BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
-    }
-
-    private enum LightingModel {
-
-        PureDiffuse,
-        DiffuseAndSpecular,
-        SpecularOnly;
+        BufferUtils.destroyDirectBuffer(bufferName);
+        BufferUtils.destroyDirectBuffer(unprojectBuffer);
     }
 }

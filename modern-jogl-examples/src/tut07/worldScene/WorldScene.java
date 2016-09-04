@@ -14,7 +14,6 @@ import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
-import framework.BufferUtils;
 import framework.Framework;
 import framework.component.Mesh;
 import glm.glm;

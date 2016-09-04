@@ -1,9 +1,15 @@
 #version 330
 
-layout(location = 0) in vec3 position;
-layout(location = 2) in vec3 normal;
+// Attribute
+#define POSITION    0
+#define COLOR       1
+#define NORMAL      2
 
-out vec4 diffuseColor;
+layout(location = POSITION) in vec3 position;
+layout(location = COLOR) in vec4 diffuseColor;
+layout(location = NORMAL) in vec3 normal;
+
+out vec4 diffuseColor_;
 out vec3 vertexNormal;
 
 uniform mat4 modelToCameraMatrix;
@@ -19,5 +25,6 @@ void main()
     gl_Position = cameraToClipMatrix * (modelToCameraMatrix * vec4(position, 1.0));
 
     vertexNormal = normalModelToCameraMatrix * normal;
-    diffuseColor = vec4(1.0);
+    diffuseColor_ = diffuseColor;
 }
+
