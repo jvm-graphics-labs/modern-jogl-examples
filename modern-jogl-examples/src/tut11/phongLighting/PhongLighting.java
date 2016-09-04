@@ -355,10 +355,13 @@ public class PhongLighting extends Framework {
             case KeyEvent.VK_B:
                 lightTimer.togglePause();
                 break;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
 
             case KeyEvent.VK_H:
-                int model = lightModel.ordinal() + 1;
-                model %= LightingModel.values().length;
+                int model = lightModel.ordinal() + (e.isShiftDown() ? -1 : +1);
+                model = (model + LightingModel.values().length) % LightingModel.values().length;
                 lightModel = LightingModel.values()[model];
                 changedLightModel = true;
                 break;
