@@ -23,6 +23,7 @@ import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import glm.vec._2.i.Vec2i;
 import glutil.BufferUtils;
+import glutil.GlDebugOutput;
 import java.nio.FloatBuffer;
 
 /**

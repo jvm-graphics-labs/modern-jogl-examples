@@ -255,6 +255,7 @@ public class PhongLighting extends Framework {
 
                 modelMatrix.pop();
             }
+            modelMatrix.pop();
         }
     }
 

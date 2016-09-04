@@ -233,6 +233,7 @@ public class BlinnVsPhongLighting extends Framework {
                 gl3.glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f);
                 cube.render(gl3, "flat");
             }
+            modelMatrix.pop();
         }
     }
 

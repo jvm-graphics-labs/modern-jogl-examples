@@ -4,288 +4,241 @@
  */
 package tut11.gaussianSpecularLighting;
 
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.MouseEvent;
+import static com.jogamp.opengl.GL.GL_BACK;
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_DYNAMIC_DRAW;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.util.FPSAnimator;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
-import framework.glutil.MatrixStack;
-import framework.glutil.ObjectData;
-import framework.glutil.ObjectPole;
-import framework.glutil.Timer;
-import framework.glutil.ViewData;
-import framework.glutil.ViewPole;
-import framework.glutil.ViewScale;
-import java.awt.Frame;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import framework.jglm.Jglm;
-import framework.jglm.Mat3;
-import framework.jglm.Quat;
-import framework.jglm.Vec3;
-import framework.jglm.Vec4;
+import framework.Framework;
+import framework.Semantic;
 import framework.component.Mesh;
-import tut10.glsl.UnlitProgram;
-import tut11.phongLighting.glslProgram.LitProgram;
+import glm.mat._3.Mat3;
+import glm.mat._4.Mat4;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
+import glutil.BufferUtils;
+import glutil.MatrixStack;
+import glutil.Timer;
+import java.io.IOException;
+import java.nio.IntBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import view.ObjectData;
+import view.ObjectPole;
+import view.ViewData;
+import view.ViewPole;
+import view.ViewScale;
 
 /**
  *
  * @author gbarbieri
  */
-public class GaussianSpecularLighting implements GLEventListener, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
+public class GaussianSpecularLighting extends Framework {
 
-    private GLCanvas canvas;
-    private int imageWidth;
-    private int imageHeight;
-    private LitProgram whiteProgram;
-    private LitProgram colorProgram;
-    private UnlitProgram unlit;
-    private ViewPole viewPole;
-    private ObjectPole objectPole;
-    private Mesh cylinder;
-    private Mesh plane;
-    private Mesh cube;
-    private int[] projectionUBO;
-    private Timer lightTimer;
-    private float lightHeight;
-    private float lightRadius;
-    private boolean coloredCylinder;
-    private boolean drawLight;
-    private boolean scaleCylinder;
-    private boolean drawDark;
-    private float lightAttenuation;
-    private MaterialParameters materialParameters;
-    private Vec4 darkColor;
-    private Vec4 lightColor;
-    private LightingModel lightingModel;
-    private ProgramPairs[] programs;
+    private final String SHADERS_ROOT = "/tut11/gaussianSpecularLighting/shaders", MESHES_ROOT = "/tut11/data/",
+            PN_SHADER_SRC = "pn", PCN_SHADER_SRC = "pcn",
+            POS_TRANSFORM_SHADER_SRC = "pos-transform", UNIFORM_COLOR_SHADER_SRC = "uniform-color",
+            CYLINDER_MESH_SRC = "UnitCylinder.xml", PLANE_MESH_SRC = "LargePlane.xml", CUBE_MESH_SRC = "UnitCube.xml";
+    private final String[] FRAGMENTS_SHADERS_SRC = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only",
+        "gaussian-lighting", "gaussian-only"};
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-
-        GaussianSpecularLighting gaussianSpecularLighting = new GaussianSpecularLighting();
-
-        Frame frame = new Frame("Tutorial 11 - Gaussian Specular Lighting");
-
-        frame.add(gaussianSpecularLighting.getCanvas());
-
-        frame.setSize(gaussianSpecularLighting.getCanvas().getWidth(), gaussianSpecularLighting.getCanvas().getHeight());
-
-        final FPSAnimator fPSAnimator = new FPSAnimator(gaussianSpecularLighting.canvas, 30);
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                fPSAnimator.stop();
-                System.exit(0);
-            }
-        });
-
-        fPSAnimator.start();
-
-        frame.setVisible(true);
+        new GaussianSpecularLighting("Tutorial 10 - Gaussian Specular Lighting");
     }
 
-    public GaussianSpecularLighting() {
-        initGL();
-    }
+    private ProgramPairs[] programs = new ProgramPairs[LightingModel.values().length];
+    private UnlitProgData unlit;
 
-    private void initGL() {
+    private ViewData initialViewData = new ViewData(
+            new Vec3(0.0f, 0.5f, 0.0f),
+            new Quat(0.92387953f, 0.3826834f, 0.0f, 0.0f),
+            5.0f,
+            0.0f);
+    private ViewScale viewScale = new ViewScale(
+            3.0f, 20.0f,
+            1.5f, 0.5f,
+            0.0f, 0.0f, //No camera movement.
+            90.0f / 250.0f);
+    private ObjectData initialObjectData = new ObjectData(
+            new Vec3(0.0f, 0.5f, 0.0f),
+            new Quat(1.0f, 0.0f, 0.0f, 0.0f));
 
-        imageWidth = 800;
-        imageHeight = 600;
+    private ViewPole viewPole = new ViewPole(initialViewData, viewScale, MouseEvent.BUTTON1);
+    private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
 
-        GLProfile profile = GLProfile.getDefault();
+    private Mesh cylinder, plane, cube;
 
-        GLCapabilities capabilities = new GLCapabilities(profile);
+    private LightingModel lightModel = LightingModel.BlinnSpecular;
 
-        canvas = new GLCanvas(capabilities);
+    private boolean drawColoredCyl = false, drawLightSource = false, scaleCyl = false, drawDark = false;
+    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.2f;
 
-        canvas.setSize(imageWidth, imageHeight);
+    private Vec4 darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f), lightColor = new Vec4(1.0f);
 
-        canvas.addGLEventListener(this);
-        canvas.addKeyListener(this);
-        canvas.addMouseListener(this);
-        canvas.addMouseMotionListener(this);
-        canvas.addMouseWheelListener(this);
+    private Timer lightTimer = new Timer(Timer.Type.LOOP, 5.0f);
+
+    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
+
+    public GaussianSpecularLighting(String title) {
+        super(title);
     }
 
     @Override
-    public void init(GLAutoDrawable drawable) {
+    public void init(GL3 gl3) {
 
-        GL3 gl3 = drawable.getGL().getGL3();
+        initializePrograms(gl3);
 
-        int projectionUBB = 2;
+        try {
+            cylinder = new Mesh(MESHES_ROOT + CYLINDER_MESH_SRC, gl3);
+            plane = new Mesh(MESHES_ROOT + PLANE_MESH_SRC, gl3);
+            cube = new Mesh(MESHES_ROOT + CUBE_MESH_SRC, gl3);
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            Logger.getLogger(GaussianSpecularLighting.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-        canvas.setAutoSwapBufferMode(false);
+        float depthZNear = 0.0f, depthZFar = 1.0f;
 
-        initializePrograms(gl3, projectionUBB);
+        gl3.glEnable(GL_CULL_FACE);
+        gl3.glCullFace(GL_BACK);
+        gl3.glFrontFace(GL_CW);
 
-        ViewData initialViewData = new ViewData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(0.3826834f, 0.0f, 0.0f, 0.92387953f), 5.0f, 0.0f);
-
-        ViewScale viewScale = new ViewScale(3.0f, 20.0f, 1.5f, 0.5f, 0.0f, 0.0f, 90.0f / 250.0f);
-
-        viewPole = new ViewPole(initialViewData, viewScale);
-
-        ObjectData initialObjectData = new ObjectData(new Vec3(0.0f, 0.5f, 0.0f), new Quat(1.0f, 0.0f, 0.0f, 0.0f));
-
-        objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, viewPole);
-
-        initializeMeshes(gl3);
-
-        gl3.glEnable(GL3.GL_CULL_FACE);
-        gl3.glCullFace(GL3.GL_BACK);
-        gl3.glFrontFace(GL3.GL_CW);
-
-        gl3.glEnable(GL3.GL_DEPTH_TEST);
+        gl3.glEnable(GL_DEPTH_TEST);
         gl3.glDepthMask(true);
-        gl3.glDepthFunc(GL3.GL_LEQUAL);
-        gl3.glDepthRangef(0.0f, 1.0f);
-        gl3.glEnable(GL3.GL_DEPTH_CLAMP);
+        gl3.glDepthFunc(GL_LEQUAL);
+        gl3.glDepthRangef(depthZNear, depthZFar);
+        gl3.glEnable(GL_DEPTH_CLAMP);
 
-        initUBO(gl3, projectionUBB);
+        gl3.glGenBuffers(1, projectionUniformBuffer);
 
-        lightHeight = 1.5f;
-        lightRadius = 1.0f;
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
+        gl3.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
-        lightTimer = new Timer(Timer.Type.Loop, 5.0f);
+        //Bind the static buffers.
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer.get(0),
+                0, Mat4.SIZE);
 
-        lightingModel = LightingModel.DiffuseAndGaussian;
-
-        coloredCylinder = false;
-        drawLight = false;
-
-        scaleCylinder = false;
-
-        drawDark = false;
-
-        lightAttenuation = 1.2f;
-
-        darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f);
-        lightColor = new Vec4(1.0f);
-
-        materialParameters = new MaterialParameters();
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-    private void initializePrograms(GL3 gl3, int projectionUBB) {
+    private void initializePrograms(GL3 gl3) {
 
-        String shadersFilepath = "/tut11/gaussianSpecularLighting/shaders/";
-        programs = new ProgramPairs[6];
-
-        ShaderPairs[] shadersFiles = new ShaderPairs[]{
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "DiffusePhong_FS.glsl"),
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "Phong_FS.glsl"),
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "DiffuseBlinn_FS.glsl"),
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "Blinn_FS.glsl"),
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "DiffuseGaussian_FS.glsl"),
-            new ShaderPairs("PN_VS.glsl", "PCN_VS.glsl", "Gaussian_FS.glsl")};
-
-        for (int i = 0; i < 6; i++) {
-
-            ProgramPairs programPair = new ProgramPairs();
-
-            programPair.whiteProgram = new LitProgram(gl3, shadersFilepath, shadersFiles[i].whiteVS, shadersFiles[i].fS, projectionUBB);
-            programPair.colorProgram = new LitProgram(gl3, shadersFilepath, shadersFiles[i].colorVS, shadersFiles[i].fS, projectionUBB);
-
-            programs[i] = programPair;
+        for (int i = 0; i < programs.length; i++) {
+            programs[i] = new ProgramPairs();
+            programs[i].whiteProgram = new ProgramData(gl3, SHADERS_ROOT, PN_SHADER_SRC, FRAGMENTS_SHADERS_SRC[i]);
+            programs[i].colorProgram = new ProgramData(gl3, SHADERS_ROOT, PCN_SHADER_SRC, FRAGMENTS_SHADERS_SRC[i]);
         }
-
-        unlit = new UnlitProgram(gl3, shadersFilepath, "PosTransform_VS.glsl", "UniformColor_FS.glsl", projectionUBB);
-    }
-
-    private void initializeMeshes(GL3 gl3) {
-
-        String dataFilepath = "/tut10/data/";
-
-//        cylinder = new Mesh(dataFilepath + "UnitCylinder.xml", gl3);
-//
-//        plane = new Mesh(dataFilepath + "LargePlane.xml", gl3);
-//
-//        cube = new Mesh(dataFilepath + "UnitCube.xml", gl3);
-    }
-
-    private void initUBO(GL3 gl3, int projectionUBB) {
-
-        int size = 16 * 4;
-
-        projectionUBO = new int[1];
-
-        gl3.glGenBuffers(1, projectionUBO, 0);
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
-        {
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size, null, GL3.GL_DYNAMIC_DRAW);
-
-            gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, projectionUBB, projectionUBO[0], 0, size);
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+        unlit = new UnlitProgData(gl3, SHADERS_ROOT, POS_TRANSFORM_SHADER_SRC, UNIFORM_COLOR_SHADER_SRC);
     }
 
     @Override
-    public void dispose(GLAutoDrawable drawable) {
-    }
-
-    @Override
-    public void display(GLAutoDrawable drawable) {
-//        System.out.println("display");
-
-        GL3 gl3 = drawable.getGL().getGL3();
+    public void display(GL3 gl3) {
 
         lightTimer.update();
 
-        gl3.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        gl3.glClearDepthf(1.0f);
-        gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
         MatrixStack modelMatrix = new MatrixStack();
+        modelMatrix.setMatrix(viewPole.calcMatrix());
 
-        modelMatrix.setTop(viewPole.calcMatrix());
+        Vec4 worldLightPos = calcLightPosition();
+        Vec4 lightPosCameraSpace = modelMatrix.top().mul_(worldLightPos);
 
-        Vec4 lightPositionWorldSpace = calculateLightPosition();
+        ProgramData whiteProg = programs[lightModel.ordinal()].whiteProgram;
+        ProgramData colorProg = programs[lightModel.ordinal()].colorProgram;
 
-        Vec4 lightPositionCameraSpace = modelMatrix.top().mult(lightPositionWorldSpace);
+        gl3.glUseProgram(whiteProg.theProgram);
+        gl3.glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
+        gl3.glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation);
+        gl3.glUniform1f(whiteProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel));
+        (drawDark ? darkColor : lightColor).toDfb(vecBuffer);
+        gl3.glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, vecBuffer);
 
-        whiteProgram = programs[lightingModel.ordinal()].whiteProgram;
-        colorProgram = programs[lightingModel.ordinal()].colorProgram;
+        gl3.glUseProgram(colorProg.theProgram);
+        gl3.glUniform4f(colorProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl3.glUniform4f(colorProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl3.glUniform3fv(colorProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.toDfb(vecBuffer));
+        gl3.glUniform1f(colorProg.lightAttenuationUnif, lightAttenuation);
+        gl3.glUniform1f(colorProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel));
+        gl3.glUseProgram(0);
 
-        setLights(gl3, lightPositionCameraSpace);
-
-        modelMatrix.push();
         {
-            renderGround(gl3, modelMatrix);
-        }
-        modelMatrix.pop();
-
-        modelMatrix.push();
-        {
-            renderCylinder(gl3, modelMatrix);
-        }
-        modelMatrix.pop();
-
-        if (drawLight) {
-
             modelMatrix.push();
+
+            //Render the ground plane.
             {
-                renderLight(gl3, modelMatrix, lightPositionWorldSpace);
+                modelMatrix.push();
+
+                Mat3 normMatrix = modelMatrix.top().toMat3_().inverse().transpose();
+
+                gl3.glUseProgram(whiteProg.theProgram);
+                gl3.glUniformMatrix4fv(whiteProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+
+                gl3.glUniformMatrix3fv(whiteProg.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
+                plane.render(gl3);
+                gl3.glUseProgram(0);
+
+                modelMatrix.pop();
+            }
+
+            //Render the Cylinder
+            {
+                modelMatrix.push();
+
+                modelMatrix.applyMatrix(objectPole.calcMatrix());
+
+                if (scaleCyl) {
+                    modelMatrix.scale(1.0f, 1.0f, 0.2f);
+                }
+
+                Mat3 normMatrix = modelMatrix.top().toMat3_().inverse().transpose();
+
+                ProgramData prog = drawColoredCyl ? colorProg : whiteProg;
+                gl3.glUseProgram(prog.theProgram);
+                gl3.glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+
+                gl3.glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
+
+                if (drawColoredCyl) {
+                    cylinder.render(gl3, "lit-color");
+                } else {
+                    cylinder.render(gl3, "lit");
+                }
+
+                gl3.glUseProgram(0);
+                modelMatrix.pop();
+            }
+
+            //Render the light
+            if (drawLightSource) {
+                modelMatrix.push();
+
+                modelMatrix.translate(worldLightPos).scale(0.1f, 0.1f, 0.1f);
+
+                gl3.glUseProgram(unlit.theProgram);
+                gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+                gl3.glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f);
+                cube.render(gl3, "flat");
             }
             modelMatrix.pop();
         }
-
-        drawable.swapBuffers();
     }
-
-    private Vec4 calculateLightPosition() {
+    
+    private Vec4 calcLightPosition() {
 
         float currentTimeThroughLoop = lightTimer.getAlpha();
 
@@ -296,292 +249,26 @@ public class GaussianSpecularLighting implements GLEventListener, KeyListener, M
 
         return ret;
     }
-
-    private void setLights(GL3 gl3, Vec4 lightPositionCameraSpace) {
-
-        whiteProgram.bind(gl3);
-        {
-            gl3.glUniform4f(whiteProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
-
-            gl3.glUniform4f(whiteProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-
-            gl3.glUniform3fv(whiteProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
-
-            gl3.glUniform1f(whiteProgram.getUnLocLightAttenuation(), lightAttenuation);
-
-            gl3.glUniform1f(whiteProgram.getUnLocShininessFactor(), materialParameters.getSpecularValue());
-
-            gl3.glUniform4fv(whiteProgram.getUnLocBaseDiffuseColor(), 1, (drawDark ? darkColor : lightColor).toFloatArray(), 0);
-
-        }
-        whiteProgram.unbind(gl3);
-
-        colorProgram.bind(gl3);
-        {
-            gl3.glUniform4f(colorProgram.getUnLocLightDiffuseIntensity(), 0.8f, 0.8f, 0.8f, 1.0f);
-
-            gl3.glUniform4f(colorProgram.getUnLocLightAmbientIntensity(), 0.2f, 0.2f, 0.2f, 1.0f);
-
-            gl3.glUniform3fv(colorProgram.getUnLocLightCameraSpacePosition(), 1, lightPositionCameraSpace.toFloatArray(), 0);
-
-            gl3.glUniform1f(colorProgram.getUnLocLightAttenuation(), lightAttenuation);
-
-            gl3.glUniform1f(colorProgram.getUnLocShininessFactor(), materialParameters.getSpecularValue());
-        }
-        colorProgram.unbind(gl3);
-    }
-
-    private void renderGround(GL3 gl3, MatrixStack modelMatrix) {
-
-        Mat3 normalMatrix = new Mat3(modelMatrix.top());
-
-        normalMatrix = normalMatrix.inverse();
-
-        normalMatrix = normalMatrix.transpose();
-
-        whiteProgram.bind(gl3);
-        {
-            gl3.glUniformMatrix4fv(whiteProgram.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-            gl3.glUniformMatrix3fv(whiteProgram.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
-
-            plane.render(gl3);
-        }
-        whiteProgram.unbind(gl3);
-    }
-
-    private void renderCylinder(GL3 gl3, MatrixStack modelMatrix) {
-
-        modelMatrix.applyMat(objectPole.calcMatrix());
-
-        if (scaleCylinder) {
-            modelMatrix.scale(new Vec3(1.0f, 1.0f, 0.2f));
-        }
-
-        Mat3 normalMatrix = new Mat3(modelMatrix.top());
-        normalMatrix = normalMatrix.inverse();
-        normalMatrix = normalMatrix.transpose();
-
-        LitProgram program = coloredCylinder ? colorProgram : whiteProgram;
-
-        program.bind(gl3);
-        {
-            gl3.glUniformMatrix4fv(program.getUnLocModelToCameraMatrix(), 1, false, modelMatrix.top().toFloatArray(), 0);
-
-            gl3.glUniformMatrix3fv(program.getUnLocNormalModelToCameraMatrix(), 1, false, normalMatrix.toFloatArray(), 0);
-
-            if (coloredCylinder) {
-                cylinder.render(gl3, "lit-color");
-            } else {
-                cylinder.render(gl3, "lit");
-            }
-        }
-        program.unbind(gl3);
-    }
-
-    private void renderLight(GL3 gl3, MatrixStack modelStack, Vec4 lightPositionWorldSpace) {
-        modelStack.translate(new Vec3(lightPositionWorldSpace));
-        modelStack.scale(new Vec3(0.1f, 0.1f, 0.1f));
-
-        unlit.bind(gl3);
-        {
-            gl3.glUniformMatrix4fv(unlit.getUnLocModelToCameraMatrix(), 1, false, modelStack.top().toFloatArray(), 0);
-
-            gl3.glUniform4f(unlit.getUnLocObjectColor(), 0.8078f, 0.8078f, 0.9922f, 1.0f);
-
-            cube.render(gl3, "flat");
-        }
-        unlit.unbind(gl3);
-    }
-
+    
     @Override
-    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+    public void reshape(GL3 gl3, int w, int h) {
 
-        float zNear = 1.0f;
-        float zFar = 1000.0f;
-        GL3 gl3 = drawable.getGL().getGL3();
+        float zNear = 1.0f, zFar = 1_000f;
+        MatrixStack perspMatrix = new MatrixStack();
 
-        int size = 16 * 4;
+        Mat4 proj = perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar).top();
 
-        MatrixStack perspectiveMatrix = new MatrixStack();
-        perspectiveMatrix.setTop(Jglm.perspective(45.0f, (float) width / (float) height, zNear, zFar));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, proj.toDfb(matBuffer));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, projectionUBO[0]);
-        {
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, size, GLBuffers.newDirectFloatBuffer(perspectiveMatrix.top().toFloatArray()));
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-
-        gl3.glViewport(x, y, width, height);
+        gl3.glViewport(0, 0, w, h);
     }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-
-        float offset;
-
-        if (e.isShiftDown()) {
-
-            offset = 0.05f;
-
-        } else {
-
-            offset = 0.2f;
-        }
-
-        switch (e.getKeyCode()) {
-
-            case KeyEvent.VK_SPACE:
-                coloredCylinder = !coloredCylinder;
-                break;
-
-            case KeyEvent.VK_Y:
-                drawLight = !drawLight;
-                break;
-
-            case KeyEvent.VK_I:
-                lightHeight += offset;
-                break;
-
-            case KeyEvent.VK_K:
-                lightHeight -= offset;
-                break;
-
-            case KeyEvent.VK_L:
-                lightRadius += offset;
-                break;
-
-            case KeyEvent.VK_J:
-                lightRadius -= offset;
-                if (lightRadius < 0.2f) {
-                    lightRadius = 0.2f;
-                }
-                break;
-
-            case KeyEvent.VK_O:
-                materialParameters.increment(e.isShiftDown());
-                break;
-
-            case KeyEvent.VK_U:
-                materialParameters.decrement(e.isShiftDown());
-                break;
-
-            case KeyEvent.VK_B:
-                lightTimer.togglePause();
-                break;
-
-            case KeyEvent.VK_H:
-                if (e.isShiftDown()) {
-                    switch (lightingModel) {
-                        case Blinn:
-                            lightingModel = LightingModel.DiffuseAndBlinn;
-                            break;
-                        case DiffuseAndBlinn:
-                            lightingModel = LightingModel.Blinn;
-                            break;
-                        case Phong:
-                            lightingModel = LightingModel.DiffuseAndPhong;
-                            break;
-                        case DiffuseAndPhong:
-                            lightingModel = LightingModel.Phong;
-                            break;
-                        case Gaussian:
-                            lightingModel = LightingModel.DiffuseAndGaussian;
-                            break;
-                        case DiffuseAndGaussian:
-                            lightingModel = LightingModel.Gaussian;
-                            break;
-                    }
-                } else {
-                    switch (lightingModel) {
-                        case Phong:
-                            lightingModel = LightingModel.Blinn;
-                            break;
-                        case Blinn:
-                            lightingModel = LightingModel.Gaussian;
-                            break;
-                        case Gaussian:
-                            lightingModel = LightingModel.Phong;
-                            break;
-                        case DiffuseAndPhong:
-                            lightingModel = LightingModel.DiffuseAndBlinn;
-                            break;
-                        case DiffuseAndBlinn:
-                            lightingModel = LightingModel.DiffuseAndGaussian;
-                            break;
-                        case DiffuseAndGaussian:
-                            lightingModel = LightingModel.DiffuseAndPhong;
-                            break;
-                    }
-                    printLightingModel();
-                }
-                break;
-
-            case KeyEvent.VK_T:
-                scaleCylinder = !scaleCylinder;
-                break;
-
-            case KeyEvent.VK_G:
-                drawDark = !drawDark;
-                break;
-        }
-    }
-
-    private void printLightingModel() {
-
-        switch (lightingModel) {
-
-            case Phong:
-                System.out.println("Phong");
-                break;
-            case DiffuseAndPhong:
-                System.out.println("DiffuseAndPhong");
-                break;
-            case Blinn:
-                System.out.println("Blinn");
-                break;
-            case DiffuseAndBlinn:
-                System.out.println("DiffuseAndBlinn");
-                break;
-            case Gaussian:
-                System.out.println("Gaussian");
-                break;
-            case DiffuseAndGaussian:
-                System.out.println("DiffuseAndGaussian");
-                break;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
+    
     @Override
     public void mousePressed(MouseEvent e) {
         viewPole.mousePressed(e);
         objectPole.mousePressed(e);
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        viewPole.mouseReleased(e);
-        objectPole.mouseReleased(e);
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
     }
 
     @Override
@@ -591,151 +278,122 @@ public class GaussianSpecularLighting implements GLEventListener, KeyListener, M
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
+        viewPole.mouseReleased(e);
+        objectPole.mouseReleased(e);
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
+    public void mouseWheelMoved(MouseEvent e) {
         viewPole.mouseWheel(e);
     }
 
-    public GLCanvas getCanvas() {
-        return canvas;
+    @Override
+    public void keyPressed(KeyEvent e) {
 
+        boolean changedShininess = false, changedLightModel = false;
 
+        switch (e.getKeyCode()) {
+
+            case KeyEvent.VK_ESCAPE:
+                animator.remove(glWindow);
+                glWindow.destroy();
+                break;
+
+            case KeyEvent.VK_SPACE:
+                drawColoredCyl = !drawColoredCyl;
+                break;
+
+            case KeyEvent.VK_I:
+                lightHeight += e.isShiftDown() ? 0.05f : 0.2f;
+                break;
+            case KeyEvent.VK_K:
+                lightHeight -= e.isShiftDown() ? 0.05f : 0.2f;
+                break;
+            case KeyEvent.VK_L:
+                lightRadius += e.isShiftDown() ? 0.05f : 0.2f;
+                break;
+            case KeyEvent.VK_J:
+                lightRadius -= e.isShiftDown() ? 0.05f : 0.2f;
+                break;
+
+            case KeyEvent.VK_O:
+                MaterialParameters.increment(lightModel, !e.isShiftDown());
+                changedShininess = true;
+                break;
+            case KeyEvent.VK_U:
+                MaterialParameters.decrement(lightModel, !e.isShiftDown());
+                changedShininess = true;
+                break;
+
+            case KeyEvent.VK_Y:
+                drawLightSource = !drawLightSource;
+                break;
+            case KeyEvent.VK_T:
+                scaleCyl = !scaleCyl;
+                break;
+            case KeyEvent.VK_B:
+                lightTimer.togglePause();
+                break;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
+
+            case KeyEvent.VK_H:
+                int model = lightModel.ordinal();
+                if (e.isShiftDown()) {
+                    model = model + ((model % 2) != 0 ? -1 : +1);
+                } else {
+                    model += 2;
+                    model %= LightingModel.values().length;
+                }
+                lightModel = LightingModel.values()[model];
+                changedLightModel = true;
+                break;
+        }
+
+        if (lightRadius < 0.2f) {
+            lightRadius = 0.2f;
+        }
+        if (changedShininess) {
+            System.out.println("Shiny: " + MaterialParameters.getSpecularValue(lightModel));
+        }
+        if (changedLightModel) {
+            System.out.println(lightModel);
+        }
     }
+    
+    @Override
+    public void end(GL3 gl3) {
 
-    private enum LightingModel {
+        for (ProgramPairs programPair : programs) {
+            gl3.glDeleteProgram(programPair.whiteProgram.theProgram);
+            gl3.glDeleteProgram(programPair.colorProgram.theProgram);
+        }
+        gl3.glDeleteProgram(unlit.theProgram);
 
-        DiffuseAndPhong,
-        Phong,
-        DiffuseAndBlinn,
-        Blinn,
-        DiffuseAndGaussian,
-        Gaussian;
+        gl3.glDeleteBuffers(1, projectionUniformBuffer);
+
+        cylinder.dispose(gl3);
+        plane.dispose(gl3);
+        cube.dispose(gl3);
+
+        BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
+    }
+    
+    enum LightingModel {
+
+        PhongSpecular,
+        PhongOnly,
+        BlinnSpecular,
+        BlinnOnly,
+        GaussianSpecular,
+        GaussianOnly;
     }
 
     private class ProgramPairs {
 
-        public LitProgram whiteProgram;
-        public LitProgram colorProgram;
-    }
-
-    private class ShaderPairs {
-
-        public String whiteVS;
-        public String colorVS;
-        public String fS;
-
-        public ShaderPairs(String whiteVS, String colorVS, String fS) {
-
-            this.whiteVS = whiteVS;
-            this.colorVS = colorVS;
-            this.fS = fS;
-        }
-    }
-
-    private class MaterialParameters {
-
-        private float shininessFactorPhong;
-        private float shininessFactorBlinn;
-        private float roughnessGaussian;
-
-        public MaterialParameters() {
-
-            shininessFactorPhong = 4.0f;
-            shininessFactorBlinn = 4.0f;
-            roughnessGaussian = 0.5f;
-        }
-
-        public float getSpecularValue() {
-
-            switch (lightingModel) {
-
-                case DiffuseAndBlinn:
-                case Blinn:
-                    return shininessFactorBlinn;
-
-                case DiffuseAndPhong:
-                case Phong:
-                    return shininessFactorPhong;
-
-                default:
-                    return roughnessGaussian;
-            }
-        }
-
-        public void increment(boolean small) {
-
-            float increment;
-
-            if (small) {
-                increment = 0.1f;
-            } else {
-                increment = 0.5f;
-            }
-
-            switch (lightingModel) {
-
-                case Blinn:
-                case DiffuseAndBlinn:
-                    shininessFactorBlinn += increment;
-                    System.out.println("shininessFactorBlinn: " + shininessFactorBlinn);
-                    break;
-
-                case Phong:
-                case DiffuseAndPhong:
-                    shininessFactorPhong += increment;
-                    System.out.println("shininessFactorPhong: " + shininessFactorPhong);
-                    break;
-
-                default:
-                    if (small) {
-                        increment = 0.01f;
-                    } else {
-                        increment = 0.1f;
-                    }
-                    roughnessGaussian += increment;
-                    System.out.println("roughnessGaussian: " + roughnessGaussian);
-            }
-        }
-
-        public void decrement(boolean small) {
-
-            float decrement;
-
-            if (small) {
-                decrement = 0.1f;
-            } else {
-                decrement = 0.5f;
-            }
-
-            switch (lightingModel) {
-
-                case Blinn:
-                case DiffuseAndBlinn:
-                    shininessFactorBlinn -= decrement;
-                    shininessFactorBlinn = Jglm.clamp(shininessFactorBlinn, 0.0001f, shininessFactorBlinn);
-                    System.out.println("shininessFactorBlinn: " + shininessFactorBlinn);
-                    break;
-
-                case Phong:
-                case DiffuseAndPhong:
-                    shininessFactorPhong -= decrement;
-                    shininessFactorPhong = Jglm.clamp(shininessFactorPhong, 0.0001f, shininessFactorPhong);
-                    System.out.println("shininessFactorPhong: " + shininessFactorPhong);
-                    break;
-
-                default:
-                    if (small) {
-                        decrement = 0.01f;
-                    } else {
-                        decrement = 0.1f;
-                    }
-                    roughnessGaussian -= decrement;
-                    roughnessGaussian = Jglm.clamp(roughnessGaussian, 0.00001f, 1.0f);
-                    System.out.println("roughnessGaussian: " + roughnessGaussian);
-            }
-        }
+        public ProgramData whiteProgram;
+        public ProgramData colorProgram;
     }
 }
