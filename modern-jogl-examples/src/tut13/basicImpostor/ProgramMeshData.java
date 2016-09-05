@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut13;
+package tut13.basicImpostor;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -16,21 +16,21 @@ import framework.Semantic;
  *
  * @author elect
  */
-class UnlitProgData {
+class ProgramMeshData {
 
     public int theProgram;
 
-    public int objectColorUnif;
     public int modelToCameraMatrixUnif;
+    public int normalModelToCameraMatrixUnif;
 
-    public UnlitProgData(GL3 gl3, String shaderRoot, String shaderSrc) {
+    public ProgramMeshData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
         ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), shaderRoot, null,
-                shaderSrc, "vert", null, true);
+                vertSrc, "vert", null, true);
         ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), shaderRoot, null,
-                shaderSrc, "frag", null, true);
+                fragSrc, "frag", null, true);
 
         shaderProgram.add(vertShaderCode);
         shaderProgram.add(fragShaderCode);
@@ -42,11 +42,17 @@ class UnlitProgData {
         vertShaderCode.destroy(gl3);
         fragShaderCode.destroy(gl3);
 
-        objectColorUnif = gl3.glGetUniformLocation(theProgram, "objectColor");
         modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
+        normalModelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
 
         gl3.glUniformBlockBinding(theProgram,
                 gl3.glGetUniformBlockIndex(theProgram, "Projection"),
                 Semantic.Uniform.PROJECTION);
+        gl3.glUniformBlockBinding(theProgram,
+                gl3.glGetUniformBlockIndex(theProgram, "Light"),
+                Semantic.Uniform.LIGHT);
+        gl3.glUniformBlockBinding(theProgram,
+                gl3.glGetUniformBlockIndex(theProgram, "Material"),
+                Semantic.Uniform.MATERIAL);
     }
 }

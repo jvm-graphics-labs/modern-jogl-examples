@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut13;
+package tut13.basicImpostor;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -16,21 +16,21 @@ import framework.Semantic;
  *
  * @author elect
  */
-class ProgramMeshData {
+class ProgramImposData {
 
     public int theProgram;
 
-    public int modelToCameraMatrixUnif;
-    public int normalModelToCameraMatrixUnif;
+    public int sphereRadiusUnif;
+    public int cameraSpherePosUnif;
 
-    public ProgramMeshData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
+    public ProgramImposData(GL3 gl3, String shaderRoot, String shaderSrc) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
         ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), shaderRoot, null,
-                vertSrc, "vert", null, true);
+                shaderSrc, "vert", null, true);
         ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), shaderRoot, null,
-                fragSrc, "frag", null, true);
+                shaderSrc, "frag", null, true);
 
         shaderProgram.add(vertShaderCode);
         shaderProgram.add(fragShaderCode);
@@ -42,8 +42,8 @@ class ProgramMeshData {
         vertShaderCode.destroy(gl3);
         fragShaderCode.destroy(gl3);
 
-        modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
-        normalModelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
+        sphereRadiusUnif = gl3.glGetUniformLocation(theProgram, "sphereRadius");
+        cameraSpherePosUnif = gl3.glGetUniformLocation(theProgram, "cameraSpherePos");
 
         gl3.glUniformBlockBinding(theProgram,
                 gl3.glGetUniformBlockIndex(theProgram, "Projection"),
