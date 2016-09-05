@@ -54,7 +54,7 @@ public class BlinnVsPhongLighting extends Framework {
     private final String[] FRAGMENTS_SHADERS_SRC = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
 
     public static void main(String[] args) {
-        new BlinnVsPhongLighting("Tutorial 10 - Blinn vs Phong Lighting");
+        new BlinnVsPhongLighting("Tutorial 11 - Blinn vs Phong Lighting");
     }
 
     private ProgramPairs[] programs = new ProgramPairs[LightingModel.values().length];

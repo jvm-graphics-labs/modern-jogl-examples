@@ -75,6 +75,8 @@ public class Semantic {
         public static final int GLOBAL_MATRICES = 0;
         public static final int PROJECTION = 1;
         public static final int UNPROJECTION = 2;
+        public static final int MATERIAL = 3;
+        public static final int LIGHT = 4;
         
         public static final int TRANSFORM0 = 1;
         public static final int TRANSFORM1 = 2;
@@ -82,7 +84,6 @@ public class Semantic {
         public static final int CONSTANT = 0;
         public static final int PER_FRAME = 1;
         public static final int PER_PASS = 2;
-        public static final int LIGHT = 3;
     }
 
     public static class Vert {

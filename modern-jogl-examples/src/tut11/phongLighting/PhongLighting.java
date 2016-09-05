@@ -54,7 +54,7 @@ public class PhongLighting extends Framework {
             CYLINDER_MESH_SRC = "UnitCylinder.xml", PLANE_MESH_SRC = "LargePlane.xml", CUBE_MESH_SRC = "UnitCube.xml";
 
     public static void main(String[] args) {
-        new PhongLighting("Tutorial 10 - Fragment Attenuation");
+        new PhongLighting("Tutorial 11 - Fragment Attenuation");
     }
 
     private ProgramData whiteNoPhong, colorNoPhong, whitePhong, colorPhong, whitePhongOnly, colorPhongOnly;

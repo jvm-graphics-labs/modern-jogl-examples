@@ -55,7 +55,7 @@ public class GaussianSpecularLighting extends Framework {
         "gaussian-lighting", "gaussian-only"};
 
     public static void main(String[] args) {
-        new GaussianSpecularLighting("Tutorial 10 - Gaussian Specular Lighting");
+        new GaussianSpecularLighting("Tutorial 11 - Gaussian Specular Lighting");
     }
 
     private ProgramPairs[] programs = new ProgramPairs[LightingModel.values().length];
