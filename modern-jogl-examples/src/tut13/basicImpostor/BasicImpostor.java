@@ -134,7 +134,7 @@ public class BasicImpostor extends Framework {
 
     private Impostors currImpostor = Impostors.Basic;
 
-    private boolean drawCameraPos = false, drawLights = true;
+    private boolean drawCameraPos = true, drawLights = true;
 
     private boolean[] drawImposter = {false, false, false, false};
 
@@ -245,7 +245,7 @@ public class BasicImpostor extends Framework {
         new MaterialBlock(new Vec4(0.4f, 0.4f, 0.4f, 1.0f), new Vec4(0.1f, 0.1f, 0.1f, 1.0f), 0.8f)
                 .toDbb(ubArray.storage, MaterialNames.DullGrey.ordinal() * ubArray.blockOffset);
 
-        new MaterialBlock(new Vec4(0.5f, 0.5f, 0.5f, 1.0f), new Vec4(0.95f, 0.95f, 0.95f, 1.0f), 0.3f)
+        new MaterialBlock(new Vec4(0.05f, 0.05f, 0.05f, 1.0f), new Vec4(0.95f, 0.95f, 0.95f, 1.0f), 0.3f)
                 .toDbb(ubArray.storage, MaterialNames.BlackShiny.ordinal() * ubArray.blockOffset);
 
         return ubArray.createBufferObject(gl3);
@@ -297,7 +297,7 @@ public class BasicImpostor extends Framework {
 
         drawSphereOrbit(gl3, modelMatrix, new Vec3(0.0f, 10.0f, 0.0f), new Vec3(0.6f, 0.8f, 0.0f), 20.0f,
                 sphereTimer.getAlpha(), 2.0f, MaterialNames.DullGrey, drawImposter[1]);
-
+        
         drawSphereOrbit(gl3, modelMatrix, new Vec3(-10.0f, 1.0f, 0.0f), new Vec3(0.0f, 1.0f, 0.0f), 10.0f,
                 sphereTimer.getAlpha(), 1.0f, MaterialNames.BlackShiny, drawImposter[2]);
 
@@ -332,7 +332,10 @@ public class BasicImpostor extends Framework {
             gl3.glEnable(GL_DEPTH_TEST);
             gl3.glUniform4f(unlit.objectColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
             cube.render(gl3, "flat");
+            
+            modelMatrix.pop();
         }
+        modelMatrix.pop();
     }
 
     private Vec4 calcLightPosition() {
@@ -399,10 +402,10 @@ public class BasicImpostor extends Framework {
             float orbitAlpha, float sphereRadius, MaterialNames material, boolean drawImposter) {
 
         modelMatrix.push().translate(orbitCenter).rotate(orbitAxis, 360.0f * orbitAlpha);
-
-        Vec3 offsetDir = orbitAxis.cross(new Vec3(0.0f, 1.0f, 0.0f));
+        
+        Vec3 offsetDir = orbitAxis.cross_(new Vec3(0.0f, 1.0f, 0.0f));
         if (offsetDir.length() < 0.001f) {
-            offsetDir = orbitAxis.cross(new Vec3(1.0f, 0.0f, 0.0f));
+            offsetDir = orbitAxis.cross_(new Vec3(1.0f, 0.0f, 0.0f));
         }
 
         offsetDir.normalize();
@@ -461,67 +464,47 @@ public class BasicImpostor extends Framework {
                 glWindow.destroy();
                 break;
 
-//            case KeyEvent.VK_SPACE:
-//                drawColoredCyl = !drawColoredCyl;
-//                break;
-//
-//            case KeyEvent.VK_I:
-//                lightHeight += e.isShiftDown() ? 0.05f : 0.2f;
-//                break;
-//            case KeyEvent.VK_K:
-//                lightHeight -= e.isShiftDown() ? 0.05f : 0.2f;
-//                break;
-//            case KeyEvent.VK_L:
-//                lightRadius += e.isShiftDown() ? 0.05f : 0.2f;
-//                break;
-//            case KeyEvent.VK_J:
-//                lightRadius -= e.isShiftDown() ? 0.05f : 0.2f;
-//                break;
-//
-//            case KeyEvent.VK_O:
-//                MaterialParameters.increment(lightModel, !e.isShiftDown());
-//                changedShininess = true;
-//                break;
-//            case KeyEvent.VK_U:
-//                MaterialParameters.decrement(lightModel, !e.isShiftDown());
-//                changedShininess = true;
-//                break;
-//
-//            case KeyEvent.VK_Y:
-//                drawLightSource = !drawLightSource;
-//                break;
-//            case KeyEvent.VK_T:
-//                scaleCyl = !scaleCyl;
-//                break;
-//            case KeyEvent.VK_B:
-//                lightTimer.togglePause();
-//                break;
-//            case KeyEvent.VK_G:
-//                drawDark = !drawDark;
-//                break;
-//
-//            case KeyEvent.VK_H:
-//                int model = lightModel.ordinal();
-//                if (e.isShiftDown()) {
-//                    model = model + ((model % 2) != 0 ? -1 : +1);
-//                } else {
-//                    model += 2;
-//                    model %= LightingModel.values().length;
-//                }
-//                lightModel = LightingModel.values()[model];
-//                changedLightModel = true;
-//                break;
-        }
+            case KeyEvent.VK_P:
+                sphereTimer.togglePause();
+                break;
+            case KeyEvent.VK_MINUS:
+                sphereTimer.rewind(0.5f);
+                break;
+            case KeyEvent.VK_PLUS:
+                sphereTimer.fastForward(0.5f);
+                break;
+            case KeyEvent.VK_T:
+                drawCameraPos = !drawCameraPos;
+                break;
+            case KeyEvent.VK_G:
+                drawLights = !drawLights;
+                break;
 
-//        if (lightRadius < 0.2f) {
-//            lightRadius = 0.2f;
-//        }
-//        if (changedShininess) {
-//            System.out.println("Shiny: " + MaterialParameters.getSpecularValue(lightModel));
-//        }
-//        if (changedLightModel) {
-//            System.out.println(lightModel);
-//        }
+            case KeyEvent.VK_1:
+                drawImposter[0] = !drawImposter[0];
+                break;
+            case KeyEvent.VK_2:
+                drawImposter[1] = !drawImposter[1];
+                break;
+            case KeyEvent.VK_3:
+                drawImposter[2] = !drawImposter[2];
+                break;
+            case KeyEvent.VK_4:
+                drawImposter[3] = !drawImposter[3];
+                break;
+
+            case KeyEvent.VK_L:
+                currImpostor = Impostors.Basic;
+                break;
+            case KeyEvent.VK_J:
+                currImpostor = Impostors.Perspective;
+                break;
+            case KeyEvent.VK_H:
+                currImpostor = Impostors.Depth;
+                break;
+        }
+        
+        viewPole.charPress(e);
     }
 
     enum MaterialNames {
