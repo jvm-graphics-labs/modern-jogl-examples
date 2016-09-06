@@ -28,6 +28,7 @@ import glm.mat._4.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
+import glutil.BufferUtils;
 import glutil.MatrixStack;
 import glutil.Timer;
 import glutil.UniformBlockArray;
@@ -55,7 +56,7 @@ public class BasicImpostor extends Framework {
     private final String[] IMP_SHADERS_SRC = {"basic-impostor", "persp-impostor", "depth-impostor"};
 
     public static void main(String[] args) {
-        new BasicImpostor("Tutorial 11 - Gaussian Specular Lighting");
+        new BasicImpostor("Tutorial 13 - Basic Impostor");
     }
 
     private ProgramMeshData litMeshProg;
@@ -134,7 +135,7 @@ public class BasicImpostor extends Framework {
 
     private Impostors currImpostor = Impostors.Basic;
 
-    private boolean drawCameraPos = true, drawLights = true;
+    private boolean drawCameraPos = false, drawLights = true;
 
     private boolean[] drawImposter = {false, false, false, false};
 
@@ -248,7 +249,11 @@ public class BasicImpostor extends Framework {
         new MaterialBlock(new Vec4(0.05f, 0.05f, 0.05f, 1.0f), new Vec4(0.95f, 0.95f, 0.95f, 1.0f), 0.3f)
                 .toDbb(ubArray.storage, MaterialNames.BlackShiny.ordinal() * ubArray.blockOffset);
 
-        return ubArray.createBufferObject(gl3);
+        int result = ubArray.createBufferObject(gl3);
+        
+        ubArray.dispose();
+        
+        return result;
     }
 
     @Override
@@ -507,6 +512,25 @@ public class BasicImpostor extends Framework {
         viewPole.charPress(e);
     }
 
+    @Override
+    public void end(GL3 gl3) {
+
+        IntStreamEx.range(litImpProgs.length).forEach(i -> gl3.glDeleteProgram(litImpProgs[i].theProgram));
+        gl3.glDeleteProgram(litMeshProg.theProgram);
+        gl3.glDeleteProgram(unlit.theProgram);
+
+        gl3.glDeleteBuffers(Buffer.MAX, bufferName);
+        gl3.glDeleteVertexArrays(1, imposterVAO);
+
+        sphere.dispose(gl3);
+        plane.dispose(gl3);
+        cube.dispose(gl3);
+
+        BufferUtils.destroyDirectBuffer(bufferName);
+        BufferUtils.destroyDirectBuffer(imposterVAO);
+        BufferUtils.destroyDirectBuffer(lightBuffer);
+    }
+    
     enum MaterialNames {
         Terrain, BlueShiny, GoldMetal, DullGrey, BlackShiny;
     };

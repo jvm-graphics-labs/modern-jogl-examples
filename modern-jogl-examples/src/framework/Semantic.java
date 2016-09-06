@@ -18,6 +18,8 @@ public class Semantic {
         public static final int COLOR = 1;
         public static final int TEXCOORD = 4;
         public static final int DRAW_ID = 5;
+        public static final int CAMERA_SPHERE_POS = 6;
+        public static final int SPHERE_RADIUS = 7;
     }
 
     public static class Buffer {
