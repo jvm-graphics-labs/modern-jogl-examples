@@ -11,6 +11,25 @@ Steps:
 
 - add jars under `\lib`
 
+Status (everything where not specified, it means it is ported, updated and working):
+
+- Chapter 1, Hello Triangle
+- Chapter 2, Playing with Colors
+- Chapter 3, Moving Triangle
+- Chapter 4, Objects at Rest
+- Chapter 5, Objects at Depth
+- Chapter 6, Objects in Motion
+- Chapter 7, World in Motion
+- Chapter 8, Getting Oriented
+- Chapter 9, Lights On
+- Chapter 10, Plane Lights
+- Chapter 11, Shinies
+- Chapter 12, Dynamic Lights, to complete
+- Chapter 13, Lies and Impostors, in progress
+- Chapter 14, Textures are not Pictures, to update
+- Chapter 15, Many Images, to update
+- Chapter 16, Gamma and Textures, to update
+- Chapter 17, Spotlight on Textures, to update
 
 In this project there are the original Jglm and the java unofficial opengl SDK. At the end of 2012 I decided to make them as separated projects, in order to make things clear and hope that they could grow their own. But you don't need them, the original ones work out of the box.
 
