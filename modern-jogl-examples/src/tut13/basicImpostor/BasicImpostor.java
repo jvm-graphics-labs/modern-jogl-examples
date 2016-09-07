@@ -340,7 +340,6 @@ public class BasicImpostor extends Framework {
             
             modelMatrix.pop();
         }
-        modelMatrix.pop();
     }
 
     private Vec4 calcLightPosition() {
@@ -354,10 +353,6 @@ public class BasicImpostor extends Framework {
         ret.z = (float) (Math.sin(timeThroughLoop * scale) * 20.0f);
 
         return ret;
-    }
-
-    private void drawSphere(GL3 gl3, MatrixStack modelStack, Vec3 position, float radius, MaterialNames material) {
-        drawSphere(gl3, modelStack, position, radius, material, false);
     }
 
     private void drawSphere(GL3 gl3, MatrixStack modelMatrix, Vec3 position, float radius, MaterialNames material,
@@ -396,11 +391,6 @@ public class BasicImpostor extends Framework {
             modelMatrix.pop();
         }
         gl3.glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0);
-    }
-
-    private void drawSphereOrbit(GL3 gl3, MatrixStack modelMatrix, Vec3 orbitCenter, Vec3 orbitAxis, float orbitRadius,
-            float orbitAlpha, float sphereRadius, MaterialNames material) {
-        drawSphereOrbit(gl3, modelMatrix, orbitCenter, orbitAxis, orbitRadius, orbitAlpha, sphereRadius, material, false);
     }
 
     private void drawSphereOrbit(GL3 gl3, MatrixStack modelMatrix, Vec3 orbitCenter, Vec3 orbitAxis, float orbitRadius,
@@ -459,8 +449,6 @@ public class BasicImpostor extends Framework {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-        boolean changedShininess = false, changedLightModel = false;
 
         switch (e.getKeyCode()) {
 
