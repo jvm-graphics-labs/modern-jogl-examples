@@ -11,6 +11,8 @@ Steps:
 
 - add jars under `\lib`
 
+In case you may see some error in the tutorials that should be running (see list below), just clone the original project (look on my repos or on [java-graphic](https://github.com/java-graphics)) and add it.
+
 Status (everything where not specified, it means it is ported, updated and working):
 
 - Chapter 1, Hello Triangle
@@ -31,10 +33,5 @@ Status (everything where not specified, it means it is ported, updated and worki
 - Chapter 16, Gamma and Textures, to update
 - Chapter 17, Spotlight on Textures, to update
 
-In this project there are the original Jglm and the java unofficial opengl SDK. At the end of 2012 I decided to make them as separated projects, in order to make things clear and hope that they could grow their own. But you don't need them, the original ones work out of the box.
 
-
-
-Ps: in the last jogl builds GL3 has been moved, so in the meanwhile I upgrade all my projects, you have to change it by yourself  :grimacing:
-
-Pps: I am also rewriting the samples using the jogl [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html).. be patient  :pray: 
+Pps: I am also rewriting the samples using the jogl high performance native toolkit [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html).. be patient  :pray: 
