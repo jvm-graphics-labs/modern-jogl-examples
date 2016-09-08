@@ -25,8 +25,8 @@ Status (everything where not specified, it means it is ported, updated and worki
 - Chapter 10, Plane Lights
 - Chapter 11, Shinies
 - Chapter 12, Dynamic Lights, to complete
-- Chapter 13, Lies and Impostors, in progress
-- Chapter 14, Textures are not Pictures, to update
+- Chapter 13, Lies and Impostors, 
+- Chapter 14, Textures are not Pictures, in progress
 - Chapter 15, Many Images, to update
 - Chapter 16, Gamma and Textures, to update
 - Chapter 17, Spotlight on Textures, to update
