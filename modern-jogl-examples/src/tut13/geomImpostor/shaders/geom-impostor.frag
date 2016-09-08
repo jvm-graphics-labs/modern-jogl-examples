@@ -18,7 +18,7 @@ struct MaterialEntry
 {
     vec4 diffuseColor;
     vec4 specularColor;
-    vec4 specularShininess;		//ATI Array Bug fix. Not really a vec4.
+    vec4 specularShininess;		//ATI Array Bug fix. Dummy vec4 for a real float.
 };
 
 const int NUMBER_OF_SPHERES = 4;

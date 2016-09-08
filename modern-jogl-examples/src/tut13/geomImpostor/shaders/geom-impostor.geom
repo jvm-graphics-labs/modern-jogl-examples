@@ -1,9 +1,11 @@
 #version 330
-#extension GL_EXT_gpu_shader4 : enable
 
-layout(std140) uniform;
-layout(points) in;
-layout(triangle_strip, max_vertices = 4) out;
+// fix a compiler bug for NVIDIA's OpenGL. It should not be necessary.
+#extension GL_EXT_gpu_shader4 : enable 
+
+layout (std140) uniform;
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
 
 uniform Projection
 {

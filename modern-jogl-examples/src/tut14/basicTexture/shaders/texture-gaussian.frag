@@ -1,58 +1,60 @@
 #version 330
 
+// Outputs
+#define FRAG_COLOR  0
+
 in vec3 vertexNormal;
 in vec3 cameraSpacePosition;
 
-out vec4 outputColor;
+layout (location = FRAG_COLOR) out vec4 outputColor;
 
 layout(std140) uniform;
 
-uniform Material {
-
+uniform Material
+{
     vec4 diffuseColor;
     vec4 specularColor;
-    float specularShininess;	//Not used in this shader
-} Mtl;
+    float specularShininess;
+} mtl;
 
-struct PerLight {
-
+struct PerLight
+{
     vec4 cameraSpaceLightPos;
     vec4 lightIntensity;
 };
 
-const int numberOfLights = 2;
+const int NUMBER_OF_LIGHTS = 2;
 
-uniform Light {
-
+uniform Light
+{
     vec4 ambientIntensity;
     float lightAttenuation;
-    PerLight lights[numberOfLights];
-} Lgt;
+    PerLight lights[NUMBER_OF_LIGHTS];
+} lgt;
 
 uniform sampler1D gaussianTexture;
 
-float CalcAttenuation(in vec3 cameraSpacePosition, in vec3 cameraSpaceLightPos,	out vec3 lightDirection) {
-
+float calcAttenuation(in vec3 cameraSpacePosition, in vec3 cameraSpaceLightPos, out vec3 lightDirection)
+{
     vec3 lightDifference =  cameraSpaceLightPos - cameraSpacePosition;
     float lightDistanceSqr = dot(lightDifference, lightDifference);
     lightDirection = lightDifference * inversesqrt(lightDistanceSqr);
 
-    return (1 / ( 1.0 + Lgt.lightAttenuation * lightDistanceSqr));
+    return (1 / (1.0 + lgt.lightAttenuation * lightDistanceSqr));
 }
 
-vec4 ComputeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3 cameraSpaceNormal) {
-
+vec4 computeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3 cameraSpaceNormal)
+{
     vec3 lightDir;
     vec4 lightIntensity;
-
-    if(lightData.cameraSpaceLightPos.w == 0.0) {
-
+    if(lightData.cameraSpaceLightPos.w == 0.0)
+    {
         lightDir = vec3(lightData.cameraSpaceLightPos);
         lightIntensity = lightData.lightIntensity;
-
-    } else {
-
-        float atten = CalcAttenuation(cameraSpacePosition, lightData.cameraSpaceLightPos.xyz, lightDir);
+    }
+    else
+    {
+        float atten = calcAttenuation(cameraSpacePosition, lightData.cameraSpaceLightPos.xyz, lightDir);
         lightIntensity = atten * lightData.lightIntensity;
     }
 
@@ -68,19 +70,18 @@ vec4 ComputeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3
 
     gaussianTerm = cosAngIncidence != 0.0 ? gaussianTerm : 0.0;
 
-    vec4 lighting = Mtl.diffuseColor * lightIntensity * cosAngIncidence;
-    lighting += Mtl.specularColor * lightIntensity * gaussianTerm;
+    vec4 lighting = mtl.diffuseColor * lightIntensity * cosAngIncidence;
+    lighting += mtl.specularColor * lightIntensity * gaussianTerm;
 
     return lighting;
 }
 
 void main()
 {
-    vec4 accumLighting = Mtl.diffuseColor * Lgt.ambientIntensity;
-
-    for(int light = 0; light < numberOfLights; light++) {
-
-        accumLighting += ComputeLighting(Lgt.lights[light], cameraSpacePosition, vertexNormal);
+    vec4 accumLighting = mtl.diffuseColor * lgt.ambientIntensity;
+    for(int light = 0; light < NUMBER_OF_LIGHTS; light++)
+    {
+        accumLighting += computeLighting(lgt.lights[light], cameraSpacePosition, vertexNormal);
     }
 
     outputColor = sqrt(accumLighting); //2.0 gamma correction

@@ -62,7 +62,6 @@ public class GeomImpostor extends Framework {
             PN_SHADER_SRC = "pn", LIGHTING_SHADER_SRC = "lighting", UNLIT_SHADER_SRC = "unlit",
             GEOM_IMPOSTOR_SHADER_SRC = "geom-impostor",
             PLANE_MESH_SRC = "LargePlane.xml", SPHERE_MESH_SRC = "UnitSphere.xml", CUBE_MESH_SRC = "UnitCube.xml";
-    private final String[] IMP_SHADERS_SRC = {"basic-impostor", "persp-impostor", "depth-impostor"};
 
     public static void main(String[] args) {
         new GeomImpostor("Tutorial 13 - Geometry Impostor");

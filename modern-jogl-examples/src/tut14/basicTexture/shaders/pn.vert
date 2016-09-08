@@ -1,23 +1,26 @@
 #version 330
 
-layout(std140) uniform;
+// Attribute
+#define POSITION    0
+#define COLOR       1
+#define NORMAL      2
 
-layout(location = 0) in vec3 position;
-layout(location = 2) in vec3 normal;
+layout(location = POSITION) in vec3 position;
+layout(location = NORMAL) in vec3 normal;
 
 out vec3 vertexNormal;
 out vec3 cameraSpacePosition;
 
-uniform Projection {
-    
+uniform Projection
+{
     mat4 cameraToClipMatrix;
 };
 
 uniform mat4 modelToCameraMatrix;
 uniform mat3 normalModelToCameraMatrix;
 
-void main() {
-
+void main()
+{
     vec4 tempCamPosition = (modelToCameraMatrix * vec4(position, 1.0));
     gl_Position = cameraToClipMatrix * tempCamPosition;
 
