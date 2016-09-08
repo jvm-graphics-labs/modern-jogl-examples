@@ -10,6 +10,7 @@ He is also supporting the html form of the documentation [here](https://paroj.gi
 Steps:
 
 - add jars under `\lib`
+- remove the tutorials with errors in order to "clean & build", necessary step to find the shaders
 
 In case you may see some error in the tutorials that should be running (see list below), just clone the original project (look on my repos or on [java-graphic](https://github.com/java-graphics)) and add it.
 
