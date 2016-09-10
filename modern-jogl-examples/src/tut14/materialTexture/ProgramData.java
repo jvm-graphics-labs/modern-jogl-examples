@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut14.basicTexture;
+package tut14.materialTexture;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -59,6 +59,9 @@ class ProgramData {
         gl3.glUniform1i(
                 gl3.glGetUniformLocation(theProgram, "gaussianTexture"),
                 Semantic.Sampler.GAUSSIAN_TEXTURE);
+        gl3.glUniform1i(
+                gl3.glGetUniformLocation(theProgram, "shininessTexture"),
+                Semantic.Sampler.SHININESS_TEXTURE);
         gl3.glUseProgram(theProgram);
     }
 }

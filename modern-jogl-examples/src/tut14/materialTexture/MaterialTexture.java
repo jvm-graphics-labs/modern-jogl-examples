@@ -5,326 +5,328 @@
  */
 package tut14.materialTexture;
 
-import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
-import com.jogamp.newt.event.MouseListener;
-import com.jogamp.newt.opengl.GLWindow;
+import static com.jogamp.opengl.GL.GL_BACK;
+import static com.jogamp.opengl.GL.GL_CLAMP_TO_EDGE;
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_DYNAMIC_DRAW;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL.GL_NEAREST;
+import static com.jogamp.opengl.GL.GL_R8;
+import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TEXTURE0;
+import static com.jogamp.opengl.GL.GL_TEXTURE_2D;
+import static com.jogamp.opengl.GL.GL_TEXTURE_MAG_FILTER;
+import static com.jogamp.opengl.GL.GL_TEXTURE_MIN_FILTER;
+import static com.jogamp.opengl.GL.GL_TEXTURE_WRAP_S;
+import static com.jogamp.opengl.GL.GL_TEXTURE_WRAP_T;
+import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
+import static com.jogamp.opengl.GL2ES2.GL_RED;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static com.jogamp.opengl.GL2ES3.GL_TEXTURE_BASE_LEVEL;
+import static com.jogamp.opengl.GL2ES3.GL_TEXTURE_MAX_LEVEL;
+import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
+import static com.jogamp.opengl.GL2GL3.GL_TEXTURE_1D;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.util.FPSAnimator;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.spi.DDSImage;
-import framework.glutil.MatrixStack;
-import framework.glutil.ObjectData;
-import framework.glutil.ObjectPole;
-import framework.glutil.Timer;
-import framework.glutil.ViewData;
-import framework.glutil.ViewPole;
-import framework.glutil.ViewScale;
-import java.awt.Frame;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import framework.Framework;
+import framework.Semantic;
+import framework.component.Mesh;
+import glm.mat._3.Mat3;
+import glm.mat._4.Mat4;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
+import glutil.BufferUtils;
+import glutil.MatrixStack;
+import glutil.Timer;
+import glutil.UniformBlockArray;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import framework.jglm.Jglm;
-import framework.jglm.Mat3;
-import framework.jglm.Mat4;
-import framework.jglm.Quat;
-import framework.jglm.Vec3;
-import framework.jglm.Vec4;
-import framework.component.Mesh;
-import tut14.materialTexture.programs.ProgramData;
-import tut14.materialTexture.programs.UnlitProgData;
+import javax.xml.parsers.ParserConfigurationException;
+import one.util.streamex.IntStreamEx;
+import org.xml.sax.SAXException;
+import view.ObjectData;
+import view.ObjectPole;
+import view.ViewData;
+import view.ViewPole;
+import view.ViewScale;
 
 /**
  *
  * @author gbarbieri
  */
-public class MaterialTexture implements GLEventListener, KeyListener, MouseListener {
+public class MaterialTexture extends Framework {
 
-    /**
-     * @param args the command line arguments
-     */
+    private final String SHADERS_ROOT = "/tut14/materialTexture/shaders", DATA_ROOT = "/tut14/data/",
+            UNLIT_SHADER_SRC = "unlit", OBJECT_MESH_SRC = "Infinity.xml", PLANE_MESH_SRC = "UnitPlane.xml",
+            CUBE_MESH_SRC = "UnitCube.xml", SHININESS_TEXTURE_SRC = "main.dds";
+    private final String[] VERTEX_SHADERS_SRC = {"pn", "pnt", "pnt"}, FRAGMENT_SHADERS_SRC = {"fixed-shininess",
+        "texture-shininess", "texture-compute"}, SHADER_MODE_NAMES = {"Fixed Shininess with Gaussian Texture",
+        "Texture Shininess with Gaussian Texture", "Texture Shininess with computed Gaussian"};
+
     public static void main(String[] args) {
-
-        final MaterialTexture basicTexture = new MaterialTexture();
-        basicTexture.initGL();
-
-        Frame frame = new Frame("Tutorial 14 - Material Texture");
-
-        frame.add(basicTexture.newtCanvasAWT);
-
-        frame.setSize(basicTexture.glWindow.getWidth(), basicTexture.glWindow.getHeight());
-
-        final FPSAnimator fPSAnimator = new FPSAnimator(basicTexture.glWindow, 30);
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                fPSAnimator.stop();
-                basicTexture.glWindow.destroy();
-                System.exit(0);
-            }
-        });
-
-        fPSAnimator.start();
-        frame.setVisible(true);
+        new MaterialTexture("Tutorial 14 - Material Texture");
     }
 
-    GLWindow glWindow;
-    NewtCanvasAWT newtCanvasAWT;
-    ProgramData[] programs = new ProgramData[ShaderMode.NUM_SHADER_MODES.ordinal()];
-    UnlitProgData unlit;
-    Mesh objectMesh;
-    Mesh cubeMesh;
-    Mesh planeMesh;
-    int NUM_MATERIALS = 2;
-    int[] uniformBlockBuffers = new int[UniformBlockBinding.size.ordinal()];
-    int NUM_GAUSSIAN_TEXTURES = 4;
-    int[] gaussianTextures = new int[NUM_GAUSSIAN_TEXTURES];
-    int[] textureSampler;
-    Timer lightTimer;
-    ViewPole viewPole;
-    ObjectPole objectPole;
-    int currentTexture = NUM_GAUSSIAN_TEXTURES - 1;
-    int currentMaterial = 0;
-    int materialOffset;
+    private ProgramData[] programs = new ProgramData[ShaderMode.values().length];
+    private UnlitProgData unlit;
+
+    private ObjectData initialObjectData = new ObjectData(
+            new Vec3(0.0f, 0.5f, 0.0f),
+            new Quat(1.0f, 0.0f, 0.0f, 0.0f));
+    private ViewData initialViewData = new ViewData(
+            new Vec3(initialObjectData.position()),
+            new Quat(0.92387953f, 0.3826834f, 0.0f, 0.0f),
+            10.0f,
+            0.0f);
+    private ViewScale viewScale = new ViewScale(
+            1.5f, 70.0f,
+            1.5f, 0.5f,
+            0.0f, 0.0f, //No camera movement.
+            90.0f / 250.0f);
+    private ViewPole viewPole = new ViewPole(initialViewData, viewScale, MouseEvent.BUTTON1);
+    private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
+
+    private class PerLight {
+
+        public static final int SIZE = Vec4.SIZE * 2;
+
+        public Vec4 cameraSpaceLightPos;
+        public Vec4 lightIntensity;
+
+        public PerLight(Vec4 cameraSpaceLightPos, Vec4 lightIntensity) {
+            this.cameraSpaceLightPos = cameraSpaceLightPos;
+            this.lightIntensity = lightIntensity;
+        }
+
+        public ByteBuffer toDbb(ByteBuffer bb, int offset) {
+            cameraSpaceLightPos.toDbb(bb, offset + 0);
+            lightIntensity.toDbb(bb, offset + Vec4.SIZE);
+            return bb;
+        }
+    }
+
+    private static final int NUMBER_OF_LIGHTS = 2, NUM_MATERIALS = 2, NUM_GAUSSIAN_TEXTURES = 4;
+
+    private class LightBlock {
+
+        public static final int SIZE = Vec4.SIZE * 2 + NUMBER_OF_LIGHTS * PerLight.SIZE;
+
+        public Vec4 ambientIntensity;
+        float lightAttenuation;
+        float[] padding = new float[3];
+        private PerLight[] lights = new PerLight[NUMBER_OF_LIGHTS];
+
+        public LightBlock(Vec4 ambientIntensity, float lightAttenuation, PerLight[] lights) {
+            this.ambientIntensity = ambientIntensity;
+            this.lightAttenuation = lightAttenuation;
+            this.lights = lights;
+        }
+
+        public ByteBuffer toDbb(ByteBuffer bb, int offset) {
+            ambientIntensity.toDbb(bb, offset + 0);
+            bb.putFloat(offset + Vec4.SIZE, lightAttenuation);
+            IntStreamEx.range(lights.length).forEach(i -> lights[i].toDbb(bb, offset + 2 * Vec4.SIZE + i * PerLight.SIZE));
+            return bb;
+        }
+    }
+
+    private class MaterialBlock {
+
+        public static final int SIZE = 3 * Vec4.SIZE;
+
+        public Vec4 diffuseColor;
+        public Vec4 specularColor;
+        public float specularShininess;
+        public float[] padding = new float[3];
+
+        public MaterialBlock(Vec4 diffuseColor, Vec4 specularColor, float specularShininess) {
+            this.diffuseColor = diffuseColor;
+            this.specularColor = specularColor;
+            this.specularShininess = specularShininess;
+        }
+
+        public ByteBuffer toDbb(ByteBuffer bb, int offset) {
+            diffuseColor.toDbb(bb, offset + 0);
+            specularColor.toDbb(bb, offset + Vec4.SIZE);
+            bb.putFloat(offset + 2 * Vec4.SIZE, specularShininess);
+            return bb;
+        }
+    }
+
+    private Mesh objectMesh, cube, plane;
+
+    private interface Buffer {
+
+        public static final int PROJECTION = 0;
+        public static final int LIGHT = 1;
+        public static final int MATERIAL = 2;
+        public static final int MAX = 3;
+    }
+
+    private interface Texture {
+
+        public static final int SHINE = NUM_GAUSSIAN_TEXTURES;
+        public static final int MAX = SHINE + 1;
+    }
+
+    private IntBuffer bufferName = GLBuffers.newDirectIntBuffer(Buffer.MAX),
+            textureName = GLBuffers.newDirectIntBuffer(Texture.MAX), samplerName = GLBuffers.newDirectIntBuffer(1);
+
+    private int materialOffset, currMaterial = 0, currTexture = NUM_GAUSSIAN_TEXTURES - 1;
+
+    private Timer lightTimer = new Timer(Timer.Type.LOOP, 6.0f);
+
+    private float halfLightDistance = 25.0f, lightAttenuation = 1.0f / (halfLightDistance * halfLightDistance),
+            lightHeight = 1.0f, lightRadius = 3.0f;
+
+    private ByteBuffer lightBuffer = GLBuffers.newDirectByteBuffer(LightBlock.SIZE);
+
+    private ShaderMode mode = ShaderMode.MODE_FIXED;
+
     boolean drawLights = true;
     boolean drawCameraPos = false;
     boolean useInfinity = true;
-    ShaderMode eMode = ShaderMode.MODE_FIXED;
-    int[] shineTexture = new int[1];
-    String[] shaderModeNames = new String[]{"Fixed Shininess with Gaussian Texture",
-        "Texture Shininess with Gaussian Texture", "Texture Shininess with computed Gaussian"};
 
-    public MaterialTexture() {
-
-    }
-
-    public void initGL() {
-
-        GLProfile gLProfile = GLProfile.get(GLProfile.GL3);
-
-        GLCapabilities gLCapabilities = new GLCapabilities(gLProfile);
-
-        glWindow = GLWindow.create(gLCapabilities);
-
-        glWindow.setSize(1024, 768);
-
-        glWindow.addGLEventListener(this);
-        glWindow.addKeyListener(this);
-        glWindow.addMouseListener(this);
-        /*
-         *  We combine NEWT GLWindow inside existing AWT application (the main JFrame) 
-         *  by encapsulating the glWindow inside a NewtCanvasAWT canvas.
-         */
-        newtCanvasAWT = new NewtCanvasAWT(glWindow);
+    public MaterialTexture(String title) {
+        super(title);
     }
 
     @Override
-    public void init(GLAutoDrawable glad) {
-        System.out.println("init");
+    public void init(GL3 gl3) {
 
-        GL3 gl3 = glad.getGL().getGL3();
+        initializePrograms(gl3);
 
-        buildShaders(gl3);
+        try {
+            objectMesh = new Mesh(DATA_ROOT + OBJECT_MESH_SRC, gl3);
+            cube = new Mesh(DATA_ROOT + CUBE_MESH_SRC, gl3);
+            plane = new Mesh(DATA_ROOT + CUBE_MESH_SRC, gl3);
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-        String dataPath = "/tut14/data/";
+        float depthZNear = 0.0f, depthZFar = 1.0f;
 
-//        objectMesh = new Mesh(dataPath + "Infinity.xml", gl3);
-//        cubeMesh = new Mesh(dataPath + "UnitCube.xml", gl3);
-//        planeMesh = new Mesh(dataPath + "UnitPlane.xml", gl3);
+        gl3.glEnable(GL_CULL_FACE);
+        gl3.glCullFace(GL_BACK);
+        gl3.glFrontFace(GL_CW);
 
-        gl3.glEnable(GL3.GL_CULL_FACE);
-        gl3.glCullFace(GL3.GL_BACK);
-        gl3.glFrontFace(GL3.GL_CW);
-
-        gl3.glEnable(GL3.GL_DEPTH_TEST);
+        gl3.glEnable(GL_DEPTH_TEST);
         gl3.glDepthMask(true);
-        gl3.glDepthFunc(GL3.GL_LEQUAL);
-        gl3.glDepthRangef(0f, 1f);
-        gl3.glEnable(GL3.GL_DEPTH_CLAMP);
-        /**
-         * Setup our uniform buffers.
-         */
+        gl3.glDepthFunc(GL_LEQUAL);
+        gl3.glDepthRangef(depthZNear, depthZFar);
+        gl3.glEnable(GL_DEPTH_CLAMP);
+
+        //Setup our Uniform Buffers
         setupMaterials(gl3);
 
-        gl3.glGenBuffers(1, uniformBlockBuffers, UniformBlockBinding.light.ordinal());
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBinding.light.ordinal()]);
-        {
-            int size = 4 + 4 + 2 * (4 + 4);
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size * 4, null, GL3.GL_DYNAMIC_DRAW);
-        }
+        gl3.glGenBuffers(Buffer.LIGHT - Buffer.PROJECTION + 1, bufferName);
 
-        gl3.glGenBuffers(1, uniformBlockBuffers, UniformBlockBinding.projection.ordinal());
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBinding.projection.ordinal()]);
-        {
-            int size = 16;
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, size * 4, null, GL3.GL_DYNAMIC_DRAW);
-        }
-        /**
-         * Bind the static buffers.
-         */
-        int size = 4 + 4 + 2 * (4 + 4);
-        int offset = 0;
-        gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, UniformBlockBinding.light.ordinal(),
-                uniformBlockBuffers[UniformBlockBinding.light.ordinal()], offset, size * 4);
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.LIGHT));
+        gl3.glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE, null, GL_DYNAMIC_DRAW);
 
-        size = 16;
-        gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, UniformBlockBinding.projection.ordinal(),
-                uniformBlockBuffers[UniformBlockBinding.projection.ordinal()], offset, size * 4);
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
+        gl3.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
-        int materialBlockSize = 12;
-        gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, UniformBlockBinding.material.ordinal(),
-                uniformBlockBuffers[UniformBlockBinding.material.ordinal()], offset, materialBlockSize * 4);
+        //Bind the static buffers.
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.LIGHT, bufferName.get(Buffer.LIGHT), 0,
+                LightBlock.SIZE);
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName.get(Buffer.PROJECTION), 0,
+                Mat4.SIZE);
+        gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName.get(Buffer.MATERIAL), 0,
+                MaterialBlock.SIZE);
 
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         createGaussianTextures(gl3);
         createShininessTexture(gl3);
+    }
 
-        lightTimer = new Timer(Timer.Type.Loop, 6f);
+    private void initializePrograms(GL3 gl3) {
 
-        ObjectData initialObjectData = new ObjectData(new Vec3(0f, 0.5f, 0f), new Quat(0f, 0f, 0f, 1f));
+        IntStreamEx.range(programs.length).forEach(i
+                -> programs[i] = new ProgramData(gl3, SHADERS_ROOT, VERTEX_SHADERS_SRC[i], FRAGMENT_SHADERS_SRC[i]));
 
-        ViewData initialViewData = new ViewData(initialObjectData.getPosition(),
-                new Quat(0.3826834f, 0f, 0f, 0.92387953f), 10f, 0f);
-
-        ViewScale viewScale = new ViewScale(1.5f, 70f, 1.5f, 0.5f, 0f, 0f, 90f / 250f);
-
-        viewPole = new ViewPole(initialViewData, viewScale);
-
-        objectPole = new ObjectPole(initialObjectData, 90f / 250f, viewPole);
+        unlit = new UnlitProgData(gl3, SHADERS_ROOT, UNLIT_SHADER_SRC);
     }
 
     private void setupMaterials(GL3 gl3) {
 
-        MaterialBlock[] mtls = new MaterialBlock[]{
-            new MaterialBlock(new Vec4(1f, .673f, .043f, 1f), (new Vec4(1f, .673f, .043f, 1f)).mult(.4f), .125f),
-            new MaterialBlock(new Vec4(.01f, .01f, .01f, 1f), new Vec4(.99f, .99f, .99f, 1f), .125f)};
+        UniformBlockArray mtls = new UniformBlockArray(gl3, MaterialBlock.SIZE, NUM_MATERIALS);
 
-        int[] uniformBufferAlignSize = new int[1];
-        gl3.glGetIntegerv(GL3.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, uniformBufferAlignSize, 0);
-//        System.out.println("uniformBufferAlignSize " + uniformBufferAlignSize[0]);
-        materialOffset = MaterialBlock.size;
-        materialOffset += uniformBufferAlignSize[0] / 4 - (materialOffset % (uniformBufferAlignSize[0] / 4));
-//        System.out.println("blockOffset " + blockOffset);
+        MaterialBlock mtl = new MaterialBlock(new Vec4(1.0f, 0.673f, 0.043f, 1.0f),
+                new Vec4(1.0f, 0.673f, 0.043f, 1.0f).mul(0.4f), 0.125f);
+        mtl.toDbb(mtls.storage, 0 * mtls.blockOffset);
 
-        gl3.glGenBuffers(1, uniformBlockBuffers, UniformBlockBinding.material.ordinal());
+        mtl = new MaterialBlock(new Vec4(0.01f, 0.01f, 0.01f, 1.0f), new Vec4(0.99f, 0.99f, 0.99f, 1.0f), 0.125f);
+        mtl.toDbb(mtls.storage, 1 * mtls.blockOffset);
 
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBinding.material.ordinal()]);
-        {
-            float[] floatArray = new float[NUM_MATERIALS * materialOffset];
+        materialOffset = mtls.blockOffset;
 
-            System.arraycopy(mtls[0].toFloatArray(), 0, floatArray, 0, mtls[0].toFloatArray().length);
-            System.arraycopy(mtls[1].toFloatArray(), 0, floatArray, materialOffset, mtls[1].toFloatArray().length);
+        int materialUniformBuffer = mtls.createBufferObject(gl3);
 
-            FloatBuffer floatBuffer = GLBuffers.newDirectFloatBuffer(floatArray);
+        bufferName.put(Buffer.MATERIAL, materialUniformBuffer);
 
-            gl3.glBufferData(GL3.GL_UNIFORM_BUFFER, NUM_MATERIALS * materialOffset * 4, floatBuffer, GL3.GL_STATIC_DRAW);
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-    }
-
-    private void buildShaders(GL3 gl3) {
-
-        String shadersPath = "/tut14/materialTexture/shaders/";
-
-        ShaderPairs[] shaderPairs = new ShaderPairs[]{
-            new ShaderPairs("PN_VS.glsl", "FixedShininess_FS.glsl"),
-            new ShaderPairs("PNT_VS.glsl", "TextureShininess_FS.glsl"),
-            new ShaderPairs("PNT_VS.glsl", "TextureCompute_FS.glsl"),};
-
-        for (int prog = 0; prog < ShaderMode.NUM_SHADER_MODES.ordinal(); prog++) {
-
-            programs[prog] = new ProgramData(gl3, shadersPath, shaderPairs[prog].vertShader, 
-                    shaderPairs[prog].fragShader);
-        }
-
-        unlit = new UnlitProgData(gl3, shadersPath, "Unlit_VS.glsl", "Unlit_FS.glsl",
-                UniformBlockBinding.projection.ordinal());
+        mtls.dispose();
     }
 
     private void createGaussianTextures(GL3 gl3) {
-
         for (int loop = 0; loop < NUM_GAUSSIAN_TEXTURES; loop++) {
-//            System.out.println("loop " + loop);
             int cosAngleResolution = calcCosAngleResolution(loop);
-//            System.out.println("cosAngleResolution "+cosAngleResolution);
-            gaussianTextures[loop] = createGaussianTexture(gl3, cosAngleResolution, 128);
-//            System.out.println("gaussianTextures[loop] "+gaussianTextures[loop]);
+            textureName.put(loop, createGaussianTexture(gl3, cosAngleResolution, 128));
         }
-        textureSampler = new int[1];
-        gl3.glGenSamplers(1, textureSampler, 0);
-        gl3.glSamplerParameteri(textureSampler[0], GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_NEAREST);
-        gl3.glSamplerParameteri(textureSampler[0], GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_NEAREST);
-        gl3.glSamplerParameteri(textureSampler[0], GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-        gl3.glSamplerParameteri(textureSampler[0], GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+        gl3.glGenSamplers(1, samplerName);
+        gl3.glSamplerParameteri(samplerName.get(0), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        gl3.glSamplerParameteri(samplerName.get(0), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        gl3.glSamplerParameteri(samplerName.get(0), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl3.glSamplerParameteri(samplerName.get(0), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
     private int calcCosAngleResolution(int level) {
-
         int cosAngleStart = 64;
-
         return cosAngleStart * ((int) Math.pow(2f, level));
     }
 
     private int createGaussianTexture(GL3 gl3, int cosAngleResolution, int shininessResolution) {
 
-        byte[] textureData = buildGaussianData(cosAngleResolution, shininessResolution);
-//        System.out.println("textureData.length " + textureData.length);
-//        for (int i = 0; i < textureData.length; i++) {
-//
-//            System.out.println("textureData[" + i + "] " + String.format("%02x", textureData[i]));
-//        }
-        int[] gaussTexture = new int[1];
-        gl3.glGenTextures(1, gaussTexture, 0);
+        ByteBuffer textureData = buildGaussianData(cosAngleResolution, shininessResolution);
 
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, gaussTexture[0]);
-        {
-            ByteBuffer byteBuffer = GLBuffers.newDirectByteBuffer(textureData);
+        IntBuffer gaussianTexture = GLBuffers.newDirectIntBuffer(1);
 
-//            System.out.println("byteBuffer " + byteBuffer.toString());
-//            System.out.println("cosAngleResolution " + cosAngleResolution + " shininessResolution " + shininessResolution);
-//            System.out.println("GLBuffer.sizeof() " + GLBuffers.sizeof(gl3, new int[1], GL3.GL_RED,
-//                    GL3.GL_UNSIGNED_BYTE, cosAngleResolution, shininessResolution, 1, true));
-//            System.out.println("bytes per pixel " + GLBuffers.bytesPerPixel(GL3.GL_RED, GL3.GL_UNSIGNED_BYTE));
-//
-//            int[] alignment = new int[1];
-//            gl3.glGetIntegerv(GL3.GL_PACK_ALIGNMENT, alignment, 0);
-//            System.out.println("alignment " + alignment[0]);
-            gl3.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 1);
+        gl3.glGenTextures(1, gaussianTexture);
+        gl3.glBindTexture(GL_TEXTURE_1D, gaussianTexture.get(0));
+        gl3.glTexImage1D(GL_TEXTURE_1D, 0, GL_R8, cosAngleResolution, 0, GL_RED, GL_UNSIGNED_BYTE, textureData);
+        gl3.glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+        gl3.glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+        gl3.glBindTexture(GL_TEXTURE_1D, 0);
 
-            gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_R8, cosAngleResolution, shininessResolution,
-                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, byteBuffer);
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
-        }
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+        int result = gaussianTexture.get(0);
 
-        return gaussTexture[0];
+        BufferUtils.destroyDirectBuffer(gaussianTexture);
+        BufferUtils.destroyDirectBuffer(textureData);
+
+        return result;
     }
 
-    private byte[] buildGaussianData(int cosAngleResolution, int shininessResolution) {
+    private ByteBuffer buildGaussianData(int cosAngleResolution, int shininessResolution) {
 
-        byte[] textureData = new byte[cosAngleResolution * shininessResolution];
+        ByteBuffer textureData = GLBuffers.newDirectByteBuffer(cosAngleResolution * shininessResolution);
 
-        int index = 0;
-
-        for (int iShin = 1; iShin <= shininessResolution; iShin++) {
+        for (int iShin = 1; iShin < shininessResolution; iShin++) {
 
             float shininess = iShin / (float) shininessResolution;
-//            System.out.println("shininess " + shininess);
+
             for (int iCosAng = 0; iCosAng < cosAngleResolution; iCosAng++) {
 
                 float cosAng = iCosAng / (float) (cosAngleResolution - 1);
@@ -333,225 +335,145 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
                 exponent = -(exponent * exponent);
                 float gaussianTerm = (float) Math.exp(exponent);
 
-                textureData[index] = (byte) (gaussianTerm * 255f);
-//                System.out.println("textureData[" + index + "] " + String.format("%02x", textureData[index]));
-                index++;
+                textureData.put(iCosAng, (byte) (gaussianTerm * 255f));
             }
         }
-
         return textureData;
     }
 
     private void createShininessTexture(GL3 gl3) {
 
-        String filePath = "/tut14/materialTexture/data/main.dds";
-
-        URL url = getClass().getResource(filePath);
-        File file = new File(url.getPath());
-
-        DDSImage ddsImage = null;
-
         try {
-            ddsImage = DDSImage.read(file);
+            
+            File file = new File("/home/elect/NetBeansProjects/modern-jogl-examples/modern-jogl-examples/src/tut14/data/main.dds");
+            
+            DDSImage image = DDSImage.read(file);
+
+            gl3.glBindTexture(GL_TEXTURE_2D, textureName.get(Texture.SHINE));
+
+            gl3.glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, image.getWidth(), image.getHeight(), 0, GL_RED,
+                    GL_UNSIGNED_BYTE, image.getMipMap(0).getData());
+
+            gl3.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+            gl3.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+            gl3.glBindTexture(GL_TEXTURE_2D, 0);
+
         } catch (IOException ex) {
             Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
         }
-        gl3.glGenTextures(1, shineTexture, 0);
-//
-//        TextureData textureData = null;
-//        try {
-//            textureData = TextureIO.newTextureData(gl3.getGLProfile(), file, false, TextureIO.DDS);
-//        } catch (IOException ex) {
-//            Logger.getLogger(MaterialTexture.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        Buffer buffer = textureData.getBuffer();
-//        buffer.rewind();
-
-//        while(buffer.hasRemaining()){
-//            System.out.println("["+buffer.position()+"] = "+buffer.get());
-//        }
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, shineTexture[0]);
-        {
-//            System.out.println("ddsImage.getWidth() " + ddsImage.getWidth()
-//                    + " ddsImage.getHeight() " + ddsImage.getHeight() + " ");
-//            ddsImage.debugPrint();
-            gl3.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_R8, ddsImage.getWidth(), ddsImage.getHeight(),
-                    0, GL3.GL_RED, GL3.GL_UNSIGNED_BYTE, ddsImage.getMipMap(0).getData());
-
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_BASE_LEVEL, 0);
-            gl3.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_LEVEL, 0);
-        }
-        gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
 
     @Override
-    public void dispose(GLAutoDrawable glad) {
-        System.out.println("dispose");
-    }
-
-    @Override
-    public void display(GLAutoDrawable glad) {
-//        System.out.println("display");
-
-        GL3 gl3 = glad.getGL().getGL3();
+    public void display(GL3 gl3) {
 
         lightTimer.update();
+        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.75f).put(1, 0.75f).put(2, 1.0f).put(3, 1.0f));
+        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        gl3.glClearColor(0.75f, 0.75f, 1f, 1f);
-        gl3.glClearDepthf(1f);
-        gl3.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+        MatrixStack modelMatrix = new MatrixStack(viewPole.calcMatrix());
+        Mat4 worldToCamMat = modelMatrix.top();
 
-        if (objectMesh != null && cubeMesh != null) {
+        Vec3 globalLightDirection = new Vec3(0.707f, 0.707f, 0.0f);
 
-            MatrixStack modelMatrix = new MatrixStack();
-            modelMatrix.setTop(viewPole.calcMatrix());
-            Mat4 worldToCamMat = new Mat4(modelMatrix.top().toFloatArray());
+        LightBlock lightData = new LightBlock(
+                new Vec4(0.2f, 0.2f, 0.2f, 1.0f),
+                lightAttenuation,
+                new PerLight[]{
+                    new PerLight(
+                            worldToCamMat.mul_(new Vec4(globalLightDirection, 0.0f)),
+                            new Vec4(0.6f, 0.6f, 0.6f, 1.0f)),
+                    new PerLight(
+                            worldToCamMat.mul_(calcLightPosition()),
+                            new Vec4(0.4f, 0.4f, 0.4f, 1.0f))});
 
-            Vec3 globalLightDirection = new Vec3(0.707f, 0.707f, 0f);
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.LIGHT));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE, lightData.toDbb(lightBuffer, 0));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-            PerLight[] lights = new PerLight[]{
-                new PerLight(worldToCamMat.mult(new Vec4(globalLightDirection, 0f)), new Vec4(0.6f, 0.6f, .6f, 1f)),
-                new PerLight(worldToCamMat.mult(calcLightPosition()), new Vec4(.4f, .4f, .4f, 1f))
-            };
-            float halfLightDistance = 25f;
-            float lightAttenuation = 1f / (halfLightDistance * halfLightDistance);
-            LightBlock lightData = new LightBlock(new Vec4(.2f, .2f, .2f, 1f), lightAttenuation, lights);
+        {
+            Mesh mesh = useInfinity ? objectMesh : plane;
 
-            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBinding.light.ordinal()]);
-            {
-                FloatBuffer lightFB = GLBuffers.newDirectFloatBuffer(lightData.toFloatArray());
-                gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, lightData.toFloatArray().length * 4, lightFB);
+            gl3.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName.get(Buffer.MATERIAL),
+                    currMaterial * materialOffset, MaterialBlock.SIZE);
+
+            modelMatrix.push().applyMatrix(objectPole.calcMatrix()).scale(useInfinity ? 2.0f : 4.0f);
+
+            Mat3 normMatrix = modelMatrix.top().toMat3_().inverse().transpose();
+
+            ProgramData prog = programs[mode.ordinal()];
+
+            gl3.glUseProgram(prog.theProgram);
+            gl3.glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+            gl3.glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix.toDfb(matBuffer));
+
+            gl3.glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.GAUSSIAN_TEXTURE);
+            gl3.glBindTexture(GL_TEXTURE_2D, textureName.get(currTexture));
+            gl3.glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, samplerName.get(0));
+
+            gl3.glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.SHININESS_TEXTURE);
+            gl3.glBindTexture(GL_TEXTURE_2D, textureName.get(Texture.SHINE));
+            gl3.glBindSampler(Semantic.Sampler.SHININESS_TEXTURE, samplerName.get(0));
+
+            if (mode != ShaderMode.MODE_FIXED) {
+                mesh.render(gl3, "lit-tex");
+            } else {
+                mesh.render(gl3, "lit");
             }
-            gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
 
-            {
-                Mesh mesh = useInfinity ? objectMesh : planeMesh;
+            gl3.glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, 0);
+            gl3.glBindSampler(Semantic.Sampler.SHININESS_TEXTURE, 0);
+            gl3.glBindTexture(GL_TEXTURE_2D, 0);
 
-                int materialBlockSize = 12;
-//                int offset = currentMaterial * materialBlockSize;
-                int offset = currentMaterial * materialOffset;
-                gl3.glBindBufferRange(GL3.GL_UNIFORM_BUFFER, UniformBlockBinding.material.ordinal(),
-                        uniformBlockBuffers[UniformBlockBinding.material.ordinal()], offset * 4, materialBlockSize * 4);
+            gl3.glUseProgram(0);
+            gl3.glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0);
 
-                modelMatrix.push();
-                {
-                    modelMatrix.applyMat(objectPole.calcMatrix());
-                    modelMatrix.scale(useInfinity ? new Vec3(2f, 2f, 2f) : new Vec3(4f, 4f, 4f));
-//                    modelMatrix.top().print("modelmatrix");
-                    Mat3 normalMatrix = new Mat3(modelMatrix.top());
-                    normalMatrix = normalMatrix.inverse().transpose();
+            modelMatrix.pop();
+        }
+        if (drawLights) {
 
-                    ProgramData prog = programs[eMode.ordinal()];
+            modelMatrix.push().translate(calcLightPosition()).scale(0.25f);
 
-                    prog.bind(gl3);
-                    {
-                        gl3.glUniformMatrix4fv(prog.getModelToCameraMatrixUL(), 1, false,
-                                modelMatrix.top().toFloatArray(), 0);
+            gl3.glUseProgram(unlit.theProgram);
+            gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
 
-                        gl3.glUniformMatrix3fv(prog.getNormalModelToCameraMatrixUL(), 1, false,
-                                normalMatrix.toFloatArray(), 0);
+            Vec4 lightColor = new Vec4(1.0f);
+            gl3.glUniform4fv(unlit.objectColorUnif, 1, lightColor.toDfb(vecBuffer));
+            cube.render(gl3, "flat");
 
-                        gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.gaussian.ordinal());
-                        gl3.glBindTexture(GL3.GL_TEXTURE_2D, gaussianTextures[currentTexture]);
-                        {
-                            gl3.glBindSampler(TexUnit.gaussian.ordinal(), textureSampler[0]);
-                            {
-                                gl3.glActiveTexture(GL3.GL_TEXTURE0 + TexUnit.shininess.ordinal());
-                                gl3.glBindTexture(GL3.GL_TEXTURE_2D, shineTexture[0]);
-                                gl3.glBindSampler(TexUnit.shininess.ordinal(), textureSampler[0]);
-                                {
-                                    if (eMode != ShaderMode.MODE_FIXED) {
+            modelMatrix.resetStack();
 
-                                        mesh.render(gl3, "lit-tex");
+            modelMatrix.translate(globalLightDirection.mul_(100.0f)).scale(5.0f);
 
-                                    } else {
+            gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+            cube.render(gl3, "flat");
 
-                                        mesh.render(gl3, "lit");
-                                    }
-                                }
-                            }
-                            gl3.glBindSampler(TexUnit.gaussian.ordinal(), 0);
-                        }
-                        gl3.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-                    }
-                    prog.unbind(gl3);
+            gl3.glUseProgram(0);
+            modelMatrix.pop();
+        }
+        if (drawCameraPos) {
 
-                    gl3.glBindBufferBase(GL3.GL_UNIFORM_BUFFER,
-                            uniformBlockBuffers[UniformBlockBinding.material.ordinal()], 0);
-                }
-                modelMatrix.pop();
-            }
-            if (drawLights) {
+            modelMatrix.push().identity().translate(new Vec3(0.0f, 0.0f, -viewPole.getView().radius())).scale(0.25f);
 
-                unlit.bind(gl3);
-                {
-                    modelMatrix.push();
-                    {
-//                        modelMatrix.top().print("modelmatrix");
-//                        calcLightPosition().print("calcLightPosition()");
-                        modelMatrix.translate(new Vec3(calcLightPosition()));
-                        modelMatrix.scale(new Vec3(0.25f, 0.25f, 0.25f));
-
-                        gl3.glUniformMatrix4fv(unlit.getModelToCameraMatrixUL(),
-                                1, false, modelMatrix.top().toFloatArray(), 0);
-
-                        gl3.glUniform4f(unlit.getObjectColorUL(), 1f, 1f, 1f, 1f);
-
-                        cubeMesh.render(gl3, "flat");
-                    }
-                    modelMatrix.pop();
-                    modelMatrix.push();
-                    {
-                        modelMatrix.translate(globalLightDirection.times(100f));
-                        modelMatrix.scale(new Vec3(5.0f, 5.0f, 5.0f));
-
-                        gl3.glUniformMatrix4fv(unlit.getModelToCameraMatrixUL(),
-                                1, false, modelMatrix.top().toFloatArray(), 0);
-
-                        cubeMesh.render(gl3, "flat");
-                    }
-                    modelMatrix.pop();
-                }
-                unlit.unbind(gl3);
-            }
-            if (drawCameraPos) {
-
-                modelMatrix.setTop(new Mat4(1f));
-                modelMatrix.translate(new Vec3(0f, 0f, -viewPole.getCurrView().getRadius()));
-                modelMatrix.scale(new Vec3(.25f, .25f, .25f));
-
-                gl3.glDisable(GL3.GL_DEPTH_TEST);
-                gl3.glDepthMask(false);
-
-                unlit.bind(gl3);
-                {
-                    gl3.glUniformMatrix4fv(unlit.getModelToCameraMatrixUL(), 1, false,
-                            modelMatrix.top().toFloatArray(), 0);
-                    gl3.glUniform4f(unlit.getObjectColorUL(), .25f, .25f, .25f, 1f);
-
-                    cubeMesh.render(gl3, "flat");
-
-                    gl3.glDepthMask(true);
-                    gl3.glEnable(GL3.GL_DEPTH_TEST);
-                    gl3.glUniform4f(unlit.getObjectColorUL(), 1f, 1f, 1f, 1f);
-
-                    cubeMesh.render(gl3, "flat");
-                }
-                unlit.unbind(gl3);
-            }
+            gl3.glDisable(GL_DEPTH_TEST);
+            gl3.glDepthMask(false);
+            gl3.glUseProgram(unlit.theProgram);
+            gl3.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().toDfb(matBuffer));
+            gl3.glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f);
+            cube.render(gl3, "flat");
+            gl3.glDepthMask(true);
+            gl3.glEnable(GL_DEPTH_TEST);
+            gl3.glUniform4f(unlit.objectColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+            cube.render(gl3, "flat");
         }
     }
 
     private Vec4 calcLightPosition() {
 
-        float lightHeight = 1f;
-        float lightRadius = 3f;
-
-        float scale = (float) (Math.PI * 2f);
+        float scale = (float) (Math.PI * 2.0f);
 
         float timeThroughLoop = lightTimer.getAlpha();
-
-        Vec4 ret = new Vec4(0f, lightHeight, 0f, 1f);
+        Vec4 ret = new Vec4(0.0f, lightHeight, 0.0f, 1.0f);
 
         ret.x = (float) (Math.cos(timeThroughLoop * scale) * lightRadius);
         ret.z = (float) (Math.sin(timeThroughLoop * scale) * lightRadius);
@@ -560,101 +482,18 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     }
 
     @Override
-    public void reshape(GLAutoDrawable glad, int x, int y, int w, int h) {
-        System.out.println("reshape");
-        GL3 gl3 = glad.getGL().getGL3();
+    public void reshape(GL3 gl3, int w, int h) {
 
-        float zNear = 1.0f;
-        float zFar = 1000.0f;
+        float zNear = 1.0f, zFar = 1_000f;
+        MatrixStack perspMatrix = new MatrixStack();
 
-        Mat4 projection = Jglm.perspective(45.0f, w / (float) h, zNear, zFar);
+        Mat4 proj = perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar).top();
 
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, uniformBlockBuffers[UniformBlockBinding.projection.ordinal()]);
-        {
-            FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(projection.toFloatArray());
-            gl3.glBufferSubData(GL3.GL_UNIFORM_BUFFER, 0, projection.toFloatArray().length * 4, buffer);
-        }
-        gl3.glBindBuffer(GL3.GL_UNIFORM_BUFFER, 0);
-        gl3.glViewport(x, y, w, h);
-    }
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
+        gl3.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, proj.toDfb(matBuffer));
+        gl3.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    @Override
-    public void keyPressed(KeyEvent ke) {
-
-        switch (ke.getKeyCode()) {
-
-            case KeyEvent.VK_SPACE:
-                int currentEmode = eMode.ordinal() + 1;
-                currentEmode = currentEmode % ShaderMode.NUM_SHADER_MODES.ordinal();
-                eMode = ShaderMode.values()[currentEmode];
-                System.out.println("" + shaderModeNames[eMode.ordinal()]);
-                break;
-
-            case KeyEvent.VK_P:
-                lightTimer.togglePause();
-                break;
-
-            case KeyEvent.VK_MINUS:
-                lightTimer.rewind(.5f);
-                break;
-
-            case KeyEvent.VK_EQUALS:
-                lightTimer.fastForward(.5f);
-                break;
-
-            case KeyEvent.VK_T:
-                drawCameraPos = !drawCameraPos;
-                break;
-
-            case KeyEvent.VK_G:
-                drawLights = !drawLights;
-                break;
-
-            case KeyEvent.VK_Y:
-                useInfinity = !useInfinity;
-                break;
-
-            case KeyEvent.VK_1:
-                currentTexture = 0;
-                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
-//                System.out.println("currentTexture " + currentTexture);
-                break;
-
-            case KeyEvent.VK_2:
-                currentTexture = 1;
-                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
-//                System.out.println("currentTexture " + currentTexture);
-                break;
-
-            case KeyEvent.VK_3:
-                currentTexture = 2;
-                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
-//                System.out.println("currentTexture " + currentTexture);
-                break;
-
-            case KeyEvent.VK_4:
-                currentTexture = 3;
-                System.out.println("Angle resolution: " + calcCosAngleResolution(currentTexture));
-//                System.out.println("currentTexture " + currentTexture);
-                break;
-
-            case KeyEvent.VK_8:
-                currentMaterial = 0;
-                break;
-
-            case KeyEvent.VK_9:
-                currentMaterial = 1;
-                break;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent ke) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
+        gl3.glViewport(0, 0, w, h);
     }
 
     @Override
@@ -664,27 +503,15 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-        viewPole.mouseReleased(e);
-        objectPole.mouseReleased(e);
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
-    @Override
     public void mouseDragged(MouseEvent e) {
         viewPole.mouseMove(e);
         objectPole.mouseMove(e);
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
+        viewPole.mouseReleased(e);
+        objectPole.mouseReleased(e);
     }
 
     @Override
@@ -692,103 +519,82 @@ public class MaterialTexture implements GLEventListener, KeyListener, MouseListe
         viewPole.mouseWheel(e);
     }
 
-    static class MaterialBlock {
+    @Override
+    public void keyPressed(KeyEvent e) {
 
-        Vec4 diffuseColor;
-        Vec4 specularColor;
-        float specularShininess;
-        Vec3 padding;
-        static final int size = 12;
+        switch (e.getKeyCode()) {
 
-        public MaterialBlock(Vec4 diffuseColor, Vec4 specularColor, float specularShininess) {
+            case KeyEvent.VK_ESCAPE:
+                animator.remove(glWindow);
+                glWindow.destroy();
+                break;
 
-            this.diffuseColor = diffuseColor;
-            this.specularColor = specularColor;
-            this.specularShininess = specularShininess;
-            padding = new Vec3();
+            case KeyEvent.VK_P:
+                lightTimer.togglePause();
+                break;
+            case KeyEvent.VK_MINUS:
+                lightTimer.rewind(0.5f);
+                break;
+            case KeyEvent.VK_PLUS:
+                lightTimer.fastForward(0.5f);
+                break;
+            case KeyEvent.VK_T:
+                drawCameraPos = !drawCameraPos;
+                break;
+            case KeyEvent.VK_G:
+                drawLights = !drawLights;
+                break;
+            case KeyEvent.VK_Y:
+                useInfinity = !useInfinity;
+                break;
+
+            case KeyEvent.VK_SPACE:
+                int mode_ = (mode.ordinal() + 1) % ShaderMode.values().length;
+                mode = ShaderMode.values()[mode_];
+                System.out.println(SHADER_MODE_NAMES[mode_]);
+                break;
         }
 
-        public float[] toFloatArray() {
-
-            return new float[]{diffuseColor.x, diffuseColor.y, diffuseColor.z, diffuseColor.w,
-                specularColor.x, specularColor.y, specularColor.z, specularColor.w,
-                specularShininess, padding.x, padding.y, padding.z};
+        if (KeyEvent.VK_1 <= e.getKeyCode() && KeyEvent.VK_9 >= e.getKeyCode()) {
+            int number = e.getKeyCode() - KeyEvent.VK_0 - 1;
+            if (number < NUM_GAUSSIAN_TEXTURES) {
+                System.out.println("Angle Resolution: " + calcCosAngleResolution(number));
+                currTexture = number;
+            }
+            if (number >= 9 - NUM_MATERIALS) {
+                number = number - (9 - NUM_MATERIALS);
+                System.out.println("Material Number: " + number);
+                currMaterial = number;
+            }
         }
+
+        viewPole.charPress(e);
     }
 
-    static class LightBlock {
+    @Override
+    public void end(GL3 gl3) {
 
-        Vec4 ambientIntensity;
-        float lightAttenuation;
-        Vec3 padding;
-        PerLight[] lights;
-
-        public LightBlock(Vec4 ambientIntensity, float lightAttenuation, PerLight[] lights) {
-
-            this.ambientIntensity = ambientIntensity;
-            this.lightAttenuation = lightAttenuation;
-            padding = new Vec3();
-            this.lights = lights;
-        }
-
-        public float[] toFloatArray() {
-
-            return new float[]{ambientIntensity.x, ambientIntensity.y, ambientIntensity.z, ambientIntensity.w,
-                lightAttenuation, padding.x, padding.y, padding.z,
-                lights[0].cameraSpaceLightPos.x, lights[0].cameraSpaceLightPos.y,
-                lights[0].cameraSpaceLightPos.z, lights[0].cameraSpaceLightPos.w,
-                lights[0].lightIntensity.x, lights[0].lightIntensity.y,
-                lights[0].lightIntensity.z, lights[0].lightIntensity.w,
-                lights[1].cameraSpaceLightPos.x, lights[1].cameraSpaceLightPos.y,
-                lights[1].cameraSpaceLightPos.z, lights[1].cameraSpaceLightPos.w,
-                lights[1].lightIntensity.x, lights[1].lightIntensity.y,
-                lights[1].lightIntensity.z, lights[1].lightIntensity.w};
-        }
-    }
-
-    class PerLight {
-
-        Vec4 cameraSpaceLightPos;
-        Vec4 lightIntensity;
-
-        public PerLight(Vec4 cameraSpaceLightPos, Vec4 lightIntensity) {
-
-            this.cameraSpaceLightPos = cameraSpaceLightPos;
-            this.lightIntensity = lightIntensity;
-        }
-    }
-
-    class ShaderPairs {
-
-        public String vertShader;
-        public String fragShader;
-
-        public ShaderPairs(String vertShader, String fragShader) {
-
-            this.vertShader = vertShader;
-            this.fragShader = fragShader;
-        }
+//        gl3.glDeleteProgram(litShaderProg.theProgram);
+//        gl3.glDeleteProgram(litTextureProg.theProgram);
+//        gl3.glDeleteProgram(unlit.theProgram);
+//
+//        gl3.glDeleteBuffers(Buffer.MAX, bufferName);
+//        gl3.glDeleteSamplers(1, gaussSampler);
+//        gl3.glDeleteTextures(NUM_GAUSSIAN_TEXTURES, gaussTextures);
+//
+//        objectMesh.dispose(gl3);
+//        cube.dispose(gl3);
+//
+//        BufferUtils.destroyDirectBuffer(bufferName);
+//        BufferUtils.destroyDirectBuffer(gaussSampler);
+//        BufferUtils.destroyDirectBuffer(gaussTextures);
+//        BufferUtils.destroyDirectBuffer(lightBuffer);
     }
 
     enum ShaderMode {
 
         MODE_FIXED,
         MODE_TEXTURED,
-        MODE_TEXTURED_COMPUTE,
-        NUM_SHADER_MODES
-    }
-
-    public enum UniformBlockBinding {
-
-        material,
-        light,
-        projection,
-        size
-    }
-
-    public enum TexUnit {
-
-        gaussian,
-        shininess
+        MODE_TEXTURED_COMPUTE;
     }
 }

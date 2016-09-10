@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tut14.basicTexture;
+package tut14.materialTexture;
 
 import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
 import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
@@ -16,21 +16,21 @@ import framework.Semantic;
  *
  * @author elect
  */
-class ProgramData {
+class UnlitProgData {
 
     public int theProgram;
 
+    public int objectColorUnif;
     public int modelToCameraMatrixUnif;
-    public int normalModelToCameraMatrixUnif;
 
-    public ProgramData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
+    public UnlitProgData(GL3 gl3, String shaderRoot, String shaderSrc) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
         ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), shaderRoot, null,
-                vertSrc, "vert", null, true);
+                shaderSrc, "vert", null, true);
         ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), shaderRoot, null,
-                fragSrc, "frag", null, true);
+                shaderSrc, "frag", null, true);
 
         shaderProgram.add(vertShaderCode);
         shaderProgram.add(fragShaderCode);
@@ -42,23 +42,11 @@ class ProgramData {
         vertShaderCode.destroy(gl3);
         fragShaderCode.destroy(gl3);
 
+        objectColorUnif = gl3.glGetUniformLocation(theProgram, "objectColor");
         modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
-        normalModelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
 
         gl3.glUniformBlockBinding(theProgram,
                 gl3.glGetUniformBlockIndex(theProgram, "Projection"),
                 Semantic.Uniform.PROJECTION);
-        gl3.glUniformBlockBinding(theProgram,
-                gl3.glGetUniformBlockIndex(theProgram, "Material"),
-                Semantic.Uniform.MATERIAL);
-        gl3.glUniformBlockBinding(theProgram,
-                gl3.glGetUniformBlockIndex(theProgram, "Light"),
-                Semantic.Uniform.LIGHT);
-
-        gl3.glUseProgram(theProgram);
-        gl3.glUniform1i(
-                gl3.glGetUniformLocation(theProgram, "gaussianTexture"),
-                Semantic.Sampler.GAUSSIAN_TEXTURE);
-        gl3.glUseProgram(theProgram);
     }
 }

@@ -277,7 +277,7 @@ public class BasicTexture extends Framework {
         gl3.glTexImage1D(GL_TEXTURE_1D, 0, GL_R8, cosAngleResolution, 0, GL_RED, GL_UNSIGNED_BYTE, textureData);
         gl3.glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
         gl3.glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
-        gl3.glBindTexture(GL3.GL_TEXTURE_1D, 0);
+        gl3.glBindTexture(GL_TEXTURE_1D, 0);
 
         int result = gaussianTexture.get(0);
 
@@ -472,16 +472,16 @@ public class BasicTexture extends Framework {
             case KeyEvent.VK_G:
                 drawLights = !drawLights;
                 break;
-                
+
             case KeyEvent.VK_SPACE:
                 useTexture = !useTexture;
                 break;
         }
-        
-        if(KeyEvent.VK_1 <= e.getKeyCode() && KeyEvent.VK_9 >= e.getKeyCode()) {            
+
+        if (KeyEvent.VK_1 <= e.getKeyCode() && KeyEvent.VK_9 >= e.getKeyCode()) {
             int number = e.getKeyCode() - KeyEvent.VK_0 - 1;
-            if(number < NUM_GAUSSIAN_TEXTURES) {                
-                System.out.println("Angle Resolution: "+calcCosAngleResolution(number));
+            if (number < NUM_GAUSSIAN_TEXTURES) {
+                System.out.println("Angle Resolution: " + calcCosAngleResolution(number));
                 currTexture = number;
             }
         }

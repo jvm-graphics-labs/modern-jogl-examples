@@ -65,7 +65,8 @@ public class Semantic {
         public static final int POSITION = 4;
         public static final int TEXCOORD = 5;
         public static final int COLOR = 6;
-        public static final int GAUSSIAN_TEXTURE = 6;
+        public static final int GAUSSIAN_TEXTURE = 7;
+        public static final int SHININESS_TEXTURE = 8;
     }
 
     public static class Storage {
