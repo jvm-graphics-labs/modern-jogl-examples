@@ -16,7 +16,7 @@ Steps:
 
 In case you may see some error in the tutorials that should be running (see list below), just clone the original project (look on my repos or on [java-graphic](https://github.com/java-graphics)) and add it.
 
-Status (everything where not specified, it means it is ported, updated and working):
+Status, everything where not specified, it means it is ported, updated - because I am also rewriting the samples using the jogl high performance native toolkit [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html) - and working:
 
 - Chapter 1, Hello Triangle
 - Chapter 2, Playing with Colors
@@ -35,6 +35,3 @@ Status (everything where not specified, it means it is ported, updated and worki
 - Chapter 15, Many Images, to update
 - Chapter 16, Gamma and Textures, to update
 - Chapter 17, Spotlight on Textures, to update
-
-
-Pps: I am also rewriting the samples using the jogl high performance native toolkit [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html).. be patient  :pray: 
