@@ -1,0 +1,31 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile 'com.github.java-graphics:glm:-SNAPSHOT'
+    compile 'com.github.java-graphics:java-unofficial-opengl-SDK:-SNAPSHOT'
+
+    def jogl = '2.3.2'
+
+    compile "org.jogamp.gluegen:gluegen-rt:$jogl"
+    compile "org.jogamp.jogl:jogl-all:$jogl"
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+//task run(type: JavaExec, dependsOn: installApp, overwrite: true) {
+//    description 'Runs this project as a JVM application'
+//    group 'application'
+//    main mainClassName
+//    classpath fileTree("$installApp.destinationDir/lib")
+//}
