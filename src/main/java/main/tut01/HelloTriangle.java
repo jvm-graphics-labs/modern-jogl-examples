@@ -4,15 +4,15 @@
  */
 package main.tut01;
 
+import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glm.vec._4.Vec4;
-import glutil.BufferUtils;
 import main.framework.Framework;
 import main.framework.Semantic;
+import vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

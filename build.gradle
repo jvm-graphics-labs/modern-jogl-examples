@@ -8,8 +8,8 @@ repositories {
 
 dependencies {
 
-    compile 'com.github.java-graphics:glm:-SNAPSHOT'
-    compile 'com.github.java-graphics:java-unofficial-opengl-SDK:-SNAPSHOT'
+    compile 'com.github.elect86:glm:232a15ac00dc763cb5e76444e90bd5f80fb90842'
+    compile 'com.github.elect86:unofficial-opengl-SDK:af9eb3e131cf61058b09a0ade1869e5ca0925cc3'
 
     def jogl = '2.3.2'
 
