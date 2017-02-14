@@ -5,6 +5,7 @@
  */
 package main.framework;
 
+import buffer.BufferUtils;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
@@ -21,9 +22,8 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
-import glm.vec._2.i.Vec2i;
-import glutil.BufferUtils;
-import glutil.GlDebugOutput;
+import debug.GlDebugOutput;
+import vec._2.Vec2i;
 import java.nio.FloatBuffer;
 
 /**
@@ -64,7 +64,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         glWindow.setPointerVisible(true);
         glWindow.confinePointer(false);
         glWindow.setTitle(title);
-        glWindow.setSize(windowSize.x, windowSize.y);
+        glWindow.setSize(windowSize.getX(), windowSize.getY());
 
         glWindow.setVisible(true);
 

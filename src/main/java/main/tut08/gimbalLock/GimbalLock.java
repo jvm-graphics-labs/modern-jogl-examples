@@ -17,18 +17,12 @@ import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glutil.BufferUtils;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import glm.mat._4.Mat4;
-import glm.vec._3.Vec3;
-import glm.vec._4.Vec4;
-import glutil.MatrixStack;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
-import one.util.streamex.IntStreamEx;
 import org.xml.sax.SAXException;
 
 /**

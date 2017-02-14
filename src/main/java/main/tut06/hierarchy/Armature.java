@@ -6,8 +6,7 @@
 package main.tut06.hierarchy;
 
 import com.jogamp.opengl.GL3;
-import glm.Glm;
-import glm.vec._3.Vec3;
+import vec._3.Vec3;
 import glutil.MatrixStack;
 import main.framework.Framework;
 

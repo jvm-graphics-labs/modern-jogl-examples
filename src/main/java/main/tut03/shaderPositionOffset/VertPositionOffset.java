@@ -16,11 +16,11 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glutil.BufferUtils;
+import buffer.BufferUtils;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.vec._2.Vec2;
-import glm.vec._4.Vec4;
+import vec._2.Vec2;
+import vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -107,7 +107,7 @@ public class VertPositionOffset extends Framework {
 
         gl3.glUseProgram(theProgram);
 
-        gl3.glUniform2f(offsetLocation, offset.x, offset.y);
+        gl3.glUniform2f(offsetLocation, offset.getX(), offset.getY());
 
         gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
@@ -129,8 +129,8 @@ public class VertPositionOffset extends Framework {
 
         float currTimeThroughLoop = elapsedTime % loopDuration;
 
-        offset.x = (float) (Math.cos(currTimeThroughLoop * scale) * 0.5f);
-        offset.y = (float) (Math.sin(currTimeThroughLoop * scale) * 0.5f);
+        offset.setX((float) (Math.cos(currTimeThroughLoop * scale) * 0.5f));
+        offset.setY((float) (Math.sin(currTimeThroughLoop * scale) * 0.5f));
     }
 
     @Override

@@ -7,28 +7,27 @@ package main.framework.component;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+
+import buffer.BufferUtils;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import glutil.BufferUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import one.util.streamex.IntStreamEx;
-import one.util.streamex.StreamEx;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- *
  * @author gbarbieri
  */
 public class Mesh {
@@ -176,8 +175,8 @@ public class Mesh {
             gl3.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, null, GL_STATIC_DRAW);
 
             //Fill with data.
-            IntStreamEx.range(indexData.size()).forEach(i
-                    -> indexData.get(i).fillBoundBufferObject(gl3, indexStartLocs[i]));
+            for (int i = 0; i < indexData.size(); i++)
+                indexData.get(i).fillBoundBufferObject(gl3, indexStartLocs[i]);
 
             //Fill in indexed rendering commands.
             for (int loop = 0; loop < indexData.size(); loop++) {
@@ -228,7 +227,7 @@ public class Mesh {
 
         attribs.forEach(attrib -> BufferUtils.destroyDirectBuffer(attrib.dataArray()));
         indexData.forEach(cmd -> BufferUtils.destroyDirectBuffer(cmd.dataArray()));
-        
+
         gl3.glDeleteBuffers(1, attribArraysBuffer);
         if (!indexData.isEmpty()) {
             gl3.glDeleteBuffers(1, indexBuffer);

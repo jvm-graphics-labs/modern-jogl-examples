@@ -19,10 +19,10 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glutil.BufferUtils;
+import buffer.BufferUtils;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.vec._4.Vec4;
+import vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 

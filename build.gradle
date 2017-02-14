@@ -9,7 +9,7 @@ repositories {
 dependencies {
 
     compile 'com.github.elect86:glm:232a15ac00dc763cb5e76444e90bd5f80fb90842'
-    compile 'com.github.elect86:unofficial-opengl-SDK:af9eb3e131cf61058b09a0ade1869e5ca0925cc3'
+    compile 'com.github.elect86:uno-sdk:f9f1c5e218044f20450bb6e2dc555a81a836ffa0'
 
     def jogl = '2.3.2'
 
