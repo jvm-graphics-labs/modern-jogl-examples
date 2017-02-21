@@ -2,36 +2,32 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.tut03.shaderCalcOffset;
+package main.tut03;
 
+import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_FLOAT;
-import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import buffer.BufferUtils;
+import glsl.ShaderCodeKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+
 /**
- *
  * @author gbarbieri
  */
 public class VertCalcOffset extends Framework {
 
-    private final String SHADERS_ROOT = "tut03/shaderCalcOffset";
-    private final String VERT_SHADER_SOURCE = "calc-offset";
-    private final String FRAG_SHADER_SOURCE = "standard";
+    private final String VERTEX_SHADER = "tut03/calc-offset.vert";
+    private final String FRAGMENT_SHADER = "tut03/standard.frag";
 
     public static void main(String[] args) {
         new VertCalcOffset("Tutorial 03 - Shader Calc Offset");
@@ -44,9 +40,9 @@ public class VertCalcOffset extends Framework {
     private int theProgram, elapsedTimeUniform;
     private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
     private float[] vertexPositions = {
-        +0.25f, +0.25f, 0.0f, 1.0f,
-        +0.25f, -0.25f, 0.0f, 1.0f,
-        -0.25f, -0.25f, 0.0f, 1.0f};
+            +0.25f, +0.25f, 0.0f, 1.0f,
+            +0.25f, -0.25f, 0.0f, 1.0f,
+            -0.25f, -0.25f, 0.0f, 1.0f};
     private long startingTime;
 
     @Override
@@ -61,43 +57,41 @@ public class VertCalcOffset extends Framework {
         startingTime = System.currentTimeMillis();
     }
 
-    private void initializeProgram(GL3 gl3) {
+    private void initializeProgram(GL3 gl) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
-        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
-        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
+        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
 
-        shaderProgram.add(vertShaderCode);
-        shaderProgram.add(fragShaderCode);
+        shaderProgram.add(vertex);
+        shaderProgram.add(fragment);
 
-        shaderProgram.link(gl3, System.out);
+        shaderProgram.link(gl, System.err);
+
+        vertex.destroy(gl);
+        fragment.destroy(gl);
 
         theProgram = shaderProgram.program();
 
-        vertShaderCode.destroy(gl3);
-        fragShaderCode.destroy(gl3);
+        elapsedTimeUniform = gl.glGetUniformLocation(theProgram, "time");
 
-        elapsedTimeUniform = gl3.glGetUniformLocation(theProgram, "time");
+        int loopDurationUnf = gl.glGetUniformLocation(theProgram, "loopDuration");
 
-        gl3.glUseProgram(theProgram);
-        gl3.glUniform1f(
-                gl3.glGetUniformLocation(theProgram, "loopDuration"),
-                5.0f);
-        gl3.glUseProgram(0);
+        gl.glUseProgram(theProgram);
+        gl.glUniform1f(loopDurationUnf, 5f);
+        gl.glUseProgram(0);
     }
 
-    private void initializeVertexBuffer(GL3 gl3) {
+    private void initializeVertexBuffer(GL3 gl) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexPositions);
 
-        gl3.glGenBuffers(1, positionBufferObject);
+        gl.glGenBuffers(1, positionBufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
-        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
@@ -124,7 +118,6 @@ public class VertCalcOffset extends Framework {
 
     @Override
     public void reshape(GL3 gl, int w, int h) {
-
         gl.glViewport(0, 0, w, h);
     }
 
@@ -134,7 +127,7 @@ public class VertCalcOffset extends Framework {
         gl.glDeleteProgram(theProgram);
         gl.glDeleteBuffers(1, positionBufferObject);
         gl.glDeleteVertexArrays(1, vao);
-        
+
         BufferUtils.destroyDirectBuffer(positionBufferObject);
         BufferUtils.destroyDirectBuffer(vao);
     }
