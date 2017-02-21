@@ -13,8 +13,6 @@ He is also supporting the html form of the documentation [here](https://paroj.gi
 
 You can find the examples in java under `src/main/java` and the corresponding in kotlin under `src/main/kotlin`
 
-Status, everything where not specified, it means it is ported, updated - because I am also rewriting the samples using the jogl high performance native toolkit [newt](http://jogamp.org/jogl/doc/NEWT-Overview.html) - and working:
-
 Status:
 
 - [x] Chapter 1, Hello Triangle
