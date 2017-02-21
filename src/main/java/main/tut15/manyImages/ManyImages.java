@@ -56,15 +56,15 @@ public class ManyImages implements GLEventListener, KeyListener {
 
         frame.add(manyImages.newtCanvasAWT);
 
-        frame.setSize(manyImages.glWindow.getWidth(), manyImages.glWindow.getHeight());
+        frame.setSize(manyImages.window.getWidth(), manyImages.window.getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(manyImages.glWindow, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(manyImages.window, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 fPSAnimator.stop();
-                manyImages.glWindow.destroy();
+                manyImages.window.destroy();
                 System.exit(0);
             }
         });
@@ -73,7 +73,7 @@ public class ManyImages implements GLEventListener, KeyListener {
         frame.setVisible(true);
     }
 
-    private GLWindow glWindow;
+    private GLWindow window;
     private NewtCanvasAWT newtCanvasAWT;
     private ProgramData program;
     private Mesh plane;
@@ -96,13 +96,13 @@ public class ManyImages implements GLEventListener, KeyListener {
 
         GLCapabilities gLCapabilities = new GLCapabilities(gLProfile);
 
-        glWindow = GLWindow.create(gLCapabilities);
+        window = GLWindow.create(gLCapabilities);
 
-        glWindow.setSize(1024, 768);
+        window.setSize(1024, 768);
 
-        glWindow.addGLEventListener(this);
-        glWindow.addKeyListener(this);
-//        glWindow.addMouseListener(this);
+        window.addGLEventListener(this);
+        window.addKeyListener(this);
+//        window.addMouseListener(this);
         */
 /*
          *  We combine NEWT GLWindow inside existing AWT application (the main JFrame) 

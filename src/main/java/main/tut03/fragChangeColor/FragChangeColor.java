@@ -50,13 +50,13 @@ public class FragChangeColor extends Framework{
     private long startingTime;
 
     @Override
-    public void init(GL3 gl3) {
+    public void init(GL3 gl) {
 
-        initializeProgram(gl3);
-        initializeVertexBuffer(gl3);
+        initializeProgram(gl);
+        initializeVertexBuffer(gl);
 
-        gl3.glGenVertexArrays(1, vao);
-        gl3.glBindVertexArray(vao.get(0));
+        gl.glGenVertexArrays(1, vao);
+        gl.glBindVertexArray(vao.get(0));
 
         startingTime = System.currentTimeMillis();
     }
@@ -106,37 +106,37 @@ public class FragChangeColor extends Framework{
     }
 
    @Override
-    public void display(GL3 gl3) {
+    public void display(GL3 gl) {
 
-        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
 
-        gl3.glUseProgram(theProgram);
+        gl.glUseProgram(theProgram);
 
-        gl3.glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000.0f);
+        gl.glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000.0f);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
-        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
+        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
 
-        gl3.glDrawArrays(GL_TRIANGLES, 0, 3);
+        gl.glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        gl3.glDisableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glDisableVertexAttribArray(Semantic.Attr.POSITION);
 
-        gl3.glUseProgram(0);
+        gl.glUseProgram(0);
     }
 
     @Override
-    public void reshape(GL3 gl3, int w, int h) {
+    public void reshape(GL3 gl, int w, int h) {
 
-        gl3.glViewport(0, 0, w, h);
+        gl.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
-        gl3.glDeleteBuffers(1, positionBufferObject);
-        gl3.glDeleteVertexArrays(1, vao);
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(1, positionBufferObject);
+        gl.glDeleteVertexArrays(1, vao);
         
         BufferUtils.destroyDirectBuffer(positionBufferObject);
         BufferUtils.destroyDirectBuffer(vao);
@@ -147,8 +147,8 @@ public class FragChangeColor extends Framework{
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.remove(glWindow);
-                glWindow.destroy();
+                animator.remove(window);
+                window.destroy();
                 break;
         }
     }

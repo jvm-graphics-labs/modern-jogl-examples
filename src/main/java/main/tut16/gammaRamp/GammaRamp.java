@@ -55,15 +55,15 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
         frame.add(gammaRamp.newtCanvasAWT);
 
-        frame.setSize(gammaRamp.glWindow.getWidth(), gammaRamp.glWindow.getHeight());
+        frame.setSize(gammaRamp.window.getWidth(), gammaRamp.window.getHeight());
 
-        final FPSAnimator fPSAnimator = new FPSAnimator(gammaRamp.glWindow, 30);
+        final FPSAnimator fPSAnimator = new FPSAnimator(gammaRamp.window, 30);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 fPSAnimator.stop();
-                gammaRamp.glWindow.destroy();
+                gammaRamp.window.destroy();
                 System.exit(0);
             }
         });
@@ -72,7 +72,7 @@ public class GammaRamp implements GLEventListener, KeyListener {
         frame.setVisible(true);
     }
 
-    private GLWindow glWindow;
+    private GLWindow window;
     private NewtCanvasAWT newtCanvasAWT;
     private int[] programs;
     private int[] uniformBlockBuffers;
@@ -91,13 +91,13 @@ public class GammaRamp implements GLEventListener, KeyListener {
 
         GLCapabilities gLCapabilities = new GLCapabilities(gLProfile);
 
-        glWindow = GLWindow.create(gLCapabilities);
+        window = GLWindow.create(gLCapabilities);
 
-        glWindow.setSize(1024, 768);
+        window.setSize(1024, 768);
 
-        glWindow.addGLEventListener(this);
-        glWindow.addKeyListener(this);
-//        glWindow.addMouseListener(this);
+        window.addGLEventListener(this);
+        window.addKeyListener(this);
+//        window.addMouseListener(this);
         */
 /*
          *  We combine NEWT GLWindow inside existing AWT application (the main JFrame) 

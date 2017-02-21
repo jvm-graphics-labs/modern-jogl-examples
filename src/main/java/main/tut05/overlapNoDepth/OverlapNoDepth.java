@@ -184,15 +184,15 @@ public class OverlapNoDepth extends Framework {
         17, 16, 14};
 
     @Override
-    public void init(GL3 gl3) {
+    public void init(GL3 gl) {
 
-        initializeProgram(gl3);
-        initializeBuffers(gl3);
-        initializeVertexArrays(gl3);
+        initializeProgram(gl);
+        initializeBuffers(gl);
+        initializeVertexArrays(gl);
 
-        gl3.glEnable(GL_CULL_FACE);
-        gl3.glCullFace(GL_BACK);
-        gl3.glFrontFace(GL_CW);
+        gl.glEnable(GL_CULL_FACE);
+        gl.glCullFace(GL_BACK);
+        gl.glFrontFace(GL_CW);
     }
 
     private void initializeProgram(GL3 gl3) {
@@ -281,44 +281,44 @@ public class OverlapNoDepth extends Framework {
     }
 
     @Override
-    public void display(GL3 gl3) {
+    public void display(GL3 gl) {
 
-        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
-        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
+        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        gl3.glUseProgram(theProgram);
+        gl.glUseProgram(theProgram);
 
-        gl3.glBindVertexArray(vao.get(VertexArray._1));
-        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f);
-        gl3.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
+        gl.glBindVertexArray(vao.get(VertexArray._1));
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f);
+        gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
 
-        gl3.glBindVertexArray(vao.get(VertexArray._2));
-        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
-        gl3.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
+        gl.glBindVertexArray(vao.get(VertexArray._2));
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
+        gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
 
-        gl3.glBindVertexArray(0);
-        gl3.glUseProgram(0);
+        gl.glBindVertexArray(0);
+        gl.glUseProgram(0);
     }
 
     @Override
-    public void reshape(GL3 gl3, int w, int h) {
+    public void reshape(GL3 gl, int w, int h) {
 
         perspectiveMatrix.put(0, frustumScale * (h / (float) w));
         perspectiveMatrix.put(5, frustumScale);
 
-        gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl3.glUseProgram(0);
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
+        gl.glUseProgram(0);
 
-        gl3.glViewport(0, 0, w, h);
+        gl.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
-        gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl3.glDeleteVertexArrays(VertexArray.MAX, vao);
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl.glDeleteVertexArrays(VertexArray.MAX, vao);
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
@@ -330,8 +330,8 @@ public class OverlapNoDepth extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.remove(glWindow);
-                glWindow.destroy();
+                animator.remove(window);
+                window.destroy();
                 break;
         }
     }

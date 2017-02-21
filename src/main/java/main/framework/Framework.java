@@ -34,7 +34,7 @@ import java.nio.FloatBuffer;
 public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     private final boolean DEBUG = false;
-    protected GLWindow glWindow;
+    protected GLWindow window;
     protected Animator animator;
     protected Vec2i windowSize = new Vec2i(500);
     protected FloatBuffer clearColor = GLBuffers.newDirectFloatBuffer(4),
@@ -53,32 +53,32 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         GLProfile glProfile = GLProfile.get(GLProfile.GL3);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
 
-        glWindow = GLWindow.create(screen, glCapabilities);
+        window = GLWindow.create(screen, glCapabilities);
 
         if (DEBUG) {
-            glWindow.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);
+            window.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);
         }
 
-        glWindow.setUndecorated(false);
-        glWindow.setAlwaysOnTop(false);
-        glWindow.setFullscreen(false);
-        glWindow.setPointerVisible(true);
-        glWindow.confinePointer(false);
-        glWindow.setTitle(title);
-        glWindow.setSize(windowSize.getX(), windowSize.getY());
+        window.setUndecorated(false);
+        window.setAlwaysOnTop(false);
+        window.setFullscreen(false);
+        window.setPointerVisible(true);
+        window.confinePointer(false);
+        window.setTitle(title);
+        window.setSize(windowSize.getX(), windowSize.getY());
 
-        glWindow.setVisible(true);
+        window.setVisible(true);
 
         if (DEBUG) {
-            glWindow.getContext().addGLDebugListener(new GlDebugOutput());
+            window.getContext().addGLDebugListener(new GlDebugOutput());
         }
 
-        glWindow.addGLEventListener(this);
-        glWindow.addKeyListener(this);
-        glWindow.addMouseListener(this);
+        window.addGLEventListener(this);
+        window.addKeyListener(this);
+        window.addMouseListener(this);
 
         animator = new Animator();
-        animator.add(glWindow);
+        animator.add(window);
         animator.start();
     }
 
@@ -91,7 +91,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     }
 
-    protected void init(GL3 gl3) {
+    protected void init(GL3 gl) {
 
     }
 
@@ -103,7 +103,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         display(gl3);
     }
 
-    protected void display(GL3 gl3) {
+    protected void display(GL3 gl) {
 
     }
 
@@ -115,7 +115,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         reshape(gl3, width, height);
     }
 
-    protected void reshape(GL3 gl3, int width, int height) {
+    protected void reshape(GL3 gl, int width, int height) {
 
     }
 
@@ -131,10 +131,10 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         BufferUtils.destroyDirectBuffer(matBuffer);
         BufferUtils.destroyDirectBuffer(vecBuffer);
 
-        System.exit(0);
+        System.exit(1);
     }
 
-    protected void end(GL3 gl3) {
+    protected void end(GL3 gl) {
 
     }
 

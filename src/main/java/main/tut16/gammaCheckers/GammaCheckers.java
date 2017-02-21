@@ -53,7 +53,7 @@
 //
 //        frame.add(gammaCheckers.newtCanvasAWT);
 //
-//        frame.setSize(gammaCheckers.glWindow.getWidth(), gammaCheckers.glWindow.getHeight());
+//        frame.setSize(gammaCheckers.window.getWidth(), gammaCheckers.window.getHeight());
 //
 //        final FPSAnimator fPSAnimator = new FPSAnimator(gammaCheckers.glWindow, 30);
 //

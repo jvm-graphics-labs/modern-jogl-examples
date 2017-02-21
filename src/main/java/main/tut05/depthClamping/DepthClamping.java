@@ -22,7 +22,7 @@ import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import com.jogamp.opengl.GL3;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
-import com.jogamp.opengl.GLContext;
+
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
@@ -181,32 +181,32 @@ public class DepthClamping extends Framework {
     private boolean depthClampingActive = false;
 
     @Override
-    public void init(GL3 gl3) {
+    public void init(GL3 gl) {
 
-        initializeProgram(gl3);
-        initializeBuffers(gl3);
+        initializeProgram(gl);
+        initializeBuffers(gl);
 
-        gl3.glGenVertexArrays(1, vao);
-        gl3.glBindVertexArray(vao.get(0));
+        gl.glGenVertexArrays(1, vao);
+        gl.glBindVertexArray(vao.get(0));
 
         int colorData = Float.BYTES * 3 * numberOfVertices;
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
-        gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
-        gl3.glBindVertexArray(0);
+        gl.glBindVertexArray(0);
 
-        gl3.glEnable(GL_CULL_FACE);
-        gl3.glCullFace(GL_BACK);
-        gl3.glFrontFace(GL_CW);
+        gl.glEnable(GL_CULL_FACE);
+        gl.glCullFace(GL_BACK);
+        gl.glFrontFace(GL_CW);
 
-        gl3.glEnable(GL_DEPTH_TEST);
-        gl3.glDepthMask(true);
-        gl3.glDepthFunc(GL_LEQUAL);
-        gl3.glDepthRange(0.0f, 1.0f);
+        gl.glEnable(GL_DEPTH_TEST);
+        gl.glDepthMask(true);
+        gl.glDepthFunc(GL_LEQUAL);
+        gl.glDepthRange(0.0f, 1.0f);
     }
 
     private void initializeProgram(GL3 gl3) {
@@ -265,50 +265,50 @@ public class DepthClamping extends Framework {
     }
 
     @Override
-    public void display(GL3 gl3) {
+    public void display(GL3 gl) {
 
         if (depthClampingActive) {
-            gl3.glDisable(GL_DEPTH_CLAMP);
+            gl.glDisable(GL_DEPTH_CLAMP);
         } else {
-            gl3.glEnable(GL_DEPTH_CLAMP);
+            gl.glEnable(GL_DEPTH_CLAMP);
         }
 
-        gl3.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
-        gl3.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
+        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        gl3.glUseProgram(theProgram);
+        gl.glUseProgram(theProgram);
 
-        gl3.glBindVertexArray(vao.get(0));
+        gl.glBindVertexArray(vao.get(0));
 
-        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f);
-        gl3.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f);
+        gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
 
-        gl3.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
-        gl3.glDrawElementsBaseVertex(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2);
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
+        gl.glDrawElementsBaseVertex(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2);
 
-        gl3.glBindVertexArray(0);
-        gl3.glUseProgram(0);
+        gl.glBindVertexArray(0);
+        gl.glUseProgram(0);
     }
 
     @Override
-    public void reshape(GL3 gl3, int w, int h) {
+    public void reshape(GL3 gl, int w, int h) {
 
         perspectiveMatrix.put(0, frustumScale * (h / (float) w));
         perspectiveMatrix.put(5, frustumScale);
 
-        gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl3.glUseProgram(0);
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
+        gl.glUseProgram(0);
 
-        gl3.glViewport(0, 0, w, h);
+        gl.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
-        gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl3.glDeleteVertexArrays(1, vao);
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl.glDeleteVertexArrays(1, vao);
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
@@ -320,8 +320,8 @@ public class DepthClamping extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.remove(glWindow);
-                glWindow.destroy();
+                animator.remove(window);
+                window.destroy();
                 break;
             case KeyEvent.VK_SPACE:
                 depthClampingActive = !depthClampingActive;

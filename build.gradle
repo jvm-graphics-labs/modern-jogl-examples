@@ -23,8 +23,8 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile 'com.github.elect86:glm:232a15ac00dc763cb5e76444e90bd5f80fb90842'
-    compile 'com.github.elect86:uno-sdk:109eff3a744325a88c086fc9607cb35745b41e06'
+    compile 'com.github.elect86:glm:caaf5141fc6a914dda1ed9d6a4443fc33b6d2238'
+    compile 'com.github.elect86:uno-sdk:f6b1dcefa522dd37c324e936e0ff1bf38b05628f'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'
@@ -40,10 +40,3 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
-
-//task run(type: JavaExec, dependsOn: installApp, overwrite: true) {
-//    description 'Runs this project as a JVM application'
-//    group 'application'
-//    main mainClassName
-//    classpath fileTree("$installApp.destinationDir/lib")
-//}
