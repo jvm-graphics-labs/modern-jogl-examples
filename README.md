@@ -17,9 +17,9 @@ Status:
 
 - [x] Chapter 1, Hello Triangle
 - [x] Chapter 2, Playing with Colors
-- [ ] Chapter 3, Moving Triangle
-    - [x] cpuPositionOffset
+- [x] Chapter 3, Moving Triangle
 - [ ] Chapter 4, Objects at Rest
+    - [x] aspectRatio
 - [ ] Chapter 5, Objects at Depth
 - [ ] Chapter 6, Objects in Motion
 - [ ] Chapter 7, World in Motion
