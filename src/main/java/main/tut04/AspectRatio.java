@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.tut04.aspectRatio;
+package main.tut04;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -20,6 +20,7 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
+import glsl.ShaderCodeKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -32,9 +33,8 @@ import java.nio.IntBuffer;
  */
 public class AspectRatio extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut04/aspectRatio/shaders";
-    private final String VERT_SHADER_SOURCE = "matrix-perspective";
-    private final String FRAG_SHADER_SOURCE = "standard-colors";
+    private final String VERTEX_SHADER = "tut04/matrix-perspective.vert";
+    private final String FRAGMENT_SHADER = "tut04/standard-colors.frag";
 
     public static void main(String[] args) {
         new AspectRatio("Tutorial 04 - Aspect Ratio");
@@ -159,27 +159,25 @@ public class AspectRatio extends Framework {
         gl.glFrontFace(GL_CW);
     }
 
-    private void initializeProgram(GL3 gl3) {
+    private void initializeProgram(GL3 gl) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
-        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
-        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
+        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
 
-        shaderProgram.add(vertShaderCode);
-        shaderProgram.add(fragShaderCode);
+        shaderProgram.add(vertex);
+        shaderProgram.add(fragment);
 
-        shaderProgram.link(gl3, System.out);
+        shaderProgram.link(gl, System.err);
+
+        vertex.destroy(gl);
+        fragment.destroy(gl);
 
         theProgram = shaderProgram.program();
 
-        vertShaderCode.destroy(gl3);
-        fragShaderCode.destroy(gl3);
-
-        offsetUniform = gl3.glGetUniformLocation(theProgram, "offset");
-        perspectiveMatrixUnif = gl3.glGetUniformLocation(theProgram, "perspectiveMatrix");
+        offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
+        perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
 
         float zNear = 0.5f, zFar = 3.0f;
 
@@ -191,20 +189,20 @@ public class AspectRatio extends Framework {
         perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
         perspectiveMatrix.put(11, -1.0f);
 
-        gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl3.glUseProgram(0);
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
+        gl.glUseProgram(0);
     }
 
-    private void initializeVertexBuffer(GL3 gl3) {
+    private void initializeVertexBuffer(GL3 gl) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
 
-        gl3.glGenBuffers(1, vertexBufferObject);
+        gl.glGenBuffers(1, vertexBufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
-        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
@@ -212,7 +210,7 @@ public class AspectRatio extends Framework {
     @Override
     public void display(GL3 gl) {
 
-        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 0f));
 
         gl.glUseProgram(theProgram);
 
