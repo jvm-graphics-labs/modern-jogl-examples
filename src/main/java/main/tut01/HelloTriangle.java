@@ -35,7 +35,7 @@ public class HelloTriangle extends Framework {
         new HelloTriangle("Tutorial 01 - Hello Triangle");
     }
 
-    public HelloTriangle(String title) {
+    HelloTriangle(String title) {
         super(title);
     }
 
@@ -131,7 +131,6 @@ public class HelloTriangle extends Framework {
      */
     @Override
     public void reshape(GL3 gl3, int w, int h) {
-
         gl3.glViewport(0, 0, w, h);
     }
 

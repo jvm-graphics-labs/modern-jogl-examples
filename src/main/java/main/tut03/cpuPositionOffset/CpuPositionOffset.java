@@ -15,11 +15,11 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glutil.BufferUtils;
+import buffer.BufferUtils;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.vec._2.Vec2;
-import glm.vec._4.Vec4;
+import vec._2.Vec2;
+import vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -124,8 +124,8 @@ public class CpuPositionOffset extends Framework {
 
         float fCurrTimeThroughLoop = elapsedTime % loopDuration;
 
-        offset.x = (float) (Math.cos(fCurrTimeThroughLoop * scale) * 0.5f);
-        offset.y = (float) (Math.sin(fCurrTimeThroughLoop * scale) * 0.5f);
+        offset.setX((float) (Math.cos(fCurrTimeThroughLoop * scale) * 0.5f));
+        offset.setY((float) (Math.sin(fCurrTimeThroughLoop * scale) * 0.5f));
     }
 
     private void adjustVertexData(GL3 gl3, Vec2 offset) {
@@ -135,8 +135,8 @@ public class CpuPositionOffset extends Framework {
 
         for (int iVertex = 0; iVertex < vertexPositions.length; iVertex += 4) {
 
-            newData[iVertex + 0] += offset.x;
-            newData[iVertex + 1] += offset.y;
+            newData[iVertex + 0] += offset.getX();
+            newData[iVertex + 1] += offset.getY();
         }
 
         FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(newData);

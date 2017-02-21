@@ -4,6 +4,7 @@
  */
 package main.tut05.baseVertexOverlap;
 
+import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_BACK;
@@ -21,11 +22,10 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glutil.BufferUtils;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.vec._3.Vec3;
-import glm.vec._4.Vec4;
+import vec._3.Vec3;
+import vec._4.Vec4;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;

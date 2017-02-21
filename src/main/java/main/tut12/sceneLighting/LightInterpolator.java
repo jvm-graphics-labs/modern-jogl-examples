@@ -5,8 +5,6 @@
  */
 package main.tut12.sceneLighting;
 
-import glutil.interpolator.ConstVelLinearInterpolator;
-import glutil.interpolator.Interf_LinearInterpolate;
 
 /**
  *

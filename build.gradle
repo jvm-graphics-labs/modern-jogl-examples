@@ -1,15 +1,31 @@
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'kotlin'
 
 
-repositories {
-    mavenCentral()
+
+buildscript {
+
+    ext.kotlin_version = '1.1.0-rc-91'
+
+    repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
+
 
 dependencies {
 
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
     compile 'com.github.elect86:glm:232a15ac00dc763cb5e76444e90bd5f80fb90842'
-    compile 'com.github.elect86:unofficial-opengl-SDK:af9eb3e131cf61058b09a0ade1869e5ca0925cc3'
+    compile 'com.github.elect86:uno-sdk:109eff3a744325a88c086fc9607cb35745b41e06'
+    compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'
 
@@ -19,6 +35,8 @@ dependencies {
 
 allprojects {
     repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
         maven { url 'https://jitpack.io' }
     }
 }
