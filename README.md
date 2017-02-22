@@ -21,7 +21,7 @@ Status:
 - [x] Chapter 4, Objects at Rest
 - [ ] Chapter 5, Objects at Depth
     - [x] base vertex overlaps
-    - [y] depth buffer
+    - [x] depth buffer
 - [ ] Chapter 6, Objects in Motion
 - [ ] Chapter 7, World in Motion
 - [ ] Chapter 8, Getting Oriented
