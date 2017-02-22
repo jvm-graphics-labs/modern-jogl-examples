@@ -8,6 +8,7 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
+import glsl.programOf
 import glsl.shaderCodeOf
 import main.L
 import main.SIZE
@@ -27,9 +28,6 @@ fun main(args: Array<String>) {
 }
 
 class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
-
-    val VERTEX_SOURCE = "tut03/position-offset.vert"
-    val FRAGMENT_SOURCE = "tut03/standard.frag"
 
     var theProgram = 0
     var offsetLocation = 0
@@ -54,20 +52,7 @@ class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
 
     fun initializeProgram(gl: GL3) {
 
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SOURCE, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SOURCE, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        theProgram = shaderProgram.program()
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
+        theProgram = programOf(gl, this::class.java, "tut03", "position-offset.vert", "standard.frag")
 
         offsetLocation = gl.glGetUniformLocation(theProgram, "offset")
     }

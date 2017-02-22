@@ -18,6 +18,7 @@ import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
 import glsl.ShaderCodeKt;
+import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -29,9 +30,6 @@ import java.nio.IntBuffer;
  * @author gbarbieri
  */
 public class VertexColor extends Framework {
-
-    private final String VERTEX_SHADER = "tut02/vertex-colors.vert";
-    private final String FRAGMENT_SHADER = "tut02/vertex-colors.frag";
 
     public static void main(String[] args) {
         new VertexColor("Tutorial 02 - Vertex Colors");
@@ -62,21 +60,7 @@ public class VertexColor extends Framework {
     }
 
     private void initializeProgram(GL3 gl) {
-
-        ShaderProgram shaderProgram = new ShaderProgram();
-
-        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
-        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
-
-        shaderProgram.add(vertex);
-        shaderProgram.add(fragment);
-
-        shaderProgram.link(gl, System.err);
-
-        vertex.destroy(gl);
-        fragment.destroy(gl);
-
-        theProgram = shaderProgram.program();
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut02", "vertex-colors.vert", "vertex-colors.frag");
     }
 
     private void initializeVertexBuffer(GL3 gl) {

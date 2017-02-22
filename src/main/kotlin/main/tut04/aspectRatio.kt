@@ -9,6 +9,7 @@ import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.floatBufferBig
 import extensions.intBufferBig
 import extensions.toFloatBuffer
+import glsl.programOf
 import glsl.shaderCodeOf
 import main.*
 import main.framework.Framework
@@ -24,9 +25,6 @@ fun main(args: Array<String>) {
 }
 
 class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
-
-    val VERTEX_SHADER = "tut04/matrix-perspective.vert"
-    val FRAGMENT_SHADER = "tut04/standard-colors.frag"
 
     var theProgram = 0
     var offsetUniform = 0
@@ -149,22 +147,10 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
+        theProgram = programOf(gl, this::class.java, "tut04", "matrix-perspective.vert", "standard-colors.frag")
 
         offsetUniform = glGetUniformLocation(theProgram, "offset")
+
         perspectiveMatrixUnif = glGetUniformLocation(theProgram, "perspectiveMatrix")
 
         val zNear = 0.5f

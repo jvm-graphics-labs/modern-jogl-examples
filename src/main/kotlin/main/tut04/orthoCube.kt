@@ -9,6 +9,7 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
+import glsl.programOf
 import glsl.shaderCodeOf
 import main.L
 import main.SIZE
@@ -25,9 +26,6 @@ fun main(args: Array<String>) {
 }
 
 class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
-
-    val VERTEX_SHADER = "tut04/ortho-with-offset.vert"
-    val FRAGMENT_SHADER = "tut04/standard-colors.frag"
 
     var theProgram = 0
     var offsetUniform = 0
@@ -146,20 +144,7 @@ class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
 
     fun initializeProgram(gl: GL3) {
 
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
+        theProgram = programOf(gl, this::class.java, "tut04", "ortho-with-offset.vert", "standard-colors.frag")
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset")
     }

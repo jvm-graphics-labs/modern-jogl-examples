@@ -10,7 +10,9 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
+import extensions.ShaderProgramUtil;
 import glsl.ShaderCodeKt;
+import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -25,9 +27,6 @@ import static com.jogamp.opengl.GL2ES3.GL_COLOR;
  * @author gbarbieri
  */
 public class FragPosition extends Framework {
-
-    private final String VERTEX_SHADER = "tut02/frag-position.vert";
-    private final String FRAGMENT_SHADER = "tut02/frag-position.frag";
 
     public static void main(String[] args) {
         new FragPosition("Tutorial 02 - Fragment Position");
@@ -55,21 +54,7 @@ public class FragPosition extends Framework {
     }
 
     private void initializeProgram(GL3 gl) {
-
-        ShaderProgram shaderProgram = new ShaderProgram();
-
-        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
-        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
-
-        shaderProgram.add(vertex);
-        shaderProgram.add(fragment);
-
-        shaderProgram.link(gl, System.err);
-
-        vertex.destroy(gl);
-        fragment.destroy(gl);
-
-        theProgram = shaderProgram.program();
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut02", "frag-position.vert", "frag-position.frag");
     }
 
     private void initializeVertexBuffer(GL3 gl) {

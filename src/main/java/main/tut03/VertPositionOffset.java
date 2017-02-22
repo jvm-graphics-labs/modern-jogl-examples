@@ -16,6 +16,7 @@ import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
 import glsl.ShaderCodeKt;
+import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._2.Vec2;
@@ -29,9 +30,6 @@ import static main.GlmKt.glm;
  * @author gbarbieri
  */
 public class VertPositionOffset extends Framework {
-
-    private final String VERTEX_SOURCE = "tut03/position-offset.vert";
-    private final String FRAGMENT_SOURCE = "tut03/standard.frag";
 
     public static void main(String[] args) {
         new VertPositionOffset("Tutorial 03 - Shader Position Offset");
@@ -63,20 +61,7 @@ public class VertPositionOffset extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        ShaderProgram shaderProgram = new ShaderProgram();
-
-        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SOURCE, gl, getClass());
-        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SOURCE, gl, getClass());
-
-        shaderProgram.add(vertex);
-        shaderProgram.add(fragment);
-
-        shaderProgram.link(gl, System.err);
-
-        theProgram = shaderProgram.program();
-
-        vertex.destroy(gl);
-        fragment.destroy(gl);
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut03", "position-offset.vert", "standard.frag");
 
         offsetLocation = gl.glGetUniformLocation(theProgram, "offset");
     }

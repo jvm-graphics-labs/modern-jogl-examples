@@ -1,15 +1,13 @@
 package main.tut03
 
-import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
-import glsl.shaderCodeOf
+import glsl.programOf
 import main.*
 import main.framework.Framework
 import main.framework.Semantic
@@ -25,9 +23,6 @@ fun main(args: Array<String>) {
 }
 
 class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
-
-    val VERTEX_SHADER = "tut03/standard.vert"
-    val FRAGMENT_SHADER = "tut03/standard.frag"
 
     var theProgram = 0
     val positionBufferObject = intBufferBig(1)
@@ -50,21 +45,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
     }
 
     fun initializeProgram(gl: GL3) {
-
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
+        theProgram = programOf(gl, this::class.java, "tut03", "standard.vert", "standard.frag")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
@@ -126,7 +107,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
 
         val buffer = newData.toFloatBuffer()
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0))
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
         glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.SIZE.L, buffer)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 

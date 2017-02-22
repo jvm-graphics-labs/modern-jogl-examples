@@ -8,6 +8,7 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
+import glsl.programOf
 import glsl.shaderCodeOf
 import main.L
 import main.SIZE
@@ -49,21 +50,7 @@ class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
     }
 
     fun initializeProgram(gl: GL3) {
-
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
+        theProgram = programOf(gl, this::class.java, "tut02", "vertex-colors.vert", "vertex-colors.frag")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){

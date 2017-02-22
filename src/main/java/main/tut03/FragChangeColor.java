@@ -11,6 +11,7 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import glsl.ShaderCodeKt;
+import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -25,9 +26,6 @@ import static com.jogamp.opengl.GL2ES3.GL_COLOR;
  * @author gbarbieri
  */
 public class FragChangeColor extends Framework {
-
-    private final String VERTEX_SHADER = "tut03/calc-offset.vert";
-    private final String FRAGMENT_SHADER = "tut03/calc-color.frag";
 
     public static void main(String[] args) {
         new FragChangeColor("Tutorial 03 - Frag Change Color");
@@ -59,20 +57,7 @@ public class FragChangeColor extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        ShaderProgram shaderProgram = new ShaderProgram();
-
-        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
-        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
-
-        shaderProgram.add(vertex);
-        shaderProgram.add(fragment);
-
-        shaderProgram.link(gl, System.err);
-
-        vertex.destroy(gl);
-        fragment.destroy(gl);
-
-        theProgram = shaderProgram.program();
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut03", "calc-offset.vert", "calc-color.frag");
 
         elapsedTimeUniform = gl.glGetUniformLocation(theProgram, "time");
 

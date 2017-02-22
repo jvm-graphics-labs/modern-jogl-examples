@@ -1,14 +1,16 @@
 package main.tut04
 
 import buffer.BufferUtils
+import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.GLBuffers
-import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
-import glsl.shaderCodeOf
+import extensions.toFloatBuffer
+import glsl.programOf
+import main.L
+import main.SIZE
 import main.framework.Framework
 import main.framework.Semantic
 import vec._4.Vec4
@@ -22,9 +24,6 @@ fun main(args: Array<String>) {
 }
 
 class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
-
-    val VERTEX_SHADER = "tut04/manual-perspective.vert"
-    val FRAGMENT_SHADER = "tut04/standard-colors.frag"
 
     var theProgram = 0
     var offsetUniform = 0
@@ -128,7 +127,7 @@ class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
             0.0f, 1.0f, 1.0f, 1.0f,
             0.0f, 1.0f, 1.0f, 1.0f)
 
-    override fun init(gl: GL3) = with(gl){
+    override fun init(gl: GL3) = with(gl) {
 
         initializeProgram(gl)
         initializeVertexBuffer(gl)
@@ -141,87 +140,71 @@ class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
         glFrontFace(GL_CW)
     }
 
-    fun initializeProgram(gl: GL3) =with(gl){
+    fun initializeProgram(gl: GL3) = with(gl) {
 
-        val shaderProgram = ShaderProgram()
+        theProgram = programOf(gl, this::class.java, "tut04", "manual-perspective.vert", "standard-colors.frag")
 
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
+        offsetUniform = glGetUniformLocation(theProgram, "offset")
 
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
+        val frustumScaleUnif = glGetUniformLocation(theProgram, "frustumScale")
+        val zNearUnif = glGetUniformLocation(theProgram, "zNear")
+        val zFarUnif = glGetUniformLocation(theProgram, "zFar")
 
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
-
-        offsetUniform = gl.glGetUniformLocation(theProgram, "offset")
-
-        gl.glUseProgram(theProgram)
-        gl.glUniform1f(
-                gl.glGetUniformLocation(theProgram, "frustumScale"),
-                1.0f)
-        gl.glUniform1f(
-                gl.glGetUniformLocation(theProgram, "zNear"),
-                1.0f)
-        gl.glUniform1f(
-                gl.glGetUniformLocation(theProgram, "zFar"),
-                3.0f)
-        gl.glUseProgram(0)
+        glUseProgram(theProgram)
+        glUniform1f(frustumScaleUnif, 1.0f)
+        glUniform1f(zNearUnif, 1.0f)
+        glUniform1f(zFarUnif, 3.0f)
+        glUseProgram(0)
     }
 
-    fun initializeVertexBuffer(gl3: GL3) {
+    fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData)
+        val vertexBuffer = vertexData.toFloatBuffer()
 
-        gl3.glGenBuffers(1, vertexBufferObject)
+        glGenBuffers(1, vertexBufferObject)
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0))
-        gl3.glBufferData(GL_ARRAY_BUFFER, (vertexBuffer.capacity() * java.lang.Float.BYTES).toLong(), vertexBuffer, GL_STATIC_DRAW)
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer)
+        vertexBuffer.destroy()
     }
 
-    override fun display(gl: GL3) {
+    override fun display(gl: GL3) = with(gl) {
 
-        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
 
-        gl.glUseProgram(theProgram)
+        glUseProgram(theProgram)
 
-        gl.glUniform2f(offsetUniform, 0.5f, 0.5f)
+        glUniform2f(offsetUniform, 0.5f, 0.5f)
 
         val colorData = vertexData.size * java.lang.Float.BYTES / 2
-        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0))
-        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData.toLong())
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
+        glEnableVertexAttribArray(Semantic.Attr.POSITION)
+        glEnableVertexAttribArray(Semantic.Attr.COLOR)
+        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData.toLong())
 
-        gl.glDrawArrays(GL_TRIANGLES, 0, 36)
+        glDrawArrays(GL_TRIANGLES, 0, 36)
 
-        gl.glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        gl.glDisableVertexAttribArray(Semantic.Attr.COLOR)
+        glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        glDisableVertexAttribArray(Semantic.Attr.COLOR)
 
-        gl.glUseProgram(0)
+        glUseProgram(0)
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) {
-
         gl.glViewport(0, 0, w, h)
     }
 
-    override fun end(gl: GL3) {
+    override fun end(gl: GL3) = with(gl) {
 
-        gl.glDeleteProgram(theProgram)
-        gl.glDeleteBuffers(1, vertexBufferObject)
-        gl.glDeleteVertexArrays(1, vao)
+        glDeleteProgram(theProgram)
+        glDeleteBuffers(1, vertexBufferObject)
+        glDeleteVertexArrays(1, vao)
 
-        BufferUtils.destroyDirectBuffer(vao)
-        BufferUtils.destroyDirectBuffer(vertexBufferObject)
+        vao.destroy()
+        vertexBufferObject.destroy()
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

@@ -5,24 +5,21 @@
 package main.tut01
 
 
-import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
-import com.jogamp.opengl.GL.*
+import com.jogamp.opengl.GL2ES2.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.GLBuffers
-import com.jogamp.opengl.util.glsl.ShaderProgram
+import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
+import extensions.byteBufferOf
 import extensions.intBufferBig
+import extensions.intBufferOf
 import extensions.toFloatBuffer
-import glsl.shaderCodeOf
-import main.BYTES
 import main.L
 import main.SIZE
 import main.framework.Framework
 import main.framework.Semantic
 import vec._4.Vec4
-import java.util.ArrayList
 
 
 fun main(args: Array<String>) {
@@ -31,8 +28,22 @@ fun main(args: Array<String>) {
 
 class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
 
-    val VERTEX_SHADER = "tut01/shader.vert"
-    val FRAGMENT_SHADER = "tut01/shader.frag"
+    val strVertexShader =
+            "#version 330\n" +
+                    "#define POSITION 0\n" +
+                    "layout(location = POSITION) in vec4 position;\n" +
+                    "void main()\n" +
+                    "{\n" +
+                    "   gl_Position = position;\n" +
+                    "}\n"
+
+    val strFragmentShader =
+            "#version 330\n" +
+                    "out vec4 outputColor;\n" +
+                    "void main()\n" +
+                    "{\n" +
+                    "   outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n" +
+                    "}\n"
 
     val vertexPositions = floatArrayOf(
             +0.75f, +0.75f, 0.0f, 1.0f,
@@ -58,39 +69,35 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
         glBindVertexArray(vao[0])
     }
 
-    private fun initializeProgram(gl: GL3) {
+    fun initializeProgram(gl: GL3) {
 
-        val shaderList = ArrayList<Int>()
-
-        shaderList.add(createShader(gl, GL_VERTEX_SHADER, strVertexShader))
-        shaderList.add(createShader(gl, GL_FRAGMENT_SHADER, strFragmentShader))
+        val shaderList = listOf(createShader(gl, GL_VERTEX_SHADER, strVertexShader), createShader(gl, GL_FRAGMENT_SHADER, strFragmentShader))
 
         theProgram = createProgram(gl, shaderList)
 
-        shaderList.forEach(Consumer<Int> { gl.glDeleteShader(it) })
+        shaderList.forEach(gl::glDeleteShader)
     }
 
-    private fun createShader(gl: GL3, shaderType: Int, shaderFile: String): Int {
+    fun createShader(gl: GL3, shaderType: Int, shaderFile: String): Int = with(gl) {
 
-        val shader = gl.glCreateShader(shaderType)
+        val shader = glCreateShader(shaderType)
         val lines = arrayOf(shaderFile)
-        val length = GLBuffers.newDirectIntBuffer(intArrayOf(lines[0].length))
-        gl.glShaderSource(shader, 1, lines, length)
+        val length = intBufferOf(lines[0].length)
+        glShaderSource(shader, 1, lines, length)
 
-        gl.glCompileShader(shader)
+        glCompileShader(shader)
 
-        val status = GLBuffers.newDirectIntBuffer(1)
-        gl.glGetShaderiv(shader, GL_COMPILE_STATUS, status)
-        if (status.get(0) == GL_FALSE) {
+        val status = intBufferBig(1)
+        glGetShaderiv(shader, GL_COMPILE_STATUS, status)
+        if (status[0] == GL_FALSE) {
 
-            val infoLogLength = GLBuffers.newDirectIntBuffer(1)
-            gl.glGetShaderiv(shader, GL_INFO_LOG_LENGTH, infoLogLength)
+            val infoLogLength = intBufferBig(1)
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, infoLogLength)
 
-            val bufferInfoLog = GLBuffers.newDirectByteBuffer(infoLogLength.get(0))
-            gl.glGetShaderInfoLog(shader, infoLogLength.get(0), null, bufferInfoLog)
-            val bytes = ByteArray(infoLogLength.get(0))
+            val bufferInfoLog = byteBufferOf(infoLogLength[0])
+            glGetShaderInfoLog(shader, infoLogLength[0], null, bufferInfoLog)
+            val bytes = ByteArray(infoLogLength[0])
             bufferInfoLog.get(bytes)
-            val strInfoLog = String(bytes)
 
             var strShaderType = ""
             when (shaderType) {
@@ -98,47 +105,46 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
                 GL_GEOMETRY_SHADER -> strShaderType = "geometry"
                 GL_FRAGMENT_SHADER -> strShaderType = "fragment"
             }
-            System.err.println("Compiler failure in $strShaderType shader: $strInfoLog")
+            System.err.println("Compiler failure in $strShaderType shader: ${bytes.toString()}")
 
-            BufferUtils.destroyDirectBuffer(infoLogLength)
-            BufferUtils.destroyDirectBuffer(bufferInfoLog)
+            infoLogLength.destroy()
+            bufferInfoLog.destroy()
         }
-        BufferUtils.destroyDirectBuffer(length)
-        BufferUtils.destroyDirectBuffer(status)
+        length.destroy()
+        status.destroy()
 
         return shader
     }
 
-    private fun createProgram(gl: GL3, shaderList: ArrayList<Int>): Int {
+    fun createProgram(gl: GL3, shaderList: List<Int>): Int = with(gl){
 
-        val program = gl.glCreateProgram()
+        val program = glCreateProgram()
 
-        shaderList.forEach { shader -> gl.glAttachShader(program, shader) }
+        shaderList.forEach { glAttachShader(program, it) }
 
-        gl.glLinkProgram(program)
+        glLinkProgram(program)
 
-        val status = GLBuffers.newDirectIntBuffer(1)
-        gl.glGetProgramiv(program, GL_LINK_STATUS, status)
-        if (status.get(0) == GL_FALSE) {
+        val status = intBufferBig(1)
+        glGetProgramiv(program, GL_LINK_STATUS, status)
+        if (status[0] == GL_FALSE) {
 
-            val infoLogLength = GLBuffers.newDirectIntBuffer(1)
-            gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH, infoLogLength)
+            val infoLogLength = intBufferBig(1)
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, infoLogLength)
 
-            val bufferInfoLog = GLBuffers.newDirectByteBuffer(infoLogLength.get(0))
-            gl.glGetProgramInfoLog(program, infoLogLength.get(0), null, bufferInfoLog)
-            val bytes = ByteArray(infoLogLength.get(0))
+            val bufferInfoLog = byteBufferOf(infoLogLength[0])
+            glGetProgramInfoLog(program, infoLogLength[0], null, bufferInfoLog)
+            val bytes = ByteArray(infoLogLength[0])
             bufferInfoLog.get(bytes)
-            val strInfoLog = String(bytes)
 
-            System.err.println("Linker failure: " + strInfoLog)
+            System.err.println("Linker failure: " + bytes.toString())
 
-            BufferUtils.destroyDirectBuffer(infoLogLength)
-            BufferUtils.destroyDirectBuffer(bufferInfoLog)
+            infoLogLength.destroy()
+            bufferInfoLog.destroy()
         }
 
-        shaderList.forEach { shader -> gl.glDetachShader(program, shader) }
+        shaderList.forEach { glDetachShader(program, it) }
 
-        BufferUtils.destroyDirectBuffer(status)
+        status.destroy()
 
         return program
     }

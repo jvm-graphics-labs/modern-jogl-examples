@@ -23,6 +23,7 @@ import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
 import glsl.ShaderCodeKt;
+import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -34,9 +35,6 @@ import java.nio.IntBuffer;
  * @author gbarbieri
  */
 public class MatrixPerspective extends Framework {
-
-    private final String VERTEX_SHADER = "tut04/matrix-perspective.vert";
-    private final String FRAGMENT_SHADER = "tut04/standard-colors.frag";
 
     public static void main(String[] args) {
         new MatrixPerspective("Tutorial 04 - Matrix Perspective");
@@ -146,7 +144,7 @@ public class MatrixPerspective extends Framework {
             0.0f, 1.0f, 1.0f, 1.0f,
             0.0f, 1.0f, 1.0f, 1.0f};
 
-    private FloatBuffer perspectiveMatrix;
+    private FloatBuffer perspectiveMatrix = GLBuffers.newDirectFloatBuffer(16);
 
     @Override
     public void init(GL3 gl) {
@@ -164,28 +162,13 @@ public class MatrixPerspective extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        ShaderProgram shaderProgram = new ShaderProgram();
-
-        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
-        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
-
-        shaderProgram.add(vertex);
-        shaderProgram.add(fragment);
-
-        shaderProgram.link(gl, System.err);
-
-        vertex.destroy(gl);
-        fragment.destroy(gl);
-
-        theProgram = shaderProgram.program();
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut04", "matrix-perspective.vert", "standard-colors.frag");
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
 
         int perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
 
         float frustumScale = 1.0f, zNear = 0.5f, zFar = 3.0f;
-
-        perspectiveMatrix = GLBuffers.newDirectFloatBuffer(16);
 
         perspectiveMatrix.put(0, frustumScale);
         perspectiveMatrix.put(5, frustumScale);

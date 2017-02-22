@@ -9,6 +9,7 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
+import glsl.programOf
 import glsl.shaderCodeOf
 import main.L
 import main.SIZE
@@ -25,9 +26,6 @@ fun main(args: Array<String>) {
 }
 
 class FragChangeColor_ : Framework("Tutorial 03 - Frag Change Color") {
-
-    val VERTEX_SHADER = "tut03/calc-offset.vert"
-    val FRAGMENT_SHADER = "tut03/calc-color.frag"
 
     var theProgram = 0
     var elapsedTimeUniform = 0
@@ -52,20 +50,7 @@ class FragChangeColor_ : Framework("Tutorial 03 - Frag Change Color") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        val shaderProgram = ShaderProgram()
-
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
-
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
-
-        shaderProgram.link(gl, System.err)
-
-        vertex.destroy(gl)
-        fragment.destroy(gl)
-
-        theProgram = shaderProgram.program()
+        theProgram = programOf(gl, this::class.java, "tut03", "calc-offset.vert", "calc-color.frag")
 
         elapsedTimeUniform = glGetUniformLocation(theProgram, "time")
 
