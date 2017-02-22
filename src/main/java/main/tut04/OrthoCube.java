@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.tut04.matrixPerspective;
+package main.tut04;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -20,6 +20,7 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
+import glsl.ShaderCodeKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -30,120 +31,118 @@ import java.nio.IntBuffer;
  *
  * @author gbarbieri
  */
-public class MatrixPerspective extends Framework {
+public class OrthoCube extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut04/aspectRatio/shaders";
-    private final String VERT_SHADER_SOURCE = "matrix-perspective";
-    private final String FRAG_SHADER_SOURCE = "standard-colors";
+    private final String VERTEX_SHADER = "tut04/ortho-with-offset.vert";
+    private final String FRAGMENT_SHADER = "tut04/standard-colors.frag";
 
     public static void main(String[] args) {
-        new MatrixPerspective("Tutorial 04 - Matrix Perspective");
+        new OrthoCube("Tutorial 04 - Ortho Cube");
     }
 
-    public MatrixPerspective(String title) {
+    public OrthoCube(String title) {
         super(title);
     }
 
     private int theProgram, offsetUniform;
     private IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
     private float[] vertexData = {
-        +0.25f, +0.25f, -1.25f, 1.0f,
-        +0.25f, -0.25f, -1.25f, 1.0f,
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
-        +0.25f, -0.25f, -1.25f, 1.0f,
-        -0.25f, -0.25f, -1.25f, 1.0f,
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
-        +0.25f, +0.25f, -2.75f, 1.0f,
-        -0.25f, +0.25f, -2.75f, 1.0f,
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        //        
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        -0.25f, +0.25f, -2.75f, 1.0f,
-        -0.25f, -0.25f, -2.75f, 1.0f,
-        //        
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        -0.25f, -0.25f, -1.25f, 1.0f,
-        -0.25f, -0.25f, -2.75f, 1.0f,
-        //        
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        -0.25f, -0.25f, -2.75f, 1.0f,
-        -0.25f, +0.25f, -2.75f, 1.0f,
-        //        
-        +0.25f, +0.25f, -1.25f, 1.0f,
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        +0.25f, -0.25f, -1.25f, 1.0f,
-        //        
-        +0.25f, +0.25f, -1.25f, 1.0f,
-        +0.25f, +0.25f, -2.75f, 1.0f,
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        //        
-        +0.25f, +0.25f, -2.75f, 1.0f,
-        +0.25f, +0.25f, -1.25f, 1.0f,
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
-        +0.25f, +0.25f, -2.75f, 1.0f,
-        -0.25f, +0.25f, -1.25f, 1.0f,
-        -0.25f, +0.25f, -2.75f, 1.0f,
-        //        
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        -0.25f, -0.25f, -1.25f, 1.0f,
-        +0.25f, -0.25f, -1.25f, 1.0f,
-        //        
-        +0.25f, -0.25f, -2.75f, 1.0f,
-        -0.25f, -0.25f, -2.75f, 1.0f,
-        -0.25f, -0.25f, -1.25f, 1.0f,
-        //        
+        +0.25f, +0.25f, +0.75f, 1.0f,
+        +0.25f, -0.25f, +0.75f, 1.0f,
+        -0.25f, +0.25f, +0.75f, 1.0f,
+        
+        +0.25f, -0.25f, +0.75f, 1.0f,
+        -0.25f, -0.25f, +0.75f, 1.0f,
+        -0.25f, +0.25f, +0.75f, 1.0f,
+                
+        +0.25f, +0.25f, -0.75f, 1.0f,
+        -0.25f, +0.25f, -0.75f, 1.0f,
+        +0.25f, -0.25f, -0.75f, 1.0f,
+                
+        +0.25f, -0.25f, -0.75f, 1.0f,
+        -0.25f, +0.25f, -0.75f, 1.0f,
+        -0.25f, -0.25f, -0.75f, 1.0f,
+                
+        -0.25f, +0.25f, +0.75f, 1.0f,
+        -0.25f, -0.25f, +0.75f, 1.0f,
+        -0.25f, -0.25f, -0.75f, 1.0f,
+                
+        -0.25f, +0.25f, +0.75f, 1.0f,
+        -0.25f, -0.25f, -0.75f, 1.0f,
+        -0.25f, +0.25f, -0.75f, 1.0f,
+                
+        +0.25f, +0.25f, +0.75f, 1.0f,
+        +0.25f, -0.25f, -0.75f, 1.0f,
+        +0.25f, -0.25f, +0.75f, 1.0f,
+                
+        +0.25f, +0.25f, +0.75f, 1.0f,
+        +0.25f, +0.25f, -0.75f, 1.0f,
+        +0.25f, -0.25f, -0.75f, 1.0f,
+                
+        +0.25f, +0.25f, -0.75f, 1.0f,
+        +0.25f, +0.25f, +0.75f, 1.0f,
+        -0.25f, +0.25f, +0.75f, 1.0f,
+                
+        +0.25f, +0.25f, -0.75f, 1.0f,
+        -0.25f, +0.25f, +0.75f, 1.0f,
+        -0.25f, +0.25f, -0.75f, 1.0f,
+                
+        +0.25f, -0.25f, -0.75f, 1.0f,
+        -0.25f, -0.25f, +0.75f, 1.0f,
+        +0.25f, -0.25f, +0.75f, 1.0f,
+                
+        +0.25f, -0.25f, -0.75f, 1.0f,
+        -0.25f, -0.25f, -0.75f, 1.0f,
+        -0.25f, -0.25f, +0.75f, 1.0f,
+
+
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
-        //        
+                
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
-        //        
+                
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
-        //        
+                
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
-        //        
+                
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
-        //        
+                
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
-        //        
+                
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
-        //        
+                
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f};
-
-    private FloatBuffer perspectiveMatrix;
 
     @Override
     public void init(GL3 gl) {
@@ -159,55 +158,35 @@ public class MatrixPerspective extends Framework {
         gl.glFrontFace(GL_CW);
     }
 
-    private void initializeProgram(GL3 gl3) {
+    private void initializeProgram(GL3 gl) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
-        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
-        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
+        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
 
-        shaderProgram.add(vertShaderCode);
-        shaderProgram.add(fragShaderCode);
+        shaderProgram.add(vertex);
+        shaderProgram.add(fragment);
 
-        shaderProgram.link(gl3, System.out);
+        shaderProgram.link(gl, System.err);
+
+        vertex.destroy(gl);
+        fragment.destroy(gl);
 
         theProgram = shaderProgram.program();
 
-        vertShaderCode.destroy(gl3);
-        fragShaderCode.destroy(gl3);
-
-        offsetUniform = gl3.glGetUniformLocation(theProgram, "offset");
-
-        float frustumScale = 1.0f, zNear = 0.5f, zFar = 3.0f;
-
-        perspectiveMatrix = GLBuffers.newDirectFloatBuffer(16);
-
-        perspectiveMatrix.put(0, frustumScale);
-        perspectiveMatrix.put(5, frustumScale);
-        perspectiveMatrix.put(10, (zFar + zNear) / (zNear - zFar));
-        perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
-        perspectiveMatrix.put(11, -1.0f);
-
-        gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(
-                gl3.glGetUniformLocation(theProgram, "perspectiveMatrix"),
-                1,
-                false,
-                perspectiveMatrix);
-        gl3.glUseProgram(0);
+        offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
     }
 
-    private void initializeVertexBuffer(GL3 gl3) {
+    private void initializeVertexBuffer(GL3 gl) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
 
-        gl3.glGenBuffers(1, vertexBufferObject);
+        gl.glGenBuffers(1, vertexBufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
-        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         BufferUtils.destroyDirectBuffer(vertexBuffer);
     }
@@ -219,7 +198,7 @@ public class MatrixPerspective extends Framework {
 
         gl.glUseProgram(theProgram);
 
-        gl.glUniform2f(offsetUniform, 0.5f, 0.5f);
+        gl.glUniform2f(offsetUniform, 0.5f, 0.25f);
 
         int colorData = vertexData.length * Float.BYTES / 2;
         gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
@@ -238,7 +217,6 @@ public class MatrixPerspective extends Framework {
 
     @Override
     public void reshape(GL3 gl, int w, int h) {
-
         gl.glViewport(0, 0, w, h);
     }
 
@@ -251,7 +229,6 @@ public class MatrixPerspective extends Framework {
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(vertexBufferObject);
-        BufferUtils.destroyDirectBuffer(perspectiveMatrix);
     }
 
     @Override

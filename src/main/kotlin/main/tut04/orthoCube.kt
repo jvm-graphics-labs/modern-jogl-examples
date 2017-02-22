@@ -1,86 +1,86 @@
 package main.tut04
 
+import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
-import extensions.floatBufferBig
 import extensions.intBufferBig
 import extensions.toFloatBuffer
 import glsl.shaderCodeOf
-import main.*
+import main.L
+import main.SIZE
 import main.framework.Framework
 import main.framework.Semantic
 import vec._4.Vec4
 
 /**
- * Created by elect on 21/02/17.
+ * Created by GBarbieri on 22.02.2017.
  */
 
 fun main(args: Array<String>) {
-    AspectRatio_()
+    OrthoCube_()
 }
 
-class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
+class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
 
-    val VERTEX_SHADER = "tut04/matrix-perspective.vert"
+    val VERTEX_SHADER = "tut04/ortho-with-offset.vert"
     val FRAGMENT_SHADER = "tut04/standard-colors.frag"
 
     var theProgram = 0
     var offsetUniform = 0
-    var perspectiveMatrixUnif = 0
     val vertexBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
     val vertexData = floatArrayOf(
-            +0.25f, +0.25f, -1.25f, 1.0f,
-            +0.25f, -0.25f, -1.25f, 1.0f,
-            -0.25f, +0.25f, -1.25f, 1.0f,
+            +0.25f, +0.25f, +0.75f, 1.0f,
+            +0.25f, -0.25f, +0.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
 
-            +0.25f, -0.25f, -1.25f, 1.0f,
-            -0.25f, -0.25f, -1.25f, 1.0f,
-            -0.25f, +0.25f, -1.25f, 1.0f,
+            +0.25f, -0.25f, +0.75f, 1.0f,
+            -0.25f, -0.25f, +0.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
 
-            +0.25f, +0.25f, -2.75f, 1.0f,
-            -0.25f, +0.25f, -2.75f, 1.0f,
-            +0.25f, -0.25f, -2.75f, 1.0f,
+            +0.25f, +0.25f, -0.75f, 1.0f,
+            -0.25f, +0.25f, -0.75f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
 
-            +0.25f, -0.25f, -2.75f, 1.0f,
-            -0.25f, +0.25f, -2.75f, 1.0f,
-            -0.25f, -0.25f, -2.75f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
+            -0.25f, +0.25f, -0.75f, 1.0f,
+            -0.25f, -0.25f, -0.75f, 1.0f,
 
-            -0.25f, +0.25f, -1.25f, 1.0f,
-            -0.25f, -0.25f, -1.25f, 1.0f,
-            -0.25f, -0.25f, -2.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
+            -0.25f, -0.25f, +0.75f, 1.0f,
+            -0.25f, -0.25f, -0.75f, 1.0f,
 
-            -0.25f, +0.25f, -1.25f, 1.0f,
-            -0.25f, -0.25f, -2.75f, 1.0f,
-            -0.25f, +0.25f, -2.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
+            -0.25f, -0.25f, -0.75f, 1.0f,
+            -0.25f, +0.25f, -0.75f, 1.0f,
 
-            +0.25f, +0.25f, -1.25f, 1.0f,
-            +0.25f, -0.25f, -2.75f, 1.0f,
-            +0.25f, -0.25f, -1.25f, 1.0f,
+            +0.25f, +0.25f, +0.75f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
+            +0.25f, -0.25f, +0.75f, 1.0f,
 
-            +0.25f, +0.25f, -1.25f, 1.0f,
-            +0.25f, +0.25f, -2.75f, 1.0f,
-            +0.25f, -0.25f, -2.75f, 1.0f,
+            +0.25f, +0.25f, +0.75f, 1.0f,
+            +0.25f, +0.25f, -0.75f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
 
-            +0.25f, +0.25f, -2.75f, 1.0f,
-            +0.25f, +0.25f, -1.25f, 1.0f,
-            -0.25f, +0.25f, -1.25f, 1.0f,
+            +0.25f, +0.25f, -0.75f, 1.0f,
+            +0.25f, +0.25f, +0.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
 
-            +0.25f, +0.25f, -2.75f, 1.0f,
-            -0.25f, +0.25f, -1.25f, 1.0f,
-            -0.25f, +0.25f, -2.75f, 1.0f,
+            +0.25f, +0.25f, -0.75f, 1.0f,
+            -0.25f, +0.25f, +0.75f, 1.0f,
+            -0.25f, +0.25f, -0.75f, 1.0f,
 
-            +0.25f, -0.25f, -2.75f, 1.0f,
-            -0.25f, -0.25f, -1.25f, 1.0f,
-            +0.25f, -0.25f, -1.25f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
+            -0.25f, -0.25f, +0.75f, 1.0f,
+            +0.25f, -0.25f, +0.75f, 1.0f,
 
-            +0.25f, -0.25f, -2.75f, 1.0f,
-            -0.25f, -0.25f, -2.75f, 1.0f,
-            -0.25f, -0.25f, -1.25f, 1.0f,
+            +0.25f, -0.25f, -0.75f, 1.0f,
+            -0.25f, -0.25f, -0.75f, 1.0f,
+            -0.25f, -0.25f, +0.75f, 1.0f,
 
 
             0.0f, 0.0f, 1.0f, 1.0f,
@@ -131,9 +131,6 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
             0.0f, 1.0f, 1.0f, 1.0f,
             0.0f, 1.0f, 1.0f, 1.0f)
 
-    var perspectiveMatrix = floatBufferBig(16)
-    val frustumScale = 1.0f
-
     override fun init(gl: GL3) = with(gl) {
 
         initializeProgram(gl)
@@ -147,7 +144,7 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
         glFrontFace(GL_CW)
     }
 
-    fun initializeProgram(gl: GL3) = with(gl) {
+    fun initializeProgram(gl: GL3) {
 
         val shaderProgram = ShaderProgram()
 
@@ -164,21 +161,7 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
 
         theProgram = shaderProgram.program()
 
-        offsetUniform = glGetUniformLocation(theProgram, "offset")
-        perspectiveMatrixUnif = glGetUniformLocation(theProgram, "perspectiveMatrix")
-
-        val zNear = 0.5f
-        val zFar = 3.0f
-
-        perspectiveMatrix[0] = frustumScale
-        perspectiveMatrix[5] = frustumScale
-        perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
-        perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
-        perspectiveMatrix[11] = -1.0f
-
-        glUseProgram(theProgram)
-        glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix)
-        glUseProgram(0)
+        offsetUniform = gl.glGetUniformLocation(theProgram, "offset")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
@@ -200,9 +183,9 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
 
         glUseProgram(theProgram)
 
-        glUniform2f(offsetUniform, 1.5f, 0.5f)
+        glUniform2f(offsetUniform, 0.5f, 0.25f)
 
-        val colorData = vertexData.size * Float.BYTES / 2
+        val colorData = vertexData.size * java.lang.Float.BYTES / 2
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
@@ -217,16 +200,8 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
         glUseProgram(0)
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
-
-        perspectiveMatrix[0] = frustumScale / (w / h.f)
-        perspectiveMatrix[5] = frustumScale
-
-        glUseProgram(theProgram)
-        glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix)
-        glUseProgram(theProgram)
-
-        glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) {
+        gl.glViewport(0, 0, w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
@@ -235,9 +210,8 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
         glDeleteBuffers(1, vertexBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vertexBufferObject.destroy()
         vao.destroy()
-        perspectiveMatrix.destroy()
+        vertexBufferObject.destroy()
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

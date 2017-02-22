@@ -24,7 +24,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     compile 'com.github.elect86:glm:caaf5141fc6a914dda1ed9d6a4443fc33b6d2238'
-    compile 'com.github.elect86:uno-sdk:f6b1dcefa522dd37c324e936e0ff1bf38b05628f'
+    compile 'com.github.elect86:uno-sdk:a99404150525effa6fe5324c3448e0fb510a1a10'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'

@@ -5,9 +5,9 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.GLBuffers
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
+import extensions.toFloatBuffer
 import glsl.shaderCodeOf
 import main.L
 import main.SIZE
@@ -77,7 +77,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexPositions)
+        val vertexBuffer = vertexPositions.toFloatBuffer()
 
         glGenBuffers(1, positionBufferObject)
 

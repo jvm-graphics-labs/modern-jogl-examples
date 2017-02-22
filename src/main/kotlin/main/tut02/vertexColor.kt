@@ -1,17 +1,14 @@
 package main.tut02
 
-import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.GLBuffers
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
 import extensions.toFloatBuffer
 import glsl.shaderCodeOf
-import main.BYTES
 import main.L
 import main.SIZE
 import main.framework.Framework

@@ -33,20 +33,20 @@ import java.nio.IntBuffer;
 /**
  * @author gbarbieri
  */
-public class AspectRatio extends Framework {
+public class MatrixPerspective extends Framework {
 
     private final String VERTEX_SHADER = "tut04/matrix-perspective.vert";
     private final String FRAGMENT_SHADER = "tut04/standard-colors.frag";
 
     public static void main(String[] args) {
-        new AspectRatio("Tutorial 04 - Aspect Ratio");
+        new MatrixPerspective("Tutorial 04 - Matrix Perspective");
     }
 
-    public AspectRatio(String title) {
+    public MatrixPerspective(String title) {
         super(title);
     }
 
-    private int theProgram, offsetUniform, perspectiveMatrixUnif;
+    private int theProgram, offsetUniform;
     private IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
     private float[] vertexData = {
             +0.25f, +0.25f, -1.25f, 1.0f,
@@ -145,8 +145,8 @@ public class AspectRatio extends Framework {
             0.0f, 1.0f, 1.0f, 1.0f,
             0.0f, 1.0f, 1.0f, 1.0f,
             0.0f, 1.0f, 1.0f, 1.0f};
+
     private FloatBuffer perspectiveMatrix;
-    private final float frustumScale = 1.0f;
 
     @Override
     public void init(GL3 gl) {
@@ -180,9 +180,10 @@ public class AspectRatio extends Framework {
         theProgram = shaderProgram.program();
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
-        perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
 
-        float zNear = 0.5f, zFar = 3.0f;
+        int perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
+
+        float frustumScale = 1.0f, zNear = 0.5f, zFar = 3.0f;
 
         perspectiveMatrix = GLBuffers.newDirectFloatBuffer(16);
 
@@ -217,7 +218,7 @@ public class AspectRatio extends Framework {
 
         gl.glUseProgram(theProgram);
 
-        gl.glUniform2f(offsetUniform, 1.5f, 0.5f);
+        gl.glUniform2f(offsetUniform, 0.5f, 0.5f);
 
         int colorData = vertexData.length * Float.BYTES / 2;
         gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
@@ -236,14 +237,6 @@ public class AspectRatio extends Framework {
 
     @Override
     public void reshape(GL3 gl, int w, int h) {
-
-        perspectiveMatrix.put(0, frustumScale / (w / (float) h));
-        perspectiveMatrix.put(5, frustumScale);
-
-        gl.glUseProgram(theProgram);
-        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl.glUseProgram(theProgram);
-
         gl.glViewport(0, 0, w, h);
     }
 
@@ -254,8 +247,8 @@ public class AspectRatio extends Framework {
         gl.glDeleteBuffers(1, vertexBufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vertexBufferObject);
         BufferUtils.destroyDirectBuffer(vao);
+        BufferUtils.destroyDirectBuffer(vertexBufferObject);
         BufferUtils.destroyDirectBuffer(perspectiveMatrix);
     }
 

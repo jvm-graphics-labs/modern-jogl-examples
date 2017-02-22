@@ -5,6 +5,7 @@
 package main.tut01
 
 
+import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
@@ -13,6 +14,7 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.GLBuffers
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.intBufferBig
+import extensions.toFloatBuffer
 import glsl.shaderCodeOf
 import main.BYTES
 import main.L
@@ -20,6 +22,7 @@ import main.SIZE
 import main.framework.Framework
 import main.framework.Semantic
 import vec._4.Vec4
+import java.util.ArrayList
 
 
 fun main(args: Array<String>) {
@@ -55,27 +58,94 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
         glBindVertexArray(vao[0])
     }
 
-    fun initializeProgram(gl: GL3) {
+    private fun initializeProgram(gl: GL3) {
 
-        val shaderProgram = ShaderProgram()
+        val shaderList = ArrayList<Int>()
 
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
+        shaderList.add(createShader(gl, GL_VERTEX_SHADER, strVertexShader))
+        shaderList.add(createShader(gl, GL_FRAGMENT_SHADER, strFragmentShader))
 
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
+        theProgram = createProgram(gl, shaderList)
 
-        shaderProgram.link(gl, System.err)
+        shaderList.forEach(Consumer<Int> { gl.glDeleteShader(it) })
+    }
 
-        vertex.destroy(gl)
-        fragment.destroy(gl)
+    private fun createShader(gl: GL3, shaderType: Int, shaderFile: String): Int {
 
-        theProgram = shaderProgram.program()
+        val shader = gl.glCreateShader(shaderType)
+        val lines = arrayOf(shaderFile)
+        val length = GLBuffers.newDirectIntBuffer(intArrayOf(lines[0].length))
+        gl.glShaderSource(shader, 1, lines, length)
+
+        gl.glCompileShader(shader)
+
+        val status = GLBuffers.newDirectIntBuffer(1)
+        gl.glGetShaderiv(shader, GL_COMPILE_STATUS, status)
+        if (status.get(0) == GL_FALSE) {
+
+            val infoLogLength = GLBuffers.newDirectIntBuffer(1)
+            gl.glGetShaderiv(shader, GL_INFO_LOG_LENGTH, infoLogLength)
+
+            val bufferInfoLog = GLBuffers.newDirectByteBuffer(infoLogLength.get(0))
+            gl.glGetShaderInfoLog(shader, infoLogLength.get(0), null, bufferInfoLog)
+            val bytes = ByteArray(infoLogLength.get(0))
+            bufferInfoLog.get(bytes)
+            val strInfoLog = String(bytes)
+
+            var strShaderType = ""
+            when (shaderType) {
+                GL_VERTEX_SHADER -> strShaderType = "vertex"
+                GL_GEOMETRY_SHADER -> strShaderType = "geometry"
+                GL_FRAGMENT_SHADER -> strShaderType = "fragment"
+            }
+            System.err.println("Compiler failure in $strShaderType shader: $strInfoLog")
+
+            BufferUtils.destroyDirectBuffer(infoLogLength)
+            BufferUtils.destroyDirectBuffer(bufferInfoLog)
+        }
+        BufferUtils.destroyDirectBuffer(length)
+        BufferUtils.destroyDirectBuffer(status)
+
+        return shader
+    }
+
+    private fun createProgram(gl: GL3, shaderList: ArrayList<Int>): Int {
+
+        val program = gl.glCreateProgram()
+
+        shaderList.forEach { shader -> gl.glAttachShader(program, shader) }
+
+        gl.glLinkProgram(program)
+
+        val status = GLBuffers.newDirectIntBuffer(1)
+        gl.glGetProgramiv(program, GL_LINK_STATUS, status)
+        if (status.get(0) == GL_FALSE) {
+
+            val infoLogLength = GLBuffers.newDirectIntBuffer(1)
+            gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH, infoLogLength)
+
+            val bufferInfoLog = GLBuffers.newDirectByteBuffer(infoLogLength.get(0))
+            gl.glGetProgramInfoLog(program, infoLogLength.get(0), null, bufferInfoLog)
+            val bytes = ByteArray(infoLogLength.get(0))
+            bufferInfoLog.get(bytes)
+            val strInfoLog = String(bytes)
+
+            System.err.println("Linker failure: " + strInfoLog)
+
+            BufferUtils.destroyDirectBuffer(infoLogLength)
+            BufferUtils.destroyDirectBuffer(bufferInfoLog)
+        }
+
+        shaderList.forEach { shader -> gl.glDetachShader(program, shader) }
+
+        BufferUtils.destroyDirectBuffer(status)
+
+        return program
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexPositions)
+        val vertexBuffer = vertexPositions.toFloatBuffer()
 
         glGenBuffers(1, positionBufferObject)
 

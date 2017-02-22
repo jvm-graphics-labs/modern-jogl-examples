@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.tut04.shaderPerspective;
+package main.tut04;
 
 import com.jogamp.newt.event.KeyEvent;
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
@@ -20,6 +20,7 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import buffer.BufferUtils;
+import glsl.ShaderCodeKt;
 import main.framework.Framework;
 import main.framework.Semantic;
 import vec._4.Vec4;
@@ -32,9 +33,8 @@ import java.nio.IntBuffer;
  */
 public class ShaderPerspective extends Framework {
 
-    private final String SHADERS_ROOT = "src/tut04/shaderPerspective/shaders";
-    private final String VERT_SHADER_SOURCE = "manual-perspective";
-    private final String FRAG_SHADER_SOURCE = "standard-colors";
+    private final String VERTEX_SHADER = "tut04/manual-perspective.vert";
+    private final String FRAGMENT_SHADER = "tut04/standard-colors.frag";
 
     public static void main(String[] args) {
         new ShaderPerspective("Tutorial 04 - Shader Perspective");
@@ -50,99 +50,99 @@ public class ShaderPerspective extends Framework {
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
+                
         +0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
+                
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
-        //        
+                
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
-        //        
+                
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
-        //        
+                
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
-        //        
+                
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
-        //        
+                
         +0.25f, +0.25f, -1.25f, 1.0f,
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, -0.25f, -2.75f, 1.0f,
-        //        
+                
         +0.25f, +0.25f, -2.75f, 1.0f,
         +0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
-        //        
+                
         +0.25f, +0.25f, -2.75f, 1.0f,
         -0.25f, +0.25f, -1.25f, 1.0f,
         -0.25f, +0.25f, -2.75f, 1.0f,
-        //        
+                
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
         +0.25f, -0.25f, -1.25f, 1.0f,
-        //        
+                
         +0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -2.75f, 1.0f,
         -0.25f, -0.25f, -1.25f, 1.0f,
-        //        
+
+
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
-        //        
+                
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f, 1.0f,
-        //        
+                
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
-        //        
+                
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
         0.8f, 0.8f, 0.8f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
-        //        
+                
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
-        //        
+                
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
         0.5f, 0.5f, 0.0f, 1.0f,
-        //        
+                
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
-        //        
+                
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
-        //        
+                
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 1.0f, 1.0f};
-    private String shadersFilepath = "/tut04/shaders/";
 
     @Override
     public void init(GL3 gl) {
@@ -158,38 +158,36 @@ public class ShaderPerspective extends Framework {
         gl.glFrontFace(GL_CW);
     }
 
-    private void initializeProgram(GL3 gl3) {
+    private void initializeProgram(GL3 gl) {
 
         ShaderProgram shaderProgram = new ShaderProgram();
 
-        ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), SHADERS_ROOT, null,
-                VERT_SHADER_SOURCE, "vert", null, true);
-        ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), SHADERS_ROOT, null,
-                FRAG_SHADER_SOURCE, "frag", null, true);
+        ShaderCode vertex = ShaderCodeKt.shaderCodeOf(VERTEX_SHADER, gl, getClass());
+        ShaderCode fragment = ShaderCodeKt.shaderCodeOf(FRAGMENT_SHADER, gl, getClass());
 
-        shaderProgram.add(vertShaderCode);
-        shaderProgram.add(fragShaderCode);
+        shaderProgram.add(vertex);
+        shaderProgram.add(fragment);
 
-        shaderProgram.link(gl3, System.out);
+        shaderProgram.link(gl, System.err);
+
+        vertex.destroy(gl);
+        fragment.destroy(gl);
 
         theProgram = shaderProgram.program();
 
-        vertShaderCode.destroy(gl3);
-        fragShaderCode.destroy(gl3);
+        offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
 
-        offsetUniform = gl3.glGetUniformLocation(theProgram, "offset");
-
-        gl3.glUseProgram(theProgram);
-        gl3.glUniform1f(
-                gl3.glGetUniformLocation(theProgram, "frustumScale"),
+        gl.glUseProgram(theProgram);
+        gl.glUniform1f(
+                gl.glGetUniformLocation(theProgram, "frustumScale"),
                 1.0f);
-        gl3.glUniform1f(
-                gl3.glGetUniformLocation(theProgram, "zNear"),
+        gl.glUniform1f(
+                gl.glGetUniformLocation(theProgram, "zNear"),
                 1.0f);
-        gl3.glUniform1f(
-                gl3.glGetUniformLocation(theProgram, "zFar"),
+        gl.glUniform1f(
+                gl.glGetUniformLocation(theProgram, "zFar"),
                 3.0f);
-        gl3.glUseProgram(0);
+        gl.glUseProgram(0);
     }
 
     private void initializeVertexBuffer(GL3 gl3) {

@@ -3,6 +3,7 @@ package main.tut02
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
+import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
@@ -26,9 +27,6 @@ fun main(args: Array<String>) {
 
 class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
 
-    val VERTEX_SHADER = "tut02/frag-position.vert"
-    val FRAGMENT_SHADER = "tut02/frag-position.frag"
-
     var theProgram = 0
     val vertexBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
@@ -47,21 +45,33 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
     }
 
     fun initializeProgram(gl: GL3) {
+        theProgram = shaderProgramOf(gl, this::class.java, "tut02", "frag-position.vert", "frag-position.frag")
+    }
+
+    fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int {
+
+        val shaders =
+                if (strings[0].contains('.'))
+                    strings.toList()
+                else{
+                    val root = if(strings[0].endsWith('/')) strings[0] else strings[0] + '/'
+                    strings.drop(1).map { root + it }
+                }
 
         val shaderProgram = ShaderProgram()
 
-        val vertex = shaderCodeOf(VERTEX_SHADER, gl, this::class.java)
-        val fragment = shaderCodeOf(FRAGMENT_SHADER, gl, this::class.java)
+        val shaderCodes = shaders.map { shaderCodeOf(it, gl, context) }
 
-        shaderProgram.add(vertex)
-        shaderProgram.add(fragment)
+        shaderCodes.forEach { shaderProgram.add(gl, it, System.err) }
 
         shaderProgram.link(gl, System.err)
 
-        vertex.destroy(gl)
-        fragment.destroy(gl)
+        shaderCodes.forEach {
+            gl.glDetachShader(shaderProgram.program(), it.id())
+            gl.glDeleteShader(it.id())
+        }
 
-        theProgram = shaderProgram.program()
+        return shaderProgram.program()
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
