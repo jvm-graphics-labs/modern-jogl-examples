@@ -11,7 +11,7 @@ The original website (http://www.arcsynthesis.org/gltut) is down because probabl
 
 He is also supporting the html form of the documentation [here](https://paroj.github.io/gltut/), I strongly suggest you to read and refer it during the learning of each tutorial sample.
 
-You can find the examples in java under `src/main/java` and the corresponding in kotlin under `src/main/kotlin`
+You can find the examples in java under [`src/main/java`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/java/main) and the corresponding in kotlin under [`src/main/kotlin`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/kotlin/main)
 
 Status:
 
@@ -19,9 +19,7 @@ Status:
 - [x] Chapter 2, Playing with Colors
 - [x] Chapter 3, Moving Triangle
 - [x] Chapter 4, Objects at Rest
-- [ ] Chapter 5, Objects at Depth
-    - [x] base vertex overlaps
-    - [x] depth buffer
+- [x] Chapter 5, Objects at Depth
 - [ ] Chapter 6, Objects in Motion
 - [ ] Chapter 7, World in Motion
 - [ ] Chapter 8, Getting Oriented
