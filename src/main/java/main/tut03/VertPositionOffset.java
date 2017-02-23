@@ -89,7 +89,7 @@ public class VertPositionOffset extends Framework {
 
         gl.glUseProgram(theProgram);
 
-        gl.glUniform2f(offsetLocation, offset.getX(), offset.getY());
+        gl.glUniform2f(offsetLocation, offset.x(), offset.y());
 
         gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
@@ -111,8 +111,8 @@ public class VertPositionOffset extends Framework {
 
         float currTimeThroughLoop = elapsedTime % loopDuration;
 
-        offset.setX(glm.cos(currTimeThroughLoop * scale) * .5f);
-        offset.setY(glm.sin(currTimeThroughLoop * scale) * .5f);
+        offset.x(glm.cos(currTimeThroughLoop * scale) * .5f);
+        offset.y(glm.sin(currTimeThroughLoop * scale) * .5f);
     }
 
     @Override

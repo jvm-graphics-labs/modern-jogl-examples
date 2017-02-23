@@ -23,8 +23,8 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile 'com.github.elect86:glm:caaf5141fc6a914dda1ed9d6a4443fc33b6d2238'
-    compile 'com.github.elect86:uno-sdk:43cc36439b713c892e7cf30ebb5606afbfd5785d'
+    compile 'com.github.elect86:glm:a13fb0e529'
+    compile 'com.github.elect86:uno-sdk:4cbb89d2d46aa8a1ff14b723957044796c3b5d4d'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'
@@ -40,3 +40,8 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
+
+//configurations.all {
+//    // Check for updates every build
+//    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+//}

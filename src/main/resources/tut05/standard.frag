@@ -1,7 +1,6 @@
 #version 330
 
-// Attribute
-#define FRAG_COLOR  0
+#include semantic.glsl
 
 smooth in vec4 theColor;
 

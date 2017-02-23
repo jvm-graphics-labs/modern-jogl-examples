@@ -6,27 +6,8 @@ package main.tut06;
 
 import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
-
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_BACK;
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_CW;
-import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_FLOAT;
-import static com.jogamp.opengl.GL.GL_LEQUAL;
-import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
 import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
@@ -35,9 +16,14 @@ import mat.Mat4x4;
 import vec._3.Vec3;
 import vec._4.Vec4;
 
-import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static main.GlmKt.glm;
 
 /**
  * @author gbarbieri
@@ -62,7 +48,7 @@ public class Rotations extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
 
     private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
-    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
+    private float frustumScale = (float) (1.0f / glm.tan(Math.toRadians(45.0f) / 2.0));
 
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
     private final int numberOfVertices = 8;
@@ -147,19 +133,18 @@ public class Rotations extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert",
-                "color-passthrough.frag");
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
 
         modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
 
         float zNear = 1.0f, zFar = 61.0f;
 
-        cameraToClipMatrix.setA0(frustumScale);
-        cameraToClipMatrix.setB1(frustumScale);
-        cameraToClipMatrix.setC2((zFar + zNear) / (zNear - zFar));
-        cameraToClipMatrix.setC3(-1.0f);
-        cameraToClipMatrix.setD3((2 * zFar * zNear) / (zNear - zFar));
+        cameraToClipMatrix.v00(frustumScale);
+        cameraToClipMatrix.v11(frustumScale);
+        cameraToClipMatrix.v22((zFar + zNear) / (zNear - zFar));
+        cameraToClipMatrix.v23(-1.0f);
+        cameraToClipMatrix.v32((2 * zFar * zNear) / (zNear - zFar));
 
         cameraToClipMatrix.to(matBuffer);
 
@@ -211,24 +196,24 @@ public class Rotations extends Framework {
     }
 
     @Override
-    public void reshape(GL3 gl3, int w, int h) {
+    public void reshape(GL3 gl, int w, int h) {
 
-        cameraToClipMatrix.setA0(frustumScale * (h / (float) w));
-        cameraToClipMatrix.setB1(frustumScale);
+        cameraToClipMatrix.v00(frustumScale * (h / (float) w));
+        cameraToClipMatrix.v11(frustumScale);
 
-        gl3.glUseProgram(theProgram);
-        gl3.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.to(matBuffer));
-        gl3.glUseProgram(0);
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.to(matBuffer));
+        gl.glUseProgram(0);
 
-        gl3.glViewport(0, 0, w, h);
+        gl.glViewport(0, 0, w, h);
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
-        gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl3.glDeleteVertexArrays(1, vao);
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl.glDeleteVertexArrays(1, vao);
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
@@ -281,7 +266,7 @@ public class Rotations extends Framework {
             switch (mode) {
 
                 default:
-                    return theMat.identity();
+                    return theMat.set(1f);
 
                 case RotateX:
 
@@ -290,10 +275,10 @@ public class Rotations extends Framework {
                     sin = (float) Math.sin(angRad);
 
                     theMat.set(1f);
-                    theMat.m11 = cos;
-                    theMat.m12 = sin;
-                    theMat.m21 = -sin;
-                    theMat.m22 = cos;
+                    theMat.v11(cos);
+                    theMat.v12(sin);
+                    theMat.v21(-sin);
+                    theMat.v22(cos);
                     return theMat;
 
                 case RotateY:
@@ -302,11 +287,11 @@ public class Rotations extends Framework {
                     cos = (float) Math.cos(angRad);
                     sin = (float) Math.sin(angRad);
 
-                    theMat.identity();
-                    theMat.m00 = cos;
-                    theMat.m02 = -sin;
-                    theMat.m20 = sin;
-                    theMat.m22 = cos;
+                    theMat.set(1f);
+                    theMat.v00(cos);
+                    theMat.v02(-sin);
+                    theMat.v20(sin);
+                    theMat.v22(cos);
                     return theMat;
 
                 case RotateZ:
@@ -315,11 +300,11 @@ public class Rotations extends Framework {
                     cos = (float) Math.cos(angRad);
                     sin = (float) Math.sin(angRad);
 
-                    theMat.identity();
-                    theMat.m00 = cos;
-                    theMat.m01 = sin;
-                    theMat.m10 = -sin;
-                    theMat.m11 = cos;
+                    theMat.set(1f);
+                    theMat.v00(cos);
+                    theMat.v01(sin);
+                    theMat.v10(-sin);
+                    theMat.v11(cos);
                     return theMat;
 
                 case RotateAxis:
@@ -327,23 +312,23 @@ public class Rotations extends Framework {
                     angRad = computeAngleRad(elapsedTime, 2.0f);
                     cos = (float) Math.cos(angRad);
                     sin = (float) Math.sin(angRad);
-                    float invCos = 1.0f - cos,
-                            invSin = 1.0f - sin;
+                    float invCos = 1.0f - cos;
+                    float invSin = 1.0f - sin;
 
-                    Vec3 axis = new Vec3(1.0f).normalize();
-                    theMat.identity();
+                    Vec3 axis = new Vec3(1.0f).normalize_();
+                    theMat.set(1f);
 
-                    theMat.m00 = (axis.x * axis.x) + ((1 - axis.x * axis.x) * cos);
-                    theMat.m10 = axis.x * axis.y * (invCos) - (axis.z * sin);
-                    theMat.m20 = axis.x * axis.z * (invCos) + (axis.y * sin);
+                    theMat.v00((axis.x() * axis.x()) + ((1 - axis.x() * axis.x()) * cos));
+                    theMat.v10(axis.x() * axis.y() * (invCos) - (axis.z() * sin));
+                    theMat.v20(axis.x() * axis.z() * (invCos) + (axis.y() * sin));
 
-                    theMat.m01 = axis.x * axis.y * (invCos) + (axis.z * sin);
-                    theMat.m11 = (axis.y * axis.y) + ((1 - axis.y * axis.y) * cos);
-                    theMat.m21 = axis.y * axis.z * (invCos) - (axis.x * sin);
+                    theMat.v01(axis.x() * axis.y() * (invCos) + (axis.z() * sin));
+                    theMat.v11((axis.y() * axis.y()) + ((1 - axis.y() * axis.y()) * cos));
+                    theMat.v21(axis.y() * axis.z() * (invCos) - (axis.x() * sin));
 
-                    theMat.m02 = axis.x * axis.z * (invCos) - (axis.y * sin);
-                    theMat.m12 = axis.y * axis.z * (invCos) + (axis.x * sin);
-                    theMat.m22 = (axis.z * axis.z) + ((1 - axis.z * axis.z) * cos);
+                    theMat.v02(axis.x() * axis.z() * (invCos) - (axis.y() * sin));
+                    theMat.v12(axis.y() * axis.z() * (invCos) + (axis.x() * sin));
+                    theMat.v22((axis.z() * axis.z()) + ((1 - axis.z() * axis.z()) * cos));
 
                     return theMat;
             }
@@ -355,5 +340,4 @@ public class Rotations extends Framework {
             return currentTimeThroughLoop * scale;
         }
     }
-
 }

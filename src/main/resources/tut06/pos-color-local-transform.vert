@@ -7,10 +7,13 @@ layout (location = COLOR) in vec4 color;
 
 smooth out vec4 theColor;
 
-uniform vec2 offset;
+uniform mat4 cameraToClipMatrix;
+uniform mat4 modelToCameraMatrix;
 
 void main()
 {
-    gl_Position = position + vec4(offset.x, offset.y, 0.0f, 0.0f);
+    vec4 cameraPos = modelToCameraMatrix * position;
+    gl_Position = cameraToClipMatrix * cameraPos;
+
     theColor = color;
 }

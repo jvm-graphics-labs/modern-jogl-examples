@@ -65,7 +65,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         window.setPointerVisible(true);
         window.confinePointer(false);
         window.setTitle(title);
-        window.setSize(windowSize.getX(), windowSize.getY());
+        window.setSize(windowSize.x(), windowSize.y());
 
         window.setVisible(true);
 

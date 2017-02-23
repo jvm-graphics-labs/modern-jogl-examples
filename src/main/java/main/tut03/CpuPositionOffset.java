@@ -107,8 +107,8 @@ public class CpuPositionOffset extends Framework {
 
         float fCurrTimeThroughLoop = elapsedTime % loopDuration;
 
-        offset.setX(glm.cos(fCurrTimeThroughLoop * scale) * 0.5f);
-        offset.setY(glm.sin(fCurrTimeThroughLoop * scale) * 0.5f);
+        offset.x(glm.cos(fCurrTimeThroughLoop * scale) * 0.5f);
+        offset.y(glm.sin(fCurrTimeThroughLoop * scale) * 0.5f);
     }
 
     private void adjustVertexData(GL3 gl, Vec2 offset) {
@@ -118,8 +118,8 @@ public class CpuPositionOffset extends Framework {
 
         for (int iVertex = 0; iVertex < vertexPositions.length; iVertex += 4) {
 
-            newData[iVertex + 0] += offset.getX();
-            newData[iVertex + 1] += offset.getY();
+            newData[iVertex + 0] += offset.x();
+            newData[iVertex + 1] += offset.x();
         }
 
         FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(newData);

@@ -1,8 +1,6 @@
 #version 330
 
-// Attribute
-#define POSITION    0
-#define COLOR       1
+#include semantic.glsl
 
 layout (location = POSITION) in vec4 position;
 layout (location = COLOR) in vec4 color;
