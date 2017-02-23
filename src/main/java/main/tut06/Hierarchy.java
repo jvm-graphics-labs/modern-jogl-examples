@@ -2,45 +2,33 @@
 // * To change this template, choose Tools | Templates
 // * and open the template in the editor.
 // */
-//package main.tut06.hierarchy;
+//package main.tut06;
 //
 //import com.jogamp.newt.event.KeyEvent;
-//import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-//import static com.jogamp.opengl.GL.GL_BACK;
-//import static com.jogamp.opengl.GL.GL_CULL_FACE;
-//import static com.jogamp.opengl.GL.GL_CW;
-//import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-//import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-//import static com.jogamp.opengl.GL.GL_FLOAT;
-//import static com.jogamp.opengl.GL.GL_LEQUAL;
-//import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-//import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-//import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
-//import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-//import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 //import com.jogamp.opengl.GL3;
 //import com.jogamp.opengl.util.GLBuffers;
 //import com.jogamp.opengl.util.glsl.ShaderCode;
 //import com.jogamp.opengl.util.glsl.ShaderProgram;
-//import glutil.BufferUtils;
 //import main.framework.Framework;
 //import main.framework.Semantic;
-//import java.nio.IntBuffer;
-//import glm.mat._4.Mat4;
-//import glm.vec._3.Vec3;
-//import glm.vec._4.Vec4;
+//import mat.Mat4x4;
+//import vec._3.Vec3;
+//
 //import java.nio.FloatBuffer;
+//import java.nio.IntBuffer;
 //import java.nio.ShortBuffer;
+//
+//import static com.jogamp.opengl.GL.*;
+//import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
+//import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
+//import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+//import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 //
 ///**
 // *
 // * @author gbarbieri
 // */
 //public class Hierarchy extends Framework {
-//
-//    private final String SHADERS_ROOT = "src/tut06/hierarchy/shaders";
-//    private final String VERT_SHADER_SOURCE = "pos-color-local-transform";
-//    private final String FRAG_SHADER_SOURCE = "color-passthrough";
 //
 //    public static void main(String[] args) {
 //        new Hierarchy("Tutorial 06 - Hierarchy");
@@ -52,98 +40,113 @@
 //
 //    private interface Buffer {
 //
-//        public final static int VERTEX = 0;
-//        public final static int INDEX = 1;
-//        public final static int MAX = 2;
+//        int VERTEX = 0;
+//        int INDEX = 1;
+//        int MAX = 2;
 //    }
 //
 //    private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
-//    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
+//
+//    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
 //    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
+//
 //    private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
+//
 //    private final int numberOfVertices = 24;
+//
 //    private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.0f, 1.0f, 1.0f},
 //            RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f}, YELLOW_COLOR = {1.0f, 1.0f, 0.0f, 1.0f},
 //            CYAN_COLOR = {0.0f, 1.0f, 1.0f, 1.0f}, MAGENTA_COLOR = {1.0f, 0.0f, 1.0f, 1.0f};
+//
 //    private float[] vertexData = {
+//
 //        //Front
 //        +1.0f, +1.0f, +1.0f,
 //        +1.0f, -1.0f, +1.0f,
 //        -1.0f, -1.0f, +1.0f,
 //        -1.0f, +1.0f, +1.0f,
+//
 //        //Top
 //        +1.0f, +1.0f, +1.0f,
 //        -1.0f, +1.0f, +1.0f,
 //        -1.0f, +1.0f, -1.0f,
 //        +1.0f, +1.0f, -1.0f,
+//
 //        //Left
 //        +1.0f, +1.0f, +1.0f,
 //        +1.0f, +1.0f, -1.0f,
 //        +1.0f, -1.0f, -1.0f,
 //        +1.0f, -1.0f, +1.0f,
+//
 //        //Back
 //        +1.0f, +1.0f, -1.0f,
 //        -1.0f, +1.0f, -1.0f,
 //        -1.0f, -1.0f, -1.0f,
 //        +1.0f, -1.0f, -1.0f,
+//
 //        //Bottom
 //        +1.0f, -1.0f, +1.0f,
 //        +1.0f, -1.0f, -1.0f,
 //        -1.0f, -1.0f, -1.0f,
 //        -1.0f, -1.0f, +1.0f,
+//
 //        //Right
 //        -1.0f, +1.0f, +1.0f,
 //        -1.0f, -1.0f, +1.0f,
 //        -1.0f, -1.0f, -1.0f,
 //        -1.0f, +1.0f, -1.0f,
-//        //
+//
+//
 //        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
 //        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
 //        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
 //        GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-//        //
+//
 //        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
 //        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
 //        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
 //        BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-//        //
+//
 //        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
 //        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
 //        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
 //        RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-//        //
+//
 //        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
 //        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
 //        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
 //        YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-//        //
+//
 //        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
 //        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
 //        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
 //        CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-//        //
+//
 //        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
 //        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
 //        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
 //        MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3]};
+//
 //    private short[] indexData = {
+//
 //        0, 1, 2,
 //        2, 3, 0,
-//        //
+//
 //        4, 5, 6,
 //        6, 7, 4,
-//        //
+//
 //        8, 9, 10,
 //        10, 11, 8,
-//        //
+//
 //        12, 13, 14,
 //        14, 15, 12,
-//        //
+//
 //        16, 17, 18,
 //        18, 19, 16,
-//        //
+//
 //        20, 21, 22,
 //        22, 23, 20};
+//
 //    private Armature armature = new Armature();
 //
 //    @Override
@@ -313,4 +316,5 @@
 //                break;
 //        }
 //    }
+//
 //}

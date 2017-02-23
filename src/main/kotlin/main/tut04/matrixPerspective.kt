@@ -5,12 +5,10 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.glsl.ShaderProgram
 import extensions.floatBufferBig
 import extensions.intBufferBig
 import extensions.toFloatBuffer
 import glsl.programOf
-import glsl.shaderCodeOf
 import main.L
 import main.SIZE
 import main.framework.Framework

@@ -5,6 +5,7 @@ import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
+import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import extensions.floatBufferBig
 import extensions.intBufferBig
@@ -18,14 +19,14 @@ import vec._3.Vec3
 import vec._4.Vec4
 
 /**
- * Created by elect on 22/02/17.
+ * Created by GBarbieri on 23.02.2017.
  */
 
 fun main(args: Array<String>) {
-    BaseVertexOverlap_()
+    VertexClipping_()
 }
 
-class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
+class VertexClipping_ : Framework("Tutorial 05 - Vertex Clipping") {
 
     object Buffer {
         val VERTEX = 0
@@ -37,8 +38,10 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
     var offsetUniform = 0
     var perspectiveMatrixUnif = 0
     val numberOfVertices = 36
+
     val perspectiveMatrix = floatBufferBig(16)
     val frustumScale = 1.0f
+
     val bufferObject = intBufferBig(Buffer.MAX)
     val vao = intBufferBig(1)
 
@@ -81,7 +84,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             RIGHT_EXTENT, TOP_EXTENT, REAR_EXTENT,
             RIGHT_EXTENT, BOTTOM_EXTENT, REAR_EXTENT,
 
-
             //Object 2 positions
             TOP_EXTENT, RIGHT_EXTENT, REAR_EXTENT,
             MIDDLE_EXTENT, RIGHT_EXTENT, FRONT_EXTENT,
@@ -106,7 +108,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             TOP_EXTENT, LEFT_EXTENT, REAR_EXTENT,
             BOTTOM_EXTENT, LEFT_EXTENT, REAR_EXTENT,
 
-
             //Object 1 colors
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
@@ -130,7 +131,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
-
 
             //Object 2 colors
             RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
@@ -179,12 +179,12 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glGenVertexArrays(1, vao)
         glBindVertexArray(vao[0])
 
-        val colorData = Float.BYTES * 3 * numberOfVertices
+        val colorDataOffset = Float.BYTES * 3 * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
         glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData.L)
+        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray(0)
@@ -192,6 +192,11 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glFrontFace(GL_CW)
+
+        glEnable(GL_DEPTH_TEST)
+        glDepthMask(true)
+        glDepthFunc(GL_LESS)
+        glDepthRange(0.0, 1.0)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -238,12 +243,12 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
     override fun display(gl: GL3) = with(gl) {
 
         glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         glUseProgram(theProgram)
-
         glBindVertexArray(vao[0])
 
-        glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f)
+        glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f)
         glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
@@ -265,7 +270,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glViewport(0, 0, w, h)
     }
 
-    override fun end(gl: GL3) =with(gl){
+    override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(Buffer.MAX, bufferObject)

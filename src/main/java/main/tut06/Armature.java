@@ -3,7 +3,7 @@
 // * To change this template file, choose Tools | Templates
 // * and open the template in the editor.
 // */
-//package main.tut06.hierarchy;
+//package main.tut06;
 //
 //import com.jogamp.opengl.GL3;
 //import vec._3.Vec3;
@@ -16,16 +16,17 @@
 // *
 // * @author GBarbieri
 // */
-//public class Armature {
+//class Armature {
 //
 //    private Vec3 posBase = new Vec3(3.0f, -5.0f, -40.f);
 //    private float angBase = -45.0f;
-//    private Vec3 posBaseLeft = new Vec3(2.0f, 0.0f, 0.0f);
-//    private Vec3 posBaseRight = new Vec3(-2.0f, 0.0f, 0.0f);
+//
+//    private Vec3 posBaseLeft = new Vec3(2.0f, 0.0f, 0.0f), posBaseRight = new Vec3(-2.0f, 0.0f, 0.0f);
 //    private float scaleBaseZ = 3.0f;
 //
 //    private float angUpperArm = -33.75f;
 //    private float sizeUpperArm = 9.0f;
+//
 //    private Vec3 posLowerArm = new Vec3(0.0f, 0.0f, 8.0f);
 //    private float angLowerArm = 146.25f;
 //    private float lengthLowerArm = 5.0f;
@@ -37,8 +38,7 @@
 //    private float lengthWrist = 2.0f;
 //    private float widthWrist = 2.0f;
 //
-//    private Vec3 posLeftFinger = new Vec3(1.0f, 0.0f, 1.0f);
-//    private Vec3 posRightFinger = new Vec3(-1.0f, 0.0f, 1.0f);
+//    private Vec3 posLeftFinger = new Vec3(1.0f, 0.0f, 1.0f), posRightFinger = new Vec3(-1.0f, 0.0f, 1.0f);
 //    private float angFingerOpen = 180.0f;
 //    private float lengthFinger = 2.0f;
 //    private float widthFinger = 0.5f;
@@ -47,12 +47,12 @@
 //    private final float STANDARD_ANGLE_INCREMENT = 11.25f;
 //    private final float SMALL_ANGLE_INCREMENT = 9.0f;
 //
-//    public void draw(GL3 gl3, int theProgram, int vao, int modelToCameraMatrixUnif, int indexCount) {
+//    void draw(GL3 gl, int theProgram, int vao, int modelToCameraMatrixUnif, int indexCount) {
 //
 //        MatrixStack modelToCameraStack = new MatrixStack();
 //
-//        gl3.glUseProgram(theProgram);
-//        gl3.glBindVertexArray(vao);
+//        gl.glUseProgram(theProgram);
+//        gl.glBindVertexArray(vao);
 //
 //        modelToCameraStack.translate(posBase);
 //        modelToCameraStack.rotateY(angBase);
@@ -62,9 +62,9 @@
 //            modelToCameraStack.push();
 //            modelToCameraStack.translate(posBaseLeft);
 //            modelToCameraStack.scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-//            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false,
+//            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false,
 //                    modelToCameraStack.top().toDfb(Framework.matBuffer));
-//            gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
+//            gl.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 //            modelToCameraStack.pop();
 //        }
 //
@@ -73,17 +73,17 @@
 //            modelToCameraStack.push();
 //            modelToCameraStack.translate(posBaseRight);
 //            modelToCameraStack.scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-//            gl3.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false,
+//            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false,
 //                    modelToCameraStack.top().toDfb(Framework.matBuffer));
-//            gl3.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
+//            gl.glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 //            modelToCameraStack.pop();
 //        }
 //
 //        //  Draw main arm.
-//        drawUpperArm(gl3, modelToCameraStack, modelToCameraMatrixUnif, indexCount);
+//        drawUpperArm(gl, modelToCameraStack, modelToCameraMatrixUnif, indexCount);
 //
-//        gl3.glBindVertexArray(0);
-//        gl3.glUseProgram(0);
+//        gl.glBindVertexArray(0);
+//        gl.glUseProgram(0);
 //    }
 //
 //    private void drawUpperArm(GL3 gl3, MatrixStack modelToCameraStack, int modelToCameraMatrixUnif, int indexCount) {

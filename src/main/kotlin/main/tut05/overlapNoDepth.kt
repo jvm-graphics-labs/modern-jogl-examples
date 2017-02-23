@@ -5,6 +5,7 @@ import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
+import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import extensions.floatBufferBig
 import extensions.intBufferBig
@@ -18,14 +19,14 @@ import vec._3.Vec3
 import vec._4.Vec4
 
 /**
- * Created by elect on 22/02/17.
+ * Created by GBarbieri on 23.02.2017.
  */
 
 fun main(args: Array<String>) {
-    BaseVertexOverlap_()
+    OverlapNoDepth_()
 }
 
-class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
+class OverlapNoDepth_ : Framework("Tutorial 05 - Overlap No Depth") {
 
     object Buffer {
         val VERTEX = 0
@@ -33,14 +34,22 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         val MAX = 2
     }
 
+    object Vao {
+        val A = 0
+        val B = 1
+        val MAX = 2
+    }
+
     var theProgram = 0
     var offsetUniform = 0
     var perspectiveMatrixUnif = 0
     val numberOfVertices = 36
+
     val perspectiveMatrix = floatBufferBig(16)
     val frustumScale = 1.0f
+
     val bufferObject = intBufferBig(Buffer.MAX)
-    val vao = intBufferBig(1)
+    val vao = intBufferBig(Vao.MAX)
 
     val RIGHT_EXTENT = 0.8f
     val LEFT_EXTENT = -RIGHT_EXTENT
@@ -81,7 +90,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             RIGHT_EXTENT, TOP_EXTENT, REAR_EXTENT,
             RIGHT_EXTENT, BOTTOM_EXTENT, REAR_EXTENT,
 
-
             //Object 2 positions
             TOP_EXTENT, RIGHT_EXTENT, REAR_EXTENT,
             MIDDLE_EXTENT, RIGHT_EXTENT, FRONT_EXTENT,
@@ -106,7 +114,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             TOP_EXTENT, LEFT_EXTENT, REAR_EXTENT,
             BOTTOM_EXTENT, LEFT_EXTENT, REAR_EXTENT,
 
-
             //Object 1 colors
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
             GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
@@ -130,7 +137,6 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
             BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
-
 
             //Object 2 colors
             RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
@@ -175,19 +181,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
 
         initializeProgram(gl)
         initializeBuffers(gl)
-
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
-
-        val colorData = Float.BYTES * 3 * numberOfVertices
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData.L)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-
-        glBindVertexArray(0)
+        initializeVertexArrays(gl)
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -207,7 +201,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
 
         perspectiveMatrix[0] = frustumScale
         perspectiveMatrix[5] = frustumScale
-        perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
+        perspectiveMatrix[10]= (zFar + zNear) / (zNear - zFar)
         perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
         perspectiveMatrix[11] = -1.0f
 
@@ -216,7 +210,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glUseProgram(0)
     }
 
-    fun initializeBuffers(gl: GL3) = with(gl) {
+    fun initializeBuffers(gl: GL3) = with(gl){
 
         val vertexBuffer = vertexData.toFloatBuffer()
         val indexBuffer = indexData.toShortBuffer()
@@ -235,19 +229,50 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         indexBuffer.destroy()
     }
 
-    override fun display(gl: GL3) = with(gl) {
+    fun initializeVertexArrays(gl: GL3) = with(gl){
+
+        glGenVertexArrays(Vao.MAX, vao)
+
+        glBindVertexArray(vao.get(Vao.A))
+
+        var colorDataOffset = Float.BYTES * 3 * numberOfVertices
+
+        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
+        glEnableVertexAttribArray(Semantic.Attr.POSITION)
+        glEnableVertexAttribArray(Semantic.Attr.COLOR)
+        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
+
+        glBindVertexArray(vao[Vao.B])
+
+        val positionDataOffset = Float.BYTES * 3 * (numberOfVertices / 2)
+        colorDataOffset += Float.BYTES * 4 * (numberOfVertices / 2)
+
+        //Use the same buffer object previously bound to GL_ARRAY_BUFFER.
+        glEnableVertexAttribArray(Semantic.Attr.POSITION)
+        glEnableVertexAttribArray(Semantic.Attr.COLOR)
+        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, positionDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
+
+        glBindVertexArray(0)
+    }
+
+    override fun display(gl: GL3) = with(gl){
 
         glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         glUseProgram(theProgram)
 
-        glBindVertexArray(vao[0])
-
+        glBindVertexArray(vao[Vao.A])
         glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f)
         glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
 
+        glBindVertexArray(vao[Vao.B])
         glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
-        glDrawElementsBaseVertex(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
+        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
 
         glBindVertexArray(0)
         glUseProgram(0)
@@ -265,11 +290,11 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glViewport(0, 0, w, h)
     }
 
-    override fun end(gl: GL3) =with(gl){
+    override fun end(gl: GL3) = with(gl){
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(Buffer.MAX, bufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteVertexArrays(Vao.MAX, vao)
 
         vao.destroy()
         bufferObject.destroy()
