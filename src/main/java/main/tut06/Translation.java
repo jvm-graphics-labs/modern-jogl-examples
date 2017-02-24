@@ -11,7 +11,6 @@ import com.jogamp.opengl.util.GLBuffers;
 import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import mat.Mat3x3;
 import mat.Mat4x4;
 import vec._3.Vec3;
 import vec._4.Vec4;
@@ -26,15 +25,16 @@ import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import static main.GlmKt.glm;
 
 /**
+ *
  * @author gbarbieri
  */
-public class Rotations extends Framework {
+public class Translation extends Framework {
 
     public static void main(String[] args) {
-        new Rotations("Tutorial 06 - Rotations");
+        new Translation("Tutorial 06 - Translation");
     }
 
-    public Rotations(String title) {
+    public Translation(String title) {
         super(title);
     }
 
@@ -48,9 +48,10 @@ public class Rotations extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
 
     private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
-    private float frustumScale = (float) (1.0f / glm.tan(Math.toRadians(45.0f) / 2.0));
+    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
 
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
+
     private final int numberOfVertices = 8;
 
     private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.0f, 1.0f, 1.0f},
@@ -92,11 +93,9 @@ public class Rotations extends Framework {
             6, 7, 5};
 
     private Instance[] instanceList = {
-            new Instance(Mode.NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
-            new Instance(Mode.RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
-            new Instance(Mode.RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateAxis, new Vec3(5.0f, -5.0f, -25.0f))};
+        new Instance(Mode.StationaryOffset),
+        new Instance(Mode.OvalOffset),
+        new Instance(Mode.BottomCircleOffset)};
 
     private long start;
 
@@ -146,8 +145,10 @@ public class Rotations extends Framework {
         cameraToClipMatrix.v23(-1.0f);
         cameraToClipMatrix.v32((2 * zFar * zNear) / (zNear - zFar));
 
+        cameraToClipMatrix.to(matBuffer);
+
         gl.glUseProgram(theProgram);
-        gl.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix.to(matBuffer));
+        gl.glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, matBuffer);
         gl.glUseProgram(0);
     }
 
@@ -181,9 +182,9 @@ public class Rotations extends Framework {
         gl.glBindVertexArray(vao.get(0));
 
         float elapsedTime = (System.currentTimeMillis() - start) / 1_000f;
-        for (Instance currInst : instanceList) {
+        for (Instance instance : instanceList) {
 
-            Mat4x4 transformMatrix = currInst.constructMatrix(elapsedTime);
+            Mat4x4 transformMatrix = instance.constructMatrix(elapsedTime);
 
             gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
@@ -207,11 +208,11 @@ public class Rotations extends Framework {
     }
 
     @Override
-    public void end(GL3 gl) {
+    public void end(GL3 gl3) {
 
-        gl.glDeleteProgram(theProgram);
-        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl.glDeleteVertexArrays(1, vao);
+        gl3.glDeleteProgram(theProgram);
+        gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl3.glDeleteVertexArrays(1, vao);
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
@@ -228,114 +229,58 @@ public class Rotations extends Framework {
         }
     }
 
-    public enum Mode {
+     public enum Mode {
 
-        NullRotation,
-        RotateX,
-        RotateY,
-        RotateZ,
-        RotateAxis
+        StationaryOffset,
+        OvalOffset,
+        BottomCircleOffset
     }
 
     private class Instance {
 
-        private Rotations.Mode mode;
-        private Vec3 offset;
-        private Mat3x3 theMat = new Mat3x3();
+        private Translation.Mode mode;
+        private Vec3 vec = new Vec3();
 
-        Instance(Rotations.Mode mode, Vec3 offset) {
+        public Instance(Translation.Mode mode) {
             this.mode = mode;
-            this.offset = offset;
         }
 
-        Mat4x4 constructMatrix(float elapsedTime) {
+        public Mat4x4 constructMatrix(float elapsedTime) {
 
-            Mat3x3 rotMatrix = calcRotation(elapsedTime);
-            Mat4x4 theMat = new Mat4x4(rotMatrix);
-            theMat.set(3, new Vec4(offset, 1.0f));
+            Mat4x4 theMat = new Mat4x4(1.0f);
+            theMat.set(3, new Vec4(calcOffset(elapsedTime), 1.0f));
 
             return theMat;
         }
 
-        private Mat3x3 calcRotation(float elapsedTime) {
-
-            float angRad, cos, sin;
+        private Vec3 calcOffset(float elapsedTime) {
 
             switch (mode) {
 
                 default:
-                    return theMat.set(1f);
+                    return vec.put(0.0f, 0.0f, -20.0f);
 
-                case RotateX:
+                case OvalOffset:
+                    float loopDuration = 3.0f;
+                    float scale = (float) (Math.PI * 2.0f / loopDuration);
 
-                    angRad = computeAngleRad(elapsedTime, 3.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                    float currTimeThroughLoop = elapsedTime % loopDuration;
 
-                    theMat.set(1f);
-                    theMat.v11(cos);
-                    theMat.v12(sin);
-                    theMat.v21(-sin);
-                    theMat.v22(cos);
-                    return theMat;
+                    return vec.put(
+                            glm.cos(currTimeThroughLoop * scale) * 4,
+                            glm.sin(currTimeThroughLoop * scale) * 6,
+                            -20.0f);
 
-                case RotateY:
+                case BottomCircleOffset:
+                    loopDuration = 12.0f;
+                    scale = (float) (Math.PI * 2.0f / loopDuration);
 
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-
-                    theMat.set(1f);
-                    theMat.v00(cos);
-                    theMat.v02(-sin);
-                    theMat.v20(sin);
-                    theMat.v22(cos);
-                    return theMat;
-
-                case RotateZ:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-
-                    theMat.set(1f);
-                    theMat.v00(cos);
-                    theMat.v01(sin);
-                    theMat.v10(-sin);
-                    theMat.v11(cos);
-                    return theMat;
-
-                case RotateAxis:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-                    float invCos = 1.0f - cos;
-                    float invSin = 1.0f - sin;
-
-                    Vec3 axis = new Vec3(1.0f).normalize_();
-                    theMat.set(1f);
-
-                    theMat.v00((axis.x() * axis.x()) + ((1 - axis.x() * axis.x()) * cos));
-                    theMat.v10(axis.x() * axis.y() * (invCos) - (axis.z() * sin));
-                    theMat.v20(axis.x() * axis.z() * (invCos) + (axis.y() * sin));
-
-                    theMat.v01(axis.x() * axis.y() * (invCos) + (axis.z() * sin));
-                    theMat.v11((axis.y() * axis.y()) + ((1 - axis.y() * axis.y()) * cos));
-                    theMat.v21(axis.y() * axis.z() * (invCos) - (axis.x() * sin));
-
-                    theMat.v02(axis.x() * axis.z() * (invCos) - (axis.y() * sin));
-                    theMat.v12(axis.y() * axis.z() * (invCos) + (axis.x() * sin));
-                    theMat.v22((axis.z() * axis.z()) + ((1 - axis.z() * axis.z()) * cos));
-
-                    return theMat;
+                    currTimeThroughLoop = elapsedTime % loopDuration;
+                    return vec.put(
+                            glm.cos(currTimeThroughLoop * scale) * 5,
+                            -3.5f,
+                            glm.sin(currTimeThroughLoop * scale) * 5 - 20.0f);
             }
-        }
-
-        private float computeAngleRad(float elapsedTime, float loopDuration) {
-            float scale = (float) (Math.PI * 2.0f / loopDuration);
-            float currentTimeThroughLoop = elapsedTime % loopDuration;
-            return currentTimeThroughLoop * scale;
         }
     }
 }
