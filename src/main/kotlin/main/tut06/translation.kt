@@ -1,5 +1,6 @@
 package main.tut06
 
+import buffer.BufferUtils
 import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
@@ -13,20 +14,19 @@ import glsl.programOf
 import main.*
 import main.framework.Framework
 import main.framework.Semantic
-import mat.Mat3
 import mat.Mat4
 import vec._3.Vec3
 import vec._4.Vec4
 
 /**
- * Created by elect on 23/02/17.
+ * Created by GBarbieri on 24.02.2017.
  */
 
 fun main(args: Array<String>) {
-    Rotations_()
+    Translation_()
 }
 
-class Rotations_ : Framework("Tutorial 06 - Rotations") {
+class Translation_ : Framework("Tutorial 06 - Translation") {
 
     object Buffer {
         val VERTEX = 0
@@ -38,13 +38,14 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     var modelToCameraMatrixUnif = 0
     var cameraToClipMatrixUnif = 0
 
-    val cameraToClipMatrix = Mat4(0.0f)
+    val cameraToClipMatrix = Mat4(0f)
     val frustumScale = calcFrustumScale(45.0f)
 
-    fun calcFrustumScale(fovDeg: Float) =  1.0f / glm.tan(fovDeg.rad / 2.0f)
+    fun calcFrustumScale(fovDeg: Float) = 1.0f / glm.tan(fovDeg.rad / 2.0f)
 
     val bufferObject = intBufferBig(Buffer.MAX)
     val vao = intBufferBig(1)
+
     val numberOfVertices = 8
 
     val GREEN_COLOR = floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f)
@@ -53,7 +54,6 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     val BROWN_COLOR = floatArrayOf(0.5f, 0.5f, 0.0f, 1.0f)
 
     val vertexData = floatArrayOf(
-
 
             +1.0f, +1.0f, +1.0f,
             -1.0f, -1.0f, +1.0f,
@@ -89,11 +89,9 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
             6, 7, 5)
 
     private val instanceList = arrayOf(
-            Instance(this::nullRotation, Vec3(0.0f, 0.0f, -25.0f)),
-            Instance(this::rotateX, Vec3(-5.0f, -5.0f, -25.0f)),
-            Instance(this::rotateY, Vec3(-5.0f, +5.0f, -25.0f)),
-            Instance(this::rotateZ, Vec3(+5.0f, +5.0f, -25.0f)),
-            Instance(this::rotateAxis, Vec3(5.0f, -5.0f, -25.0f)))
+            Instance(this::stationaryOffset),
+            Instance(this::ovalOffset),
+            Instance(this::bottomCircleOffset))
 
     var start = 0L
 
@@ -131,8 +129,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
 
         theProgram = programOf(gl, this::class.java, "tut06", "pos-color-local-transform.vert", "color-passthrough.frag")
 
-        modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
-        cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")
+        modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
+        cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix")
 
         val zNear = 1.0f
         val zFar = 61.0f
@@ -143,10 +141,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         cameraToClipMatrix[2].w = -1.0f
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
-        cameraToClipMatrix to Framework.matBuffer
-
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
         glUseProgram(0)
     }
 
@@ -193,8 +189,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
 
-        cameraToClipMatrix.a0 = frustumScale * (h / w.f)
-        cameraToClipMatrix.b1 = frustumScale
+        cameraToClipMatrix[0].x = frustumScale * (h / w.f)
+        cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
         glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
@@ -223,86 +219,43 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         }
     }
 
-    private class Instance(val calcRotation: (Float) -> Mat3, val offset: Vec3) {
+    private class Instance(val calcOffset: (Float) -> Vec3) {
 
         fun constructMatrix(elapsedTime: Float): Mat4 {
 
-            val rotMatrix = calcRotation(elapsedTime)
-            val theMat = Mat4(rotMatrix)
-            theMat[3] = Vec4(offset, 1f)
+            val theMat = Mat4(1.0f)
+
+            theMat[3] = Vec4(calcOffset(elapsedTime), 1f)
 
             return theMat
         }
     }
 
-    fun nullRotation(elapsedTime: Float) = Mat3(1f)
+    fun stationaryOffset(elapsedTime: Float) = Vec3(0.0f, 0.0f, -20.0f)
 
-    fun rotateX(elapsedTime: Float): Mat3 {
+    fun ovalOffset(elapsedTime: Float): Vec3 {
 
-        val angRad = computeAngleRad(elapsedTime, 3f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
+        val loopDuration = 3.0f
+        val scale = Math.PI.f * 2.0f / loopDuration
 
-        val theMat = Mat3(1f)
-        theMat[1].y = cos; theMat[2].y = -sin
-        theMat[1].z = sin; theMat[2].z = cos
-        return theMat
+        val currTimeThroughLoop = elapsedTime % loopDuration
+
+        return Vec3(
+                glm.cos(currTimeThroughLoop * scale) * 4.f,
+                glm.sin(currTimeThroughLoop * scale) * 6.f,
+                -20.0f)
     }
 
-    fun rotateY(elapsedTime: Float): Mat3 {
+    fun bottomCircleOffset(elapsedTime: Float): Vec3 {
 
-        val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
+        val loopDuration = 12.0f
+        val scale = Math.PI.f * 2.0f / loopDuration
 
-        val theMat = Mat3(1f)
-        theMat[0].x = cos; theMat[2].x = sin
-        theMat[0].z = -sin; theMat[2].z = cos
-        return theMat
-    }
+        val currTimeThroughLoop = elapsedTime % loopDuration
 
-    fun rotateZ(elapsedTime: Float): Mat3 {
-
-        val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
-
-        val theMat = Mat3(1f)
-        theMat[0].x = cos; theMat[1].x = -sin
-        theMat[0].y = sin; theMat[1].y = cos
-        return theMat
-    }
-
-    fun rotateAxis(elapsedTime: Float): Mat3 {
-
-        val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
-        val invCos = 1f - cos
-        val sin = glm.sin(angRad)
-
-        val axis = Vec3(1f).normalize_()
-
-        val theMat = Mat3(1f)
-
-        theMat[0].x = (axis.x * axis.x) + ((1 - axis.x * axis.x) * cos)
-        theMat[1].x = axis.x * axis.y * (invCos) - (axis.z * sin)
-        theMat[2].x = axis.x * axis.z * (invCos) + (axis.y * sin)
-
-        theMat[0].y = axis.x * axis.y * (invCos) + (axis.z * sin)
-        theMat[1].y = (axis.y * axis.y) + ((1 - axis.y * axis.y) * cos)
-        theMat[2].y = axis.y * axis.z * (invCos) - (axis.x * sin)
-
-        theMat[0].z = axis.x * axis.z * (invCos) - (axis.y * sin)
-        theMat[1].z = axis.y * axis.z * (invCos) + (axis.x * sin)
-        theMat[2].z = (axis.z * axis.z) + ((1 - axis.z * axis.z) * cos)
-
-        return theMat
-    }
-
-
-    fun computeAngleRad(elapsedTime: Float, loopDuration: Float): Float {
-        val scale = (Math.PI * 2.0f / loopDuration).f
-        val currentTimeThroughLoop = elapsedTime % loopDuration
-        return currentTimeThroughLoop * scale
+        return Vec3(
+                glm.cos(currTimeThroughLoop * scale) * 5.f,
+                -3.5f,
+                glm.sin(currTimeThroughLoop * scale) * 5.f - 20.0f)
     }
 }

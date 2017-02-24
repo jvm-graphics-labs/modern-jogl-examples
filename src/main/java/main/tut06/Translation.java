@@ -48,7 +48,12 @@ public class Translation extends Framework {
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
 
     private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
-    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(45.0f) / 2.0));
+    private float frustumScale = calcFrustumScale(45.0f);
+
+    private float calcFrustumScale(float fovDeg) {
+        float fovRad = (float) Math.toRadians(fovDeg);
+        return 1.0f / glm.tan(fovRad / 2.0f);
+    }
 
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
 
@@ -208,11 +213,11 @@ public class Translation extends Framework {
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
-        gl3.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl3.glDeleteVertexArrays(1, vao);
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl.glDeleteVertexArrays(1, vao);
 
         BufferUtils.destroyDirectBuffer(vao);
         BufferUtils.destroyDirectBuffer(bufferObject);
@@ -229,7 +234,7 @@ public class Translation extends Framework {
         }
     }
 
-     public enum Mode {
+     private enum Mode {
 
         StationaryOffset,
         OvalOffset,
@@ -238,14 +243,14 @@ public class Translation extends Framework {
 
     private class Instance {
 
-        private Translation.Mode mode;
+        private Mode mode;
         private Vec3 vec = new Vec3();
 
-        public Instance(Translation.Mode mode) {
+        Instance(Mode mode) {
             this.mode = mode;
         }
 
-        public Mat4x4 constructMatrix(float elapsedTime) {
+        Mat4x4 constructMatrix(float elapsedTime) {
 
             Mat4x4 theMat = new Mat4x4(1.0f);
             theMat.set(3, new Vec4(calcOffset(elapsedTime), 1.0f));

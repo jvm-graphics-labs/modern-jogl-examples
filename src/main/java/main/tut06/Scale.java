@@ -6,35 +6,45 @@ package main.tut06;
 
 import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_BACK;
+import static com.jogamp.opengl.GL.GL_CULL_FACE;
+import static com.jogamp.opengl.GL.GL_CW;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TRIANGLES;
+import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static main.GlmKt.glm;
+
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import mat.Mat3x3;
 import mat.Mat4x4;
 import vec._3.Vec3;
 import vec._4.Vec4;
 
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-import static main.GlmKt.glm;
-
 /**
+ *
  * @author gbarbieri
  */
-public class Rotations extends Framework {
-
+public class Scale extends Framework {
+    
     public static void main(String[] args) {
-        new Rotations("Tutorial 06 - Rotations");
+        new Scale("Tutorial 06 - Scale");
     }
 
-    public Rotations(String title) {
+    public Scale(String title) {
         super(title);
     }
 
@@ -96,13 +106,13 @@ public class Rotations extends Framework {
             7, 6, 4,
             6, 7, 5};
 
-    private Instance[] instanceList = {
-            new Instance(Mode.NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
-            new Instance(Mode.RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
-            new Instance(Mode.RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateAxis, new Vec3(5.0f, -5.0f, -25.0f))};
 
+    private Instance[] instanceList = {
+        new Instance(Mode.NullScale, new Vec3(0.0f, 0.0f, -45.0f)),
+        new Instance(Mode.StaticUniformScale, new Vec3(-10.0f, -10.0f, -45.0f)),
+        new Instance(Mode.StaticNonUniformScale, new Vec3(-10.0f, 10.0f, -45.0f)),
+        new Instance(Mode.DynamicUniformScale, new Vec3(10.0f, 10.0f, -45.0f)),
+        new Instance(Mode.DynamicNonUniformScale, new Vec3(10.0f, -10.0f, -45.0f))};
     private long start;
 
     @Override
@@ -186,9 +196,9 @@ public class Rotations extends Framework {
         gl.glBindVertexArray(vao.get(0));
 
         float elapsedTime = (System.currentTimeMillis() - start) / 1_000f;
-        for (Instance currInst : instanceList) {
+        for (Instance instance : instanceList) {
 
-            Mat4x4 transformMatrix = currInst.constructMatrix(elapsedTime);
+            Mat4x4 transformMatrix = instance.constructMatrix(elapsedTime);
 
             gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
@@ -233,20 +243,20 @@ public class Rotations extends Framework {
         }
     }
 
-    private enum Mode {
+    public enum Mode {
 
-        NullRotation,
-        RotateX,
-        RotateY,
-        RotateZ,
-        RotateAxis
+        NullScale,
+        StaticUniformScale,
+        StaticNonUniformScale,
+        DynamicUniformScale,
+        DynamicNonUniformScale
     }
 
     private class Instance {
 
         private Mode mode;
         private Vec3 offset;
-        private Mat3x3 theMat = new Mat3x3();
+        private Vec3 vec = new Vec3();
 
         Instance(Mode mode, Vec3 offset) {
             this.mode = mode;
@@ -255,92 +265,46 @@ public class Rotations extends Framework {
 
         Mat4x4 constructMatrix(float elapsedTime) {
 
-            Mat3x3 rotMatrix = calcRotation(elapsedTime);
-            Mat4x4 theMat = new Mat4x4(rotMatrix);
+            Vec3 theScale = calcScale(elapsedTime);
+            Mat4x4 theMat = new Mat4x4(theScale, 1.0f);
             theMat.set(3, new Vec4(offset, 1.0f));
 
             return theMat;
         }
 
-        private Mat3x3 calcRotation(float elapsedTime) {
-
-            float angRad, cos, sin;
+        private Vec3 calcScale(float elapsedTime) {
 
             switch (mode) {
 
                 default:
-                    return theMat.put(1f);
+                    return vec.put(1.0f);
 
-                case RotateX:
+                case StaticUniformScale:
+                    return vec.put(4.0f);
 
-                    angRad = computeAngleRad(elapsedTime, 3.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                case StaticNonUniformScale:
+                    return vec.put(0.5f, 1.0f, 10.0f);
 
-                    theMat.put(1f);
-                    theMat.v11(cos);
-                    theMat.v12(sin);
-                    theMat.v21(-sin);
-                    theMat.v22(cos);
-                    return theMat;
+                case DynamicUniformScale:
+                    final float loopDuration = 3.0f;
+                    return new Vec3(glm.mix(1.0f, 4.0f, calculateLerpFactor(elapsedTime, loopDuration)));
 
-                case RotateY:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-
-                    theMat.put(1f);
-                    theMat.v00(cos);
-                    theMat.v02(-sin);
-                    theMat.v20(sin);
-                    theMat.v22(cos);
-                    return theMat;
-
-                case RotateZ:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-
-                    theMat.put(1f);
-                    theMat.v00(cos);
-                    theMat.v01(sin);
-                    theMat.v10(-sin);
-                    theMat.v11(cos);
-                    return theMat;
-
-                case RotateAxis:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
-                    float invCos = 1.0f - cos;
-                    float invSin = 1.0f - sin;
-
-                    Vec3 axis = new Vec3(1.0f).normalize_();
-                    theMat.put(1f);
-
-                    theMat.v00((axis.x() * axis.x()) + ((1 - axis.x() * axis.x()) * cos));
-                    theMat.v10(axis.x() * axis.y() * (invCos) - (axis.z() * sin));
-                    theMat.v20(axis.x() * axis.z() * (invCos) + (axis.y() * sin));
-
-                    theMat.v01(axis.x() * axis.y() * (invCos) + (axis.z() * sin));
-                    theMat.v11((axis.y() * axis.y()) + ((1 - axis.y() * axis.y()) * cos));
-                    theMat.v21(axis.y() * axis.z() * (invCos) - (axis.x() * sin));
-
-                    theMat.v02(axis.x() * axis.z() * (invCos) - (axis.y() * sin));
-                    theMat.v12(axis.y() * axis.z() * (invCos) + (axis.x() * sin));
-                    theMat.v22((axis.z() * axis.z()) + ((1 - axis.z() * axis.z()) * cos));
-
-                    return theMat;
+                case DynamicNonUniformScale:
+                    final float xLoopDuration = 3.0f;
+                    final float zLoopDuration = 5.0f;
+                    return new Vec3(
+                            glm.mix(1.0f, 0.5f, calculateLerpFactor(elapsedTime, xLoopDuration)),
+                            1.0f,
+                            glm.mix(1.0f, 10.0f, calculateLerpFactor(elapsedTime, zLoopDuration)));
             }
         }
 
-        private float computeAngleRad(float elapsedTime, float loopDuration) {
-            float scale = (float) (Math.PI * 2.0f / loopDuration);
-            float currentTimeThroughLoop = elapsedTime % loopDuration;
-            return currentTimeThroughLoop * scale;
+        private float calculateLerpFactor(float elapsedTime, float loopDuration) {
+            float value = elapsedTime % loopDuration / loopDuration;
+            if (value > 0.5f) {
+                value = 1.0f - value;
+            }
+            return value * 2.0f;
         }
     }
 }
