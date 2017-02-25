@@ -180,7 +180,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
         glUseProgram(0)
     }
 
@@ -230,7 +230,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
         glUseProgram(0)
 
         glViewport(0, 0, w, h)
@@ -319,7 +319,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                         .push()
                         .translate(posBaseLeft)
                         .scale(Vec3(1.0f, 1.0f, scaleBaseZ))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
                 glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
                 modelToCameraStack.pop()
             }
@@ -330,7 +330,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                         .push()
                         .translate(posBaseRight)
                         .scale(Vec3(1.0f, 1.0f, scaleBaseZ))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
                 glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
                 modelToCameraStack.pop()
             }
@@ -353,7 +353,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, sizeUpperArm / 2.0f - 1.0f))
                         .scale(Vec3(1.0f, 1.0f, sizeUpperArm / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
                 glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
                 modelToCameraStack.pop()
             }
@@ -374,7 +374,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthLowerArm / 2.0f))
                     .scale(Vec3(widthLowerArm / 2.0f, widthLowerArm / 2.0f, lengthLowerArm / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
             modelToCameraStack.pop()
 
@@ -394,7 +394,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
             modelToCameraStack
                     .push()
                     .scale(Vec3(widthWrist / 2.0f, widthWrist / 2.0f, lenWrist / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
             modelToCameraStack.pop()
 
@@ -415,7 +415,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
             modelToCameraStack.pop()
 
@@ -430,7 +430,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
                 glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
                 modelToCameraStack.pop()
 
@@ -449,7 +449,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
             modelToCameraStack.pop()
 
@@ -464,7 +464,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to Framework.matBuffer)
+                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
                 glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
                 modelToCameraStack.pop()
 

@@ -143,10 +143,10 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         cameraToClipMatrix[2].w = -1.0f
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
-        cameraToClipMatrix to Framework.matBuffer
+        cameraToClipMatrix to matBuffer
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, matBuffer)
         glUseProgram(0)
     }
 
@@ -183,7 +183,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
 
             val transformMatrix = it.constructMatrix(elapsedTime)
 
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
         }
 
@@ -197,7 +197,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         cameraToClipMatrix.b1 = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
         glUseProgram(0)
 
         glViewport(0, 0, w, h)

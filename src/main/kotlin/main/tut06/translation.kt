@@ -142,7 +142,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
         glUseProgram(0)
     }
 
@@ -179,7 +179,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
 
             val transformMatrix = it.constructMatrix(elapsedTime)
 
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix to Framework.matBuffer)
+            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix to matBuffer)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
         }
 
@@ -193,7 +193,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to Framework.matBuffer)
+        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
         glUseProgram(0)
 
         glViewport(0, 0, w, h)

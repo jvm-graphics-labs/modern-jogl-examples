@@ -43,7 +43,7 @@ public class Mesh {
 
     private HashMap<String, Integer> namedVAOs = new HashMap<>();
 
-    public Mesh(String xml, GL3 gl3) throws ParserConfigurationException, SAXException, IOException {
+    public Mesh(GL3 gl, String xml) throws ParserConfigurationException, SAXException, IOException {
 
         InputStream inputStream = getClass().getResourceAsStream(xml);
 
@@ -109,19 +109,19 @@ public class Mesh {
         }
 
         //Create the "Everything" VAO.
-        gl3.glGenVertexArrays(1, vao);
-        gl3.glBindVertexArray(vao.get(0));
+        gl.glGenVertexArrays(1, vao);
+        gl.glBindVertexArray(vao.get(0));
 
         //Create the buffer object.
-        gl3.glGenBuffers(1, attribArraysBuffer);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, attribArraysBuffer.get(0));
-        gl3.glBufferData(GL_ARRAY_BUFFER, attribBufferSize, null, GL_STATIC_DRAW);
+        gl.glGenBuffers(1, attribArraysBuffer);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, attribArraysBuffer.get(0));
+        gl.glBufferData(GL_ARRAY_BUFFER, attribBufferSize, null, GL_STATIC_DRAW);
 
         //Fill in our data and set up the attribute arrays.
         for (int loop = 0; loop < attribs.size(); loop++) {
             Attribute attrib = attribs.get(loop);
-            attrib.fillBoundBufferObject(gl3, attribStartLocs[loop]);
-            attrib.setupAttributeArray(gl3, attribStartLocs[loop]);
+            attrib.fillBoundBufferObject(gl, attribStartLocs[loop]);
+            attrib.setupAttributeArray(gl, attribStartLocs[loop]);
         }
 
         //Fill the named VAOs.
@@ -129,8 +129,8 @@ public class Mesh {
         for (Pair namedVao : namedVaoList) {
 
             vao.put(0, -1);
-            gl3.glGenVertexArrays(1, vao);
-            gl3.glBindVertexArray(vao.get(0));
+            gl.glGenVertexArrays(1, vao);
+            gl.glBindVertexArray(vao.get(0));
 
             for (Integer attribIx : namedVao.attributes()) {
 
@@ -144,13 +144,13 @@ public class Mesh {
                         break;
                     }
                 }
-                attribs.get(attribOffset).setupAttributeArray(gl3, attribStartLocs[attribOffset]);
+                attribs.get(attribOffset).setupAttributeArray(gl, attribStartLocs[attribOffset]);
             }
             namedVAOs.put(namedVao.name(), vao.get(0));
         }
         vao.put(0, vaoBackup);
 
-        gl3.glBindVertexArray(0);
+        gl.glBindVertexArray(0);
 
         //Get the size of our index buffer data.
         int indexBufferSize = 0;
@@ -168,15 +168,15 @@ public class Mesh {
         //Create the index buffer object.
         if (indexBufferSize != 0) {
 
-            gl3.glBindVertexArray(vao.get(0));
+            gl.glBindVertexArray(vao.get(0));
 
-            gl3.glGenBuffers(1, indexBuffer);
-            gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
-            gl3.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, null, GL_STATIC_DRAW);
+            gl.glGenBuffers(1, indexBuffer);
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
+            gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, null, GL_STATIC_DRAW);
 
             //Fill with data.
             IntStreamEx.range(indexData.size()).forEach(i
-                    -> indexData.get(i).fillBoundBufferObject(gl3, indexStartLocs[i]));
+                    -> indexData.get(i).fillBoundBufferObject(gl, indexStartLocs[i]));
 
             //Fill in indexed rendering commands.
             for (int loop = 0; loop < indexData.size(); loop++) {
@@ -192,12 +192,12 @@ public class Mesh {
             vaoBackup = vao.get(0);
             namedVAOs.entrySet().forEach(entry -> {
                 vao.put(0, entry.getValue());
-                gl3.glBindVertexArray(vao.get(0));
-                gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
+                gl.glBindVertexArray(vao.get(0));
+                gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get(0));
             });
             vao.put(0, vaoBackup);
 
-            gl3.glBindVertexArray(0);
+            gl.glBindVertexArray(0);
         }
     }
 
