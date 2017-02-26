@@ -12,6 +12,9 @@ import com.jogamp.opengl.util.GLBuffers;
 import buffer.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,14 +46,17 @@ public class Mesh {
 
     private HashMap<String, Integer> namedVAOs = new HashMap<>();
 
-    public Mesh(GL3 gl, String xml) throws ParserConfigurationException, SAXException, IOException {
+    public Mesh(GL3 gl, Class context, String xml) throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
 
-        InputStream inputStream = getClass().getResourceAsStream(xml);
+        String xml_ = xml;
+        if(!xml.startsWith("/"))
+            xml_ = "/" + xml;
+        URI uri = context.getResource(xml_).toURI();
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        Document document = documentBuilder.parse(inputStream);
+        Document document = documentBuilder.parse(uri.toString());
         Element rootElement = document.getDocumentElement();
 
         NodeList nodeList = rootElement.getElementsByTagName("attribute");
