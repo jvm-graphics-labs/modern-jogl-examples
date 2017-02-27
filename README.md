@@ -20,7 +20,7 @@ Status:
 - [x] Chapter 3, Moving Triangle
 - [x] Chapter 4, Objects at Rest
 - [x] Chapter 5, Objects at Depth
-- [ ] Chapter 6, Objects in Motion
+- [x] Chapter 6, Objects in Motion
 - [ ] Chapter 7, World in Motion
 - [ ] Chapter 8, Getting Oriented
 - [ ] Chapter 9, Lights On
