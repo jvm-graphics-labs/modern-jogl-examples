@@ -67,12 +67,12 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.1.0-rc-91" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.elect86:uno-sdk:963947de6bd49dae9bab60b01bfc75affcaa5c0e" level="project" />
-    <orderEntry type="library" name="Gradle: one.util:streamex:0.6.5" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.elect86:kotlin-unsigned:606ec0ea2b11bc604647cc61280f01db399d7191" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.jogamp.jogl:jogl-all:2.3.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.jogamp.gluegen:gluegen-rt:2.3.2" level="project" />
     <orderEntry type="library" name="Gradle: com.github.elect86:glm:7544a35d418370d8b98d0aadd181f109b4a1f82c" level="project" />
+    <orderEntry type="library" name="Gradle: org.jogamp.gluegen:gluegen-rt:2.3.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.jogamp.jogl:jogl-all:2.3.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.elect86:kotlin-unsigned:606ec0ea2b11bc604647cc61280f01db399d7191" level="project" />
+    <orderEntry type="library" name="Gradle: one.util:streamex:0.6.5" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.elect86:uno-sdk:d4b0440d286460afcdb0922981649c293d77c705" level="project" />
   </component>
 </module>
