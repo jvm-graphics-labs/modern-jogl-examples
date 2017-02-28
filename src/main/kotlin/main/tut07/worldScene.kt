@@ -371,7 +371,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         glm.perspective(45.0f, w / h.f, zNear, zFar) to matBuffer
 
         glUseProgram(uniformColor.name)
-        glUniformMatrix4fv(uniformColor.uniforms["cameraToClipMatrix"]!!, 1, false, matBuffer)
+        glUniformMatrix4fv(uniformColor.uniforms["cameraToClipMatrix"], 1, false, matBuffer)
         glUseProgram(objectColor.theProgram)
         glUniformMatrix4fv(objectColor.cameraToClipMatrixUnif, 1, false, matBuffer)
         glUseProgram(uniformColorTint.theProgram)
