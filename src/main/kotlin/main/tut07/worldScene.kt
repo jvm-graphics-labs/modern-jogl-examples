@@ -75,7 +75,6 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
     fun initializeProgram(gl: GL3) {
 
-//        uniformColor = ProgramData(gl, "pos-only-world-transform.vert", "color-uniform.frag")
         uniformColor = Program(gl, this::class.java, "tut07", "pos-only-world-transform.vert", "color-uniform.frag",
                 "modelToWorldMatrix", "worldToCameraMatrix", "cameraToClipMatrix", "baseColor")
         objectColor = Program(gl, this::class.java, "tut07", "pos-color-world-transform.vert", "color-passthrough.frag",
@@ -308,11 +307,14 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
                     0.0f,
                     parthenonColumnHeight + parthenonBaseHeight + parthenonTopHeight / 2.0f,
                     parthenonLength / 2.0f))
-//            rotateX(-135.0f)
-//            rotateY(45.0f)
+            top().rotate(-135f.rad, 1f,0f,0f).rotate(45f.rad, 0f,1f,0f) to matBuffer
+            rotateX(-135.0f)
+            rotateY(45.0f)
+
+            scale(5f)
 
             glUseProgram(objectColor.name)
-            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, top() to matBuffer)
+            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, matBuffer)
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram(0)
         }

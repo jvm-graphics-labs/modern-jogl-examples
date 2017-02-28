@@ -7,6 +7,7 @@ package main.tut07;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import glm.MatrixStack;
+import glsl.Program;
 import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.component.Mesh;
@@ -53,7 +54,7 @@ public class WorldScene extends Framework {
         int MAX = 5;
     }
 
-    private ProgramData uniformColor, objectColor, uniformColorTint;
+    private Program uniformColor, objectColor, uniformColorTint;
     private Mesh[] meshes = new Mesh[MESH.MAX];
     private Vec3 sphereCamRelPos = new Vec3(67.5f, -46.0f, 150.0f), camTarget = new Vec3(0.0f, 0.4f, 0.0f);
     private boolean drawLookAtPoint = false;
@@ -84,9 +85,12 @@ public class WorldScene extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        uniformColor = new ProgramData(gl, "pos-only-world-transform.vert", "color-uniform.frag");
-        objectColor = new ProgramData(gl, "pos-color-world-transform.vert", "color-passthrough.frag");
-        uniformColorTint = new ProgramData(gl, "pos-color-world-transform.vert", "color-mult-uniform.frag");
+        uniformColor = new Program(gl, getClass(), "tut07", "pos-only-world-transform.vert", "color-uniform.frag",
+                "modelToWorldMatrix", "worldToCameraMatrix", "cameraToClipMatrix", "baseColor");
+        objectColor = new Program(gl, getClass(), "tut07", "pos-color-world-transform.vert", "color-passthrough.frag",
+                "modelToWorldMatrix", "worldToCameraMatrix", "cameraToClipMatrix");
+        uniformColorTint = new Program(gl, getClass(), "tut07", "pos-color-world-transform.vert", "color-mult-uniform.frag",
+                "modelToWorldMatrix", "worldToCameraMatrix", "cameraToClipMatrix", "baseColor");
     }
 
     @Override
@@ -100,12 +104,12 @@ public class WorldScene extends Framework {
         Mat4x4 camMat = calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f));
         camMat.to(matBuffer);
 
-        gl.glUseProgram(uniformColor.theProgram);
-        gl.glUniformMatrix4fv(uniformColor.worldToCameraMatrixUnif, 1, false, matBuffer);
-        gl.glUseProgram(objectColor.theProgram);
-        gl.glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, matBuffer);
-        gl.glUseProgram(uniformColorTint.theProgram);
-        gl.glUniformMatrix4fv(uniformColorTint.worldToCameraMatrixUnif, 1, false, matBuffer);
+        gl.glUseProgram(uniformColor.name);
+        gl.glUniformMatrix4fv(uniformColor.get("worldToCameraMatrix"), 1, false, matBuffer);
+        gl.glUseProgram(objectColor.name);
+        gl.glUniformMatrix4fv(objectColor.get("worldToCameraMatrix"), 1, false, matBuffer);
+        gl.glUseProgram(uniformColorTint.name);
+        gl.glUniformMatrix4fv(uniformColorTint.get("worldToCameraMatrix"), 1, false, matBuffer);
         gl.glUseProgram(0);
 
         MatrixStack modelMatrix = new MatrixStack();
@@ -117,9 +121,9 @@ public class WorldScene extends Framework {
                     .scale(new Vec3(100.0f, 1.0f, 100.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColor.theProgram);
-            gl.glUniformMatrix4fv(uniformColor.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColor.baseColorUnif, 0.302f, 0.416f, 0.0589f, 1.0f);
+            gl.glUseProgram(uniformColor.name);
+            gl.glUniformMatrix4fv(uniformColor.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColor.get("baseColor"), 0.302f, 0.416f, 0.0589f, 1.0f);
             meshes[MESH.PLANE].render(gl);
             gl.glUseProgram(0);
 
@@ -150,9 +154,9 @@ public class WorldScene extends Framework {
                     .scale(new Vec3(1.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(objectColor.theProgram);
-            gl.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, new Mat4x4(1.0f).to(matBuffer));
+            gl.glUseProgram(objectColor.name);
+            gl.glUniformMatrix4fv(objectColor.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniformMatrix4fv(objectColor.get("worldToCameraMatrix"), 1, false, new Mat4x4(1.0f).to(matBuffer));
             meshes[MESH.CUBE_COLOR].render(gl);
             gl.glUseProgram(0);
 
@@ -219,9 +223,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.694f, 0.4f, 0.106f, 1.0f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.694f, 0.4f, 0.106f, 1.0f);
             meshes[MESH.CYLINDER].render(gl);
             gl.glUseProgram(0);
 
@@ -235,9 +239,9 @@ public class WorldScene extends Framework {
                     .scale(new Vec3(3.0f, coneHeight, 3.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.0f, 1.0f, 0.0f, 1.0f);
             meshes[MESH.CONE].render(gl);
             gl.glUseProgram(0);
 
@@ -261,9 +265,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[MESH.CUBE_TINT].render(gl);
             gl.glUseProgram(0);
 
@@ -278,9 +282,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[MESH.CUBE_TINT].render(gl);
             gl.glUseProgram(0);
 
@@ -342,8 +346,8 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(objectColor.theProgram);
-            gl.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matBuffer);
+            gl.glUseProgram(objectColor.name);
+            gl.glUniformMatrix4fv(objectColor.get("modelToWorldMatrix"), 1, false, matBuffer);
             meshes[MESH.CUBE_COLOR].render(gl);
             gl.glUseProgram(0);
 
@@ -362,8 +366,8 @@ public class WorldScene extends Framework {
                     .rotateY(45.0f)
                     .top().to(matBuffer);
 
-            gl.glUseProgram(objectColor.theProgram);
-            gl.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matBuffer);
+            gl.glUseProgram(objectColor.name);
+            gl.glUniformMatrix4fv(objectColor.get("modelToWorldMatrix"), 1, false, matBuffer);
             meshes[MESH.CUBE_COLOR].render(gl);
             gl.glUseProgram(0);
 
@@ -384,9 +388,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 1.0f, 1.0f, 1.0f, 1.0f);
             meshes[MESH.CUBE_TINT].render(gl);
             gl.glUseProgram(0);
 
@@ -402,9 +406,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[MESH.CUBE_TINT].render(gl);
             gl.glUseProgram(0);
 
@@ -420,9 +424,9 @@ public class WorldScene extends Framework {
                     .translate(new Vec3(0.0f, 0.5f, 0.0f))
                     .top().to(matBuffer);
 
-            gl.glUseProgram(uniformColorTint.theProgram);
-            gl.glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f);
+            gl.glUseProgram(uniformColorTint.name);
+            gl.glUniformMatrix4fv(uniformColorTint.get("modelToWorldMatrix"), 1, false, matBuffer);
+            gl.glUniform4f(uniformColorTint.get("baseColor"), 0.9f, 0.9f, 0.9f, 0.9f);
             meshes[MESH.CYLINDER].render(gl);
             gl.glUseProgram(0);
 
@@ -439,12 +443,12 @@ public class WorldScene extends Framework {
                 .perspective(45.0f, w / (float) h, zNear, zFar)
                 .top().to(matBuffer);
 
-        gl.glUseProgram(uniformColor.theProgram);
-        gl.glUniformMatrix4fv(uniformColor.cameraToClipMatrixUnif, 1, false, matBuffer);
-        gl.glUseProgram(objectColor.theProgram);
-        gl.glUniformMatrix4fv(objectColor.cameraToClipMatrixUnif, 1, false, matBuffer);
-        gl.glUseProgram(uniformColorTint.theProgram);
-        gl.glUniformMatrix4fv(uniformColorTint.cameraToClipMatrixUnif, 1, false, matBuffer);
+        gl.glUseProgram(uniformColor.name);
+        gl.glUniformMatrix4fv(uniformColor.get("cameraToClipMatrix"), 1, false, matBuffer);
+        gl.glUseProgram(objectColor.name);
+        gl.glUniformMatrix4fv(objectColor.get("cameraToClipMatrix"), 1, false, matBuffer);
+        gl.glUseProgram(uniformColorTint.name);
+        gl.glUniformMatrix4fv(uniformColorTint.get("cameraToClipMatrix"), 1, false, matBuffer);
         gl.glUseProgram(0);
 
         gl.glViewport(0, 0, w, h);
@@ -453,9 +457,9 @@ public class WorldScene extends Framework {
     @Override
     public void end(GL3 gl) {
 
-        gl.glDeleteProgram(uniformColor.theProgram);
-        gl.glDeleteProgram(objectColor.theProgram);
-        gl.glDeleteProgram(uniformColorTint.theProgram);
+        gl.glDeleteProgram(uniformColor.name);
+        gl.glDeleteProgram(objectColor.name);
+        gl.glDeleteProgram(uniformColorTint.name);
 
         StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl));
     }
@@ -536,6 +540,5 @@ public class WorldScene extends Framework {
             cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
             baseColorUnif = gl.glGetUniformLocation(theProgram, "baseColor");
         }
-
     }
 }
