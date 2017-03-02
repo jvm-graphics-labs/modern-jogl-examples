@@ -1,16 +1,15 @@
 apply plugin: 'java'
-apply plugin: 'application'
+//apply plugin: 'application'
 apply plugin: 'kotlin'
 
 
 
 buildscript {
 
-    ext.kotlin_version = '1.1.0-rc-91'
+    ext.kotlin_version = '1.1.0'
 
     repositories {
         mavenCentral()
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
     }
 
     dependencies {
@@ -24,24 +23,16 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     compile 'com.github.elect86:glm:7544a35d418370d8b98d0aadd181f109b4a1f82c'
-    compile 'com.github.elect86:uno-sdk:8eac2eaea81759591b461ebdeeab09c4669d8659'
+    compile 'com.github.elect86:uno-sdk:ec80941612c332943af8cc9b379580ca9d99777b'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'
 
-    compile "org.jogamp.gluegen:gluegen-rt:$jogl"
-    compile "org.jogamp.jogl:jogl-all:$jogl"
+    compile "org.jogamp.gluegen:gluegen-rt-main:$jogl"
+    compile "org.jogamp.jogl:jogl-all-main:$jogl"
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
-        maven { url 'https://jitpack.io' }
-    }
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
-
-//configurations.all {
-//    // Check for updates every build
-//    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-//}

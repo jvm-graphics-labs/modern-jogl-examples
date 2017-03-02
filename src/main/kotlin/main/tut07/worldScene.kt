@@ -83,6 +83,10 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
                 "modelToWorldMatrix", "worldToCameraMatrix", "cameraToClipMatrix", "baseColor")
     }
 
+    fun loadProgram(gl: GL3) {
+
+    }
+
     override fun display(gl: GL3) = with(gl) {
 
         glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
@@ -307,7 +311,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
                     0.0f,
                     parthenonColumnHeight + parthenonBaseHeight + parthenonTopHeight / 2.0f,
                     parthenonLength / 2.0f))
-            top().rotate(-135f.rad, 1f,0f,0f).rotate(45f.rad, 0f,1f,0f) to matBuffer
+            top().rotate(-135f.rad, 1f, 0f, 0f).rotate(45f.rad, 0f, 1f, 0f) to matBuffer
             rotateX(-135.0f)
             rotateY(45.0f)
 
@@ -429,4 +433,114 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         camTarget.y = glm.clamp(camTarget.y, 0.0f, camTarget.y)
         sphereCamRelPos.z = glm.clamp(sphereCamRelPos.z, 5.0f, sphereCamRelPos.z)
     }
+
+    class ProgramData(val theProgram: Int, val modelToWorldMatrixUnif: Int, val worldToCameraMatrixUnif: Int,
+                      val cameraToClipMatrixUnif: Int, val baseColorUnif: Int)
+
+    val trees = arrayOf(
+            TreeData(-45.0f, -40.0f, 2.0f, 3.0f),
+            TreeData(-42.0f, -35.0f, 2.0f, 3.0f),
+            TreeData(-39.0f, -29.0f, 2.0f, 4.0f),
+            TreeData(-44.0f, -26.0f, 3.0f, 3.0f),
+            TreeData(-40.0f, -22.0f, 2.0f, 4.0f),
+            TreeData(-36.0f, -15.0f, 3.0f, 3.0f),
+            TreeData(-41.0f, -11.0f, 2.0f, 3.0f),
+            TreeData(-37.0f, -6.0f, 3.0f, 3.0f),
+            TreeData(-45.0f, 0.0f, 2.0f, 3.0f),
+            TreeData(-39.0f, 4.0f, 3.0f, 4.0f),
+            TreeData(-36.0f, 8.0f, 2.0f, 3.0f),
+            TreeData(-44.0f, 13.0f, 3.0f, 3.0f),
+            TreeData(-42.0f, 17.0f, 2.0f, 3.0f),
+            TreeData(-38.0f, 23.0f, 3.0f, 4.0f),
+            TreeData(-41.0f, 27.0f, 2.0f, 3.0f),
+            TreeData(-39.0f, 32.0f, 3.0f, 3.0f),
+            TreeData(-44.0f, 37.0f, 3.0f, 4.0f),
+            TreeData(-36.0f, 42.0f, 2.0f, 3.0f),
+
+            TreeData(-32.0f, -45.0f, 2.0f, 3.0f),
+            TreeData(-30.0f, -42.0f, 2.0f, 4.0f),
+            TreeData(-34.0f, -38.0f, 3.0f, 5.0f),
+            TreeData(-33.0f, -35.0f, 3.0f, 4.0f),
+            TreeData(-29.0f, -28.0f, 2.0f, 3.0f),
+            TreeData(-26.0f, -25.0f, 3.0f, 5.0f),
+            TreeData(-35.0f, -21.0f, 3.0f, 4.0f),
+            TreeData(-31.0f, -17.0f, 3.0f, 3.0f),
+            TreeData(-28.0f, -12.0f, 2.0f, 4.0f),
+            TreeData(-29.0f, -7.0f, 3.0f, 3.0f),
+            TreeData(-26.0f, -1.0f, 2.0f, 4.0f),
+            TreeData(-32.0f, 6.0f, 2.0f, 3.0f),
+            TreeData(-30.0f, 10.0f, 3.0f, 5.0f),
+            TreeData(-33.0f, 14.0f, 2.0f, 4.0f),
+            TreeData(-35.0f, 19.0f, 3.0f, 4.0f),
+            TreeData(-28.0f, 22.0f, 2.0f, 3.0f),
+            TreeData(-33.0f, 26.0f, 3.0f, 3.0f),
+            TreeData(-29.0f, 31.0f, 3.0f, 4.0f),
+            TreeData(-32.0f, 38.0f, 2.0f, 3.0f),
+            TreeData(-27.0f, 41.0f, 3.0f, 4.0f),
+            TreeData(-31.0f, 45.0f, 2.0f, 4.0f),
+            TreeData(-28.0f, 48.0f, 3.0f, 5.0f),
+
+            TreeData(-25.0f, -48.0f, 2.0f, 3.0f),
+            TreeData(-20.0f, -42.0f, 3.0f, 4.0f),
+            TreeData(-22.0f, -39.0f, 2.0f, 3.0f),
+            TreeData(-19.0f, -34.0f, 2.0f, 3.0f),
+            TreeData(-23.0f, -30.0f, 3.0f, 4.0f),
+            TreeData(-24.0f, -24.0f, 2.0f, 3.0f),
+            TreeData(-16.0f, -21.0f, 2.0f, 3.0f),
+            TreeData(-17.0f, -17.0f, 3.0f, 3.0f),
+            TreeData(-25.0f, -13.0f, 2.0f, 4.0f),
+            TreeData(-23.0f, -8.0f, 2.0f, 3.0f),
+            TreeData(-17.0f, -2.0f, 3.0f, 3.0f),
+            TreeData(-16.0f, 1.0f, 2.0f, 3.0f),
+            TreeData(-19.0f, 4.0f, 3.0f, 3.0f),
+            TreeData(-22.0f, 8.0f, 2.0f, 4.0f),
+            TreeData(-21.0f, 14.0f, 2.0f, 3.0f),
+            TreeData(-16.0f, 19.0f, 2.0f, 3.0f),
+            TreeData(-23.0f, 24.0f, 3.0f, 3.0f),
+            TreeData(-18.0f, 28.0f, 2.0f, 4.0f),
+            TreeData(-24.0f, 31.0f, 2.0f, 3.0f),
+            TreeData(-20.0f, 36.0f, 2.0f, 3.0f),
+            TreeData(-22.0f, 41.0f, 3.0f, 3.0f),
+            TreeData(-21.0f, 45.0f, 2.0f, 3.0f),
+
+            TreeData(-12.0f, -40.0f, 2.0f, 4.0f),
+            TreeData(-11.0f, -35.0f, 3.0f, 3.0f),
+            TreeData(-10.0f, -29.0f, 1.0f, 3.0f),
+            TreeData(-9.0f, -26.0f, 2.0f, 2.0f),
+            TreeData(-6.0f, -22.0f, 2.0f, 3.0f),
+            TreeData(-15.0f, -15.0f, 1.0f, 3.0f),
+            TreeData(-8.0f, -11.0f, 2.0f, 3.0f),
+            TreeData(-14.0f, -6.0f, 2.0f, 4.0f),
+            TreeData(-12.0f, 0.0f, 2.0f, 3.0f),
+            TreeData(-7.0f, 4.0f, 2.0f, 2.0f),
+            TreeData(-13.0f, 8.0f, 2.0f, 2.0f),
+            TreeData(-9.0f, 13.0f, 1.0f, 3.0f),
+            TreeData(-13.0f, 17.0f, 3.0f, 4.0f),
+            TreeData(-6.0f, 23.0f, 2.0f, 3.0f),
+            TreeData(-12.0f, 27.0f, 1.0f, 2.0f),
+            TreeData(-8.0f, 32.0f, 2.0f, 3.0f),
+            TreeData(-10.0f, 37.0f, 3.0f, 3.0f),
+            TreeData(-11.0f, 42.0f, 2.0f, 2.0f),
+
+            TreeData(15.0f, 5.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 10.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 15.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 20.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 25.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 30.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 35.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 40.0f, 2.0f, 3.0f),
+            TreeData(15.0f, 45.0f, 2.0f, 3.0f),
+
+            TreeData(25.0f, 5.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 10.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 15.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 20.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 25.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 30.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 35.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 40.0f, 2.0f, 3.0f),
+            TreeData(25.0f, 45.0f, 2.0f, 3.0f))
+
+    class TreeData(val xPos: Float, val zPos: Float, val trunkHeight: Float, val coneHeight: Float)
 }
