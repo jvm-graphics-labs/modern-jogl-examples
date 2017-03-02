@@ -47,6 +47,125 @@ public class BaseVertexOverlap extends Framework {
     private float frustumScale = 1.0f;
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
 
+    @Override
+    public void init(GL3 gl) {
+
+        initializeProgram(gl);
+        initializeBuffers(gl);
+
+        gl.glGenVertexArrays(1, vao);
+        gl.glBindVertexArray(vao.get(0));
+
+        int colorData = Float.BYTES * 3 * numberOfVertices;
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+
+        gl.glBindVertexArray(0);
+
+        gl.glEnable(GL_CULL_FACE);
+        gl.glCullFace(GL_BACK);
+        gl.glFrontFace(GL_CW);
+    }
+
+    private void initializeProgram(GL3 gl) {
+
+        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
+
+        offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
+
+        perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
+
+        float zNear = 1.0f, zFar = 3.0f;
+
+        perspectiveMatrix.put(0, frustumScale);
+        perspectiveMatrix.put(5, frustumScale);
+        perspectiveMatrix.put(10, (zFar + zNear) / (zNear - zFar));
+        perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
+        perspectiveMatrix.put(11, -1.0f);
+
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
+        gl.glUseProgram(0);
+    }
+
+    private void initializeBuffers(GL3 gl) {
+
+        FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
+        ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indexData);
+
+        gl.glGenBuffers(Buffer.MAX, bufferObject);
+
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        BufferUtils.destroyDirectBuffer(vertexBuffer);
+        BufferUtils.destroyDirectBuffer(indexBuffer);
+    }
+
+    @Override
+    public void display(GL3 gl) {
+
+        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
+
+        gl.glUseProgram(theProgram);
+
+        gl.glBindVertexArray(vao.get(0));
+
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f);
+        gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
+
+        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
+        gl.glDrawElementsBaseVertex(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2);
+
+        gl.glBindVertexArray(0);
+        gl.glUseProgram(0);
+    }
+
+    @Override
+    public void reshape(GL3 gl, int w, int h) {
+
+        perspectiveMatrix.put(0, frustumScale * (h / (float) w));
+        perspectiveMatrix.put(5, frustumScale);
+
+        gl.glUseProgram(theProgram);
+        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
+        gl.glUseProgram(0);
+
+        gl.glViewport(0, 0, w, h);
+    }
+
+    @Override
+    public void end(GL3 gl) {
+
+        gl.glDeleteProgram(theProgram);
+        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
+        gl.glDeleteVertexArrays(1, vao);
+
+        BufferUtils.destroyDirectBuffer(vao);
+        BufferUtils.destroyDirectBuffer(bufferObject);
+        BufferUtils.destroyDirectBuffer(perspectiveMatrix);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent keyEvent) {
+
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_ESCAPE:
+                animator.remove(window);
+                window.destroy();
+                break;
+        }
+    }
+
     private final float RIGHT_EXTENT = 0.8f, LEFT_EXTENT = -RIGHT_EXTENT, TOP_EXTENT = 0.20f, MIDDLE_EXTENT = 0.0f,
             BOTTOM_EXTENT = -TOP_EXTENT, FRONT_EXTENT = -1.25f, REAR_EXTENT = -1.75f;
 
@@ -168,123 +287,4 @@ public class BaseVertexOverlap extends Framework {
 
             14, 16, 15,
             17, 16, 14};
-
-    @Override
-    public void init(GL3 gl) {
-
-        initializeProgram(gl);
-        initializeBuffers(gl);
-
-        gl.glGenVertexArrays(1, vao);
-        gl.glBindVertexArray(vao.get(0));
-
-        int colorData = Float.BYTES * 3 * numberOfVertices;
-        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
-        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
-
-        gl.glBindVertexArray(0);
-
-        gl.glEnable(GL_CULL_FACE);
-        gl.glCullFace(GL_BACK);
-        gl.glFrontFace(GL_CW);
-    }
-
-    private void initializeProgram(GL3 gl) {
-
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
-
-        offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
-
-        perspectiveMatrixUnif = gl.glGetUniformLocation(theProgram, "perspectiveMatrix");
-
-        float zNear = 1.0f, zFar = 3.0f;
-
-        perspectiveMatrix.put(0, frustumScale);
-        perspectiveMatrix.put(5, frustumScale);
-        perspectiveMatrix.put(10, (zFar + zNear) / (zNear - zFar));
-        perspectiveMatrix.put(14, (2 * zFar * zNear) / (zNear - zFar));
-        perspectiveMatrix.put(11, -1.0f);
-
-        gl.glUseProgram(theProgram);
-        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl.glUseProgram(0);
-    }
-
-    private void initializeBuffers(GL3 gl) {
-
-        FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
-        ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indexData);
-
-        gl.glGenBuffers(Buffer.MAX, bufferObject);
-
-        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
-        gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
-        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
-    }
-
-    @Override
-    public void display(GL3 gl) {
-
-        gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
-
-        gl.glUseProgram(theProgram);
-
-        gl.glBindVertexArray(vao.get(0));
-
-        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, 0.0f);
-        gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
-
-        gl.glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f);
-        gl.glDrawElementsBaseVertex(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2);
-
-        gl.glBindVertexArray(0);
-        gl.glUseProgram(0);
-    }
-
-    @Override
-    public void reshape(GL3 gl, int w, int h) {
-
-        perspectiveMatrix.put(0, frustumScale * (h / (float) w));
-        perspectiveMatrix.put(5, frustumScale);
-
-        gl.glUseProgram(theProgram);
-        gl.glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix);
-        gl.glUseProgram(0);
-
-        gl.glViewport(0, 0, w, h);
-    }
-
-    @Override
-    public void end(GL3 gl) {
-
-        gl.glDeleteProgram(theProgram);
-        gl.glDeleteBuffers(Buffer.MAX, bufferObject);
-        gl.glDeleteVertexArrays(1, vao);
-
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
-        BufferUtils.destroyDirectBuffer(perspectiveMatrix);
-    }
-
-    @Override
-    public void keyPressed(KeyEvent keyEvent) {
-
-        switch (keyEvent.getKeyCode()) {
-            case KeyEvent.VK_ESCAPE:
-                animator.remove(window);
-                window.destroy();
-                break;
-        }
-    }
 }
