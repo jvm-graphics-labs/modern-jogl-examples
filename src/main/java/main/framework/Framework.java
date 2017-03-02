@@ -48,12 +48,13 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     private void initGL(String title) {
 
-        Display display = NewtFactory.createDisplay(null);
-        Screen screen = NewtFactory.createScreen(display, 0);
+//        Display display = NewtFactory.createDisplay(null);
+//        Screen screen = NewtFactory.createScreen(display, 0);
         GLProfile glProfile = GLProfile.get(GLProfile.GL3);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
 
-        window = GLWindow.create(screen, glCapabilities);
+//        window = GLWindow.create(screen, glCapabilities);
+        window = GLWindow.create(glCapabilities);
 
         if (DEBUG) {
             window.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);

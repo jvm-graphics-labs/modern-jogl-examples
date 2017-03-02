@@ -2,18 +2,12 @@ package main.tut07
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import com.jogamp.opengl.GL3ES3
-import com.jogamp.opengl.util.glsl.ShaderCode
-import com.jogamp.opengl.util.glsl.ShaderProgram
 import glm.MatrixStack
 import glsl.Program
-import glsl.programOf
-import glsl.shaderCodeOf
 import main.f
 import main.framework.Framework
 import main.framework.component.Mesh
@@ -90,15 +84,15 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
         val camPos = resolveCamPosition()
 
-        val camMat = calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f))
-        camMat to Framework.matBuffer
+        // camMat
+        calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f)) to matBuffer
 
         glUseProgram(uniformColor.name)
-        glUniformMatrix4fv(uniformColor["worldToCameraMatrix"], 1, false, Framework.matBuffer)
+        glUniformMatrix4fv(uniformColor["worldToCameraMatrix"], 1, false, matBuffer)
         glUseProgram(objectColor.name)
-        glUniformMatrix4fv(objectColor["worldToCameraMatrix"], 1, false, Framework.matBuffer)
+        glUniformMatrix4fv(objectColor["worldToCameraMatrix"], 1, false, matBuffer)
         glUseProgram(uniformColorTint.name)
-        glUniformMatrix4fv(uniformColorTint["worldToCameraMatrix"], 1, false, Framework.matBuffer)
+        glUniformMatrix4fv(uniformColorTint["worldToCameraMatrix"], 1, false, matBuffer)
         glUseProgram(0)
 
         val modelMatrix = MatrixStack()
@@ -106,7 +100,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //  Render the ground plane
         modelMatrix run {
 
-            scale(Vec3(100.0f, 1.0f, 100.0f))
+            scale(100.0f, 1.0f, 100.0f)
 
             glUseProgram(uniformColor.name)
             glUniformMatrix4fv(uniformColor["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -121,7 +115,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //  Draw the building
         modelMatrix run {
 
-            translate(Vec3(20.0f, 0.0f, -10.0f))
+            translate(20.0f, 0.0f, -10.0f)
 
             drawParthenon(gl, modelMatrix)
         }
@@ -132,8 +126,10 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
             modelMatrix run {
 
-                translate(Vec3(0.0f, 0.0f, (-camTarget - camPos.x).length()))
-                scale(Vec3(1.0f))
+                val cameraAimVec = camTarget - camPos
+
+                translate(0.0f, 0.0f, glm.length(cameraAimVec))
+                scale(1.0f)
 
                 glUseProgram(objectColor.name)
                 glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -183,7 +179,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
     fun drawForest(gl: GL3, modelMatrix: MatrixStack) = Forest.trees.forEach {
         modelMatrix run {
-            translate(Vec3(it.xPos, 1.0f, it.zPos))
+            translate(it.xPos, 1.0f, it.zPos)
             drawTree(gl, modelMatrix, it.trunkHeight, it.coneHeight)
         }
     }
@@ -193,8 +189,8 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //  Draw trunk
         modelStack run {
 
-            scale(Vec3(1.0f, trunkHeight, 1.0f))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
+            scale(1.0f, trunkHeight, 1.0f)
+            translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.name)
             glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -205,8 +201,8 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         } run {
             //  Draw the treetop
 
-            translate(Vec3(0.0f, trunkHeight, 0.0f))
-            scale(Vec3(3.0f, coneHeight, 3.0f))
+            translate(0.0f, trunkHeight, 0.0f)
+            scale(3.0f, coneHeight, 3.0f)
 
             glUseProgram(uniformColorTint.name)
             glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -224,97 +220,108 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val parthenonBaseHeight = 1.0f
         val parthenonTopHeight = 2.0f
 
-        //  Draw base
-        modelMatrix run {
-
-            scale(Vec3(parthenonWidth, parthenonBaseHeight, parthenonLength))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
-
-            glUseProgram(uniformColorTint.name)
-            glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
-            glUniform4f(uniformColorTint["baseColor"], 0.9f, 0.9f, 0.9f, 0.9f)
-            meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
-
-        } run {
-            //  Draw top
-
-            translate(Vec3(0.0f, parthenonColumnHeight + parthenonBaseHeight, 0.0f))
-            scale(Vec3(parthenonWidth, parthenonTopHeight, parthenonLength))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
-
-            glUseProgram(uniformColorTint.name)
-            glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
-            glUniform4f(uniformColorTint["baseColor"], 0.9f, 0.9f, 0.9f, 0.9f)
-            meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
-        }
-
-        //  Draw columns
-        val frontZval = parthenonLength / 2.0f - 1.0f
-        val rightXval = parthenonWidth / 2.0f - 1.0f
-
-        repeat((parthenonWidth / 2.0f).i) {
-
-            modelMatrix run {
-
-                translate(Vec3(2.0f * it - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval))
-
-                drawColumn(gl, modelMatrix, parthenonColumnHeight)
-
-            } run {
-
-                translate(Vec3(2.0f * it - parthenonWidth / 2.0f + 1.0f, parthenonBaseHeight, -frontZval))
-
-                drawColumn(gl, modelMatrix, parthenonColumnHeight)
-            }
-        }
-
-        //Don't draw the first or last columns, since they've been drawn already.
-        for (iColumnNum in 1..((parthenonLength - 2.0f) / 2.0f).i - 1) {
-
-            modelMatrix run {
-
-                translate(Vec3(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f))
-
-                drawColumn(gl, modelMatrix, parthenonColumnHeight)
-
-            } run {
-
-                translate(Vec3(-rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f))
-
-                drawColumn(gl, modelMatrix, parthenonColumnHeight)
-            }
-        }
-
-        //  Draw interior
-        modelMatrix run {
-
-            translate(Vec3(0.0f, 1.0f, 0.0f))
-            scale(Vec3(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
-
-            glUseProgram(objectColor.name)
-            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, top() to matBuffer)
-            meshes[MESH.CUBE_COLOR].render(gl)
-            glUseProgram(0)
-        }
+//        //  Draw base
+//        modelMatrix run {
+//
+//            scale(parthenonWidth, parthenonBaseHeight, parthenonLength)
+//            translate(0.0f, 0.5f, 0.0f)
+//
+//            glUseProgram(uniformColorTint.name)
+//            glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
+//            glUniform4f(uniformColorTint["baseColor"], 0.9f, 0.9f, 0.9f, 0.9f)
+//            meshes[MESH.CUBE_TINT].render(gl)
+//            glUseProgram(0)
+//
+//        } run {
+//            //  Draw top
+//
+//            translate(0.0f, parthenonColumnHeight + parthenonBaseHeight, 0.0f)
+//            scale(parthenonWidth, parthenonTopHeight, parthenonLength)
+//            translate(0.0f, 0.5f, 0.0f)
+//
+//            glUseProgram(uniformColorTint.name)
+//            glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
+//            glUniform4f(uniformColorTint["baseColor"], 0.9f, 0.9f, 0.9f, 0.9f)
+//            meshes[MESH.CUBE_TINT].render(gl)
+//            glUseProgram(0)
+//        }
+//
+//        //  Draw columns
+//        val frontZval = parthenonLength / 2.0f - 1.0f
+//        val rightXval = parthenonWidth / 2.0f - 1.0f
+//
+//        repeat((parthenonWidth / 2.0f).i) {
+//
+//            modelMatrix run {
+//
+//                translate(2.0f * it - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval)
+//
+//                drawColumn(gl, modelMatrix, parthenonColumnHeight)
+//
+//            } run {
+//
+//                translate(2.0f * it - parthenonWidth / 2.0f + 1.0f, parthenonBaseHeight, -frontZval)
+//
+//                drawColumn(gl, modelMatrix, parthenonColumnHeight)
+//            }
+//        }
+//
+//        //Don't draw the first or last columns, since they've been drawn already.
+//        for (iColumnNum in 1 until ((parthenonLength - 2.0f) / 2.0f).i - 1)
+//
+//            modelMatrix run {
+//
+//                translate(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f)
+//
+//                drawColumn(gl, modelMatrix, parthenonColumnHeight)
+//
+//            } run {
+//
+//                translate(-rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f)
+//
+//                drawColumn(gl, modelMatrix, parthenonColumnHeight)
+//            }
+//
+//        //  Draw interior
+//        modelMatrix run {
+//
+//            translate(0.0f, 1.0f, 0.0f)
+//            scale(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f)
+//            translate(0.0f, 0.5f, 0.0f)
+//
+//            glUseProgram(objectColor.name)
+//            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, top() to matBuffer)
+//            meshes[MESH.CUBE_COLOR].render(gl)
+//            glUseProgram(0)
+//        }
 
         //  Draw headpiece
         modelMatrix run {
 
-            translate(Vec3(
+            translate(
                     0.0f,
                     parthenonColumnHeight + parthenonBaseHeight + parthenonTopHeight / 2.0f,
-                    parthenonLength / 2.0f))
-            top().rotate(-135f.rad, 1f,0f,0f).rotate(45f.rad, 0f,1f,0f) to matBuffer
-            rotateX(-135.0f)
-            rotateY(45.0f)
+                    parthenonLength / 2.0f)
+//            top().rotate(-135f.rad, 1f,0f,0f).rotate(45f.rad, 0f,1f,0f) to matBuffer
+//            top().rotate(-135f.rad, 1f,0f,0f) to matBuffer //.rotate(45f.rad, 0f,1f,0f) to matBuffer
 
-            scale(5f)
+            val a = top().rotate(-135f.rad, 1f,0f,0f)
+            val c = Mat4().translate_(20f, 7f, 0f)
+
+//            for(i in 0 until 16)
+//                println("a "+ matBuffer[i])
+
+            rotateX(-135.0f)
+//            rotateY(45.0f)
+
+            val b = Mat4(top())
+
+
+//            for(i in 0 until 16)
+//                println("b "+ matBuffer[i])
 
             glUseProgram(objectColor.name)
-            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, matBuffer)
+            glUniformMatrix4fv(objectColor["modelToWorldMatrix"], 1, false, b to matBuffer)
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram(0)
         }
@@ -328,8 +335,8 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //Draw the bottom of the column.
         modelMatrix run {
 
-            scale(Vec3(1.0f, columnBaseHeight, 1.0f))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
+            scale(1.0f, columnBaseHeight, 1.0f)
+            translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.name)
             glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -341,9 +348,9 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
             //Draw the top of the column.
 
-            translate(Vec3(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f))
-            scale(Vec3(1.0f, columnBaseHeight, 1.0f))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
+            translate(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f)
+            scale(1.0f, columnBaseHeight, 1.0f)
+            translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.name)
             glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
@@ -355,9 +362,9 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
             //Draw the main column.
 
-            translate(vec._3.Vec3(0.0f, columnBaseHeight, 0.0f))
-            scale(Vec3(0.8f, parthenonColumnHeight - columnBaseHeight * 2.0f, 0.8f))
-            translate(Vec3(0.0f, 0.5f, 0.0f))
+            translate(0.0f, columnBaseHeight, 0.0f)
+            scale(0.8f, parthenonColumnHeight - columnBaseHeight * 2.0f, 0.8f)
+            translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.name)
             glUniformMatrix4fv(uniformColorTint["modelToWorldMatrix"], 1, false, top() to matBuffer)
