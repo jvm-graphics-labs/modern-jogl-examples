@@ -1,34 +1,32 @@
 package main.tut07
 
 import com.jogamp.newt.event.KeyEvent
-import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
-import com.jogamp.opengl.GL2ES3.GL_DEPTH
+import com.jogamp.opengl.GL2ES2.GL_STREAM_DRAW
+import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import extensions.intBufferBig
 import glm.MatrixStack
 import glsl.Program
-import main.f
+import main.*
 import main.framework.Framework
+import main.framework.Semantic
 import main.framework.component.Mesh
-import main.glm
-import main.i
-import main.rad
 import mat.Mat4
-import mat.Mat4x4
+import one.util.streamex.StreamEx
 import vec._3.Vec3
 import vec._4.Vec4
 import kotlin.properties.Delegates
 
 /**
- * Created by elect on 26/02/17.
+ * Created by elect on 02/03/17.
  */
 
 fun main(args: Array<String>) {
-    WorldScene_()
+    WorldWithUBO_()
 }
 
-class WorldScene_ : Framework("Tutorial 07 - World Scene") {
+class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
     val MESHES_SOURCE = arrayOf("UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml")
 
@@ -50,6 +48,8 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
     val camTarget = Vec3(0.0f, 0.4f, 0.0f)
     var drawLookAtPoint = false
 
+    val globalMatricesBufferName = intBufferBig(1)
+
     override fun init(gl: GL3) = with(gl) {
 
         initializeProgram(gl)
@@ -67,30 +67,33 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         glEnable(GL_DEPTH_CLAMP)
     }
 
-    fun initializeProgram(gl: GL3) {
+    fun initializeProgram(gl: GL3) = with(gl) {
 
-        uniformColor = ProgramData(gl, "pos-only-world-transform.vert", "color-uniform.frag")
-        objectColor = ProgramData(gl,"pos-color-world-transform.vert", "color-passthrough.frag")
-        uniformColorTint = ProgramData(gl, "pos-color-world-transform.vert", "color-mult-uniform.frag")
+        uniformColor = ProgramData(gl, "pos-only-world-transform-ubo.vert", "color-uniform.frag")
+        objectColor = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-passthrough.frag")
+        uniformColorTint = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-mult-uniform.frag")
+
+        glGenBuffers(1, globalMatricesBufferName)
+        glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName[0])
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE * 2.L, null, GL_STREAM_DRAW)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesBufferName[0], 0, Mat4.SIZE * 2.L)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
 
         val camPos = resolveCamPosition()
 
         // camMat
         calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f)) to matBuffer
 
-        glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4fv(uniformColor.worldToCameraMatrixUnif, 1, false, matBuffer)
-        glUseProgram(objectColor.theProgram)
-        glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, matBuffer)
-        glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4fv(uniformColorTint.worldToCameraMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName[0])
+        glBufferSubData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, Mat4.SIZE.L, matBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         val modelMatrix = MatrixStack()
 
@@ -123,16 +126,14 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
             modelMatrix run {
 
-                val cameraAimVec = camTarget - camPos
-
-                translate(0.0f, 0.0f, glm.length(cameraAimVec))
+                translate(0.0f, 0.0f, glm.length(camTarget))
                 scale(1.0f)
 
                 glUseProgram(objectColor.theProgram)
                 glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
-                glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, Mat4(1.0f) to matBuffer)
                 meshes[MESH.CUBE_COLOR].render(gl)
                 glUseProgram(0)
+
             }
             glEnable(GL3.GL_DEPTH_TEST)
         }
@@ -153,7 +154,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         return (dirToCamera * sphereCamRelPos.z) + camTarget
     }
 
-    fun calcLookAtMatrix(cameraPt: Vec3, lookPt: Vec3, upPt: Vec3): Mat4x4 {
+    fun calcLookAtMatrix(cameraPt: Vec3, lookPt: Vec3, upPt: Vec3): Mat4 {
 
         val lookDir = (lookPt - cameraPt).normalize()
         val upDir = upPt.normalize()
@@ -164,17 +165,18 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val rotMat = Mat4(1.0f)
         rotMat[0] = Vec4(rightDir, 0.0f)
         rotMat[1] = Vec4(perpUpDir, 0.0f)
-        rotMat[2] = Vec4(lookDir.negate(), 0.0f)
+        rotMat[2] = Vec4(-lookDir, 0.0f)
 
         rotMat.transpose_()
 
-        val transMat = Mat4x4(1.0f)
-        transMat[3] = Vec4(cameraPt.negate(), 1.0f)
+        val transMat = Mat4(1.0f)
+        transMat[3] = Vec4(-cameraPt, 1.0f)
 
         return rotMat * transMat
     }
 
     fun drawForest(gl: GL3, modelMatrix: MatrixStack) = forest.forEach {
+
         modelMatrix run {
             translate(it.xPos, 1.0f, it.zPos)
             drawTree(gl, modelMatrix, it.trunkHeight, it.coneHeight)
@@ -220,8 +222,8 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //  Draw base
         modelMatrix run {
 
-            scale(parthenonWidth, parthenonBaseHeight, parthenonLength)
-            translate(0.0f, 0.5f, 0.0f)
+            scale(Vec3(parthenonWidth, parthenonBaseHeight, parthenonLength))
+            translate(Vec3(0.0f, 0.5f, 0.0f))
 
             glUseProgram(uniformColorTint.theProgram)
             glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
@@ -264,7 +266,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         }
 
         //Don't draw the first or last columns, since they've been drawn already.
-        for (iColumnNum in 1 until ((parthenonLength - 2.0f) / 2.0f).i - 1)
+        for (iColumnNum in 1 until ((parthenonLength - 2.0f) / 2.0f).i - 1) {
 
             modelMatrix run {
 
@@ -278,6 +280,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight)
             }
+        }
 
         //  Draw interior
         modelMatrix run {
@@ -290,10 +293,9 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
             glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram(0)
-        }
 
-        //  Draw headpiece
-        modelMatrix run {
+        } run {
+            //  Draw headpiece
 
             translate(
                     0.0f,
@@ -327,7 +329,6 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
             glUseProgram(0)
 
         } run {
-
             //Draw the top of the column.
 
             translate(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f)
@@ -341,7 +342,6 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
             glUseProgram(0)
 
         } run {
-
             //Draw the main column.
 
             translate(0.0f, columnBaseHeight, 0.0f)
@@ -363,13 +363,9 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
         glm.perspective(45.0f, w / h.f, zNear, zFar) to matBuffer
 
-        glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4fv(uniformColor.cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(objectColor.theProgram)
-        glUniformMatrix4fv(objectColor.cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4fv(uniformColorTint.cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName[0])
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, matBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         glViewport(0, 0, w, h)
     }
@@ -380,29 +376,29 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         glDeleteProgram(objectColor.theProgram)
         glDeleteProgram(uniformColorTint.theProgram)
 
-        meshes.forEach { it.dispose(gl) }
+        StreamEx.of<Mesh>(*meshes).forEach { mesh -> mesh.dispose(gl) }
     }
 
     override fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
 
-            KeyEvent.VK_W -> camTarget.z = camTarget.z - if (e.isShiftDown) 0.4f else 4.0f
-            KeyEvent.VK_S -> camTarget.z = camTarget.z + if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_W -> camTarget.z(camTarget.z() - if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_S -> camTarget.z(camTarget.z() + if (e.isShiftDown) 0.4f else 4.0f)
 
-            KeyEvent.VK_D -> camTarget.x = camTarget.x + if (e.isShiftDown) 0.4f else 4.0f
-            KeyEvent.VK_A -> camTarget.x = camTarget.x - if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_D -> camTarget.x(camTarget.x() + if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_A -> camTarget.x(camTarget.x() - if (e.isShiftDown) 0.4f else 4.0f)
 
-            KeyEvent.VK_E -> camTarget.y = camTarget.y - if (e.isShiftDown) 0.4f else 4.0f
-            KeyEvent.VK_Q -> camTarget.y = camTarget.y + if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_E -> camTarget.y(camTarget.y() - if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_Q -> camTarget.y(camTarget.y() + if (e.isShiftDown) 0.4f else 4.0f)
 
-            KeyEvent.VK_I -> sphereCamRelPos.y = sphereCamRelPos.y - if (e.isShiftDown) 1.125f else 11.25f
-            KeyEvent.VK_K -> sphereCamRelPos.y = sphereCamRelPos.y + if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_I -> sphereCamRelPos.y(sphereCamRelPos.y() - if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_K -> sphereCamRelPos.y(sphereCamRelPos.y() + if (e.isShiftDown) 1.125f else 11.25f)
 
-            KeyEvent.VK_J -> sphereCamRelPos.x = sphereCamRelPos.x - if (e.isShiftDown) 1.125f else 11.25f
-            KeyEvent.VK_L -> sphereCamRelPos.x = sphereCamRelPos.x + if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_J -> sphereCamRelPos.x(sphereCamRelPos.x() - if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_L -> sphereCamRelPos.x(sphereCamRelPos.x() + if (e.isShiftDown) 1.125f else 11.25f)
 
-            KeyEvent.VK_O -> sphereCamRelPos.z = sphereCamRelPos.z - if (e.isShiftDown) 1.125f else 11.25f
-            KeyEvent.VK_U -> sphereCamRelPos.z = sphereCamRelPos.z + if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_O -> sphereCamRelPos.z(sphereCamRelPos.z() - if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_U -> sphereCamRelPos.z(sphereCamRelPos.z() + if (e.isShiftDown) 1.125f else 11.25f)
 
             KeyEvent.VK_SPACE -> drawLookAtPoint = !drawLookAtPoint
 
@@ -410,8 +406,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
                 animator.remove(window)
                 window.destroy()
             }
-        }
-        //                camTarget.print("Target"); TODO
+        }//                camTarget.print("Target"); TODO
         //                sphereCamRelPos.print("Position");
 
         sphereCamRelPos.y = glm.clamp(sphereCamRelPos.y, -78.75f, -1.0f)
@@ -420,12 +415,18 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
     }
 
     class ProgramData(gl: GL3, vert: String, frag: String) {
-        
+
         val theProgram = Program(gl, this::class.java, "tut07", vert, frag).name
+
         val modelToWorldMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToWorldMatrix")
-        val worldToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "worldToCameraMatrix")
-        val cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix")
         val baseColorUnif = gl.glGetUniformLocation(theProgram, "baseColor")
+
+        init {
+
+            val globalUniformBlockIndex = gl.glGetUniformBlockIndex(theProgram, "GlobalMatrices")
+
+            gl.glUniformBlockBinding(theProgram, globalUniformBlockIndex, Semantic.Uniform.GLOBAL_MATRICES)
+        }
     }
 
     val forest = arrayOf(

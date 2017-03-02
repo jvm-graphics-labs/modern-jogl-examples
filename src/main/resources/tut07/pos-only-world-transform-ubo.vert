@@ -1,7 +1,6 @@
 #version 330
 
-// Attribute
-#define POSITION    0
+#include semantic.glsl
 
 layout(std140, column_major) uniform;
 
