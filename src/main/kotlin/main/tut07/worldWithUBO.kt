@@ -382,23 +382,23 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
     override fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
 
-            KeyEvent.VK_W -> camTarget.z(camTarget.z() - if (e.isShiftDown) 0.4f else 4.0f)
-            KeyEvent.VK_S -> camTarget.z(camTarget.z() + if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_W -> camTarget.z = camTarget.z - if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_S -> camTarget.z = camTarget.z + if (e.isShiftDown) 0.4f else 4.0f
 
-            KeyEvent.VK_D -> camTarget.x(camTarget.x() + if (e.isShiftDown) 0.4f else 4.0f)
-            KeyEvent.VK_A -> camTarget.x(camTarget.x() - if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_D -> camTarget.x = camTarget.x + if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_A -> camTarget.x = camTarget.x - if (e.isShiftDown) 0.4f else 4.0f
 
-            KeyEvent.VK_E -> camTarget.y(camTarget.y() - if (e.isShiftDown) 0.4f else 4.0f)
-            KeyEvent.VK_Q -> camTarget.y(camTarget.y() + if (e.isShiftDown) 0.4f else 4.0f)
+            KeyEvent.VK_E -> camTarget.y = camTarget.y - if (e.isShiftDown) 0.4f else 4.0f
+            KeyEvent.VK_Q -> camTarget.y = camTarget.y + if (e.isShiftDown) 0.4f else 4.0f
 
-            KeyEvent.VK_I -> sphereCamRelPos.y(sphereCamRelPos.y() - if (e.isShiftDown) 1.125f else 11.25f)
-            KeyEvent.VK_K -> sphereCamRelPos.y(sphereCamRelPos.y() + if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_I -> sphereCamRelPos.y = sphereCamRelPos.y - if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_K -> sphereCamRelPos.y = sphereCamRelPos.y + if (e.isShiftDown) 1.125f else 11.25f
 
-            KeyEvent.VK_J -> sphereCamRelPos.x(sphereCamRelPos.x() - if (e.isShiftDown) 1.125f else 11.25f)
-            KeyEvent.VK_L -> sphereCamRelPos.x(sphereCamRelPos.x() + if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_J -> sphereCamRelPos.x = sphereCamRelPos.x - if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_L -> sphereCamRelPos.x = sphereCamRelPos.x + if (e.isShiftDown) 1.125f else 11.25f
 
-            KeyEvent.VK_O -> sphereCamRelPos.z(sphereCamRelPos.z() - if (e.isShiftDown) 1.125f else 11.25f)
-            KeyEvent.VK_U -> sphereCamRelPos.z(sphereCamRelPos.z() + if (e.isShiftDown) 1.125f else 11.25f)
+            KeyEvent.VK_O -> sphereCamRelPos.z = sphereCamRelPos.z - if (e.isShiftDown) 1.125f else 11.25f
+            KeyEvent.VK_U -> sphereCamRelPos.z = sphereCamRelPos.z + if (e.isShiftDown) 1.125f else 11.25f
 
             KeyEvent.VK_SPACE -> drawLookAtPoint = !drawLookAtPoint
 
@@ -406,7 +406,8 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
                 animator.remove(window)
                 window.destroy()
             }
-        }//                camTarget.print("Target"); TODO
+        }
+        //                camTarget.print("Target"); TODO
         //                sphereCamRelPos.print("Position");
 
         sphereCamRelPos.y = glm.clamp(sphereCamRelPos.y, -78.75f, -1.0f)
