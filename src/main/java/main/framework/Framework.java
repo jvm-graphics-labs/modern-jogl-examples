@@ -86,6 +86,8 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
                     public void run() {
                         //stop the animator thread when user close the window
                         animator.stop();
+                        // This is actually redundant since the JVM will terminate when all threads are closed.
+                        // It's useful just in case you create a thread and you forget to stop it.
                         System.exit(0);
                     }
                 }).start();
