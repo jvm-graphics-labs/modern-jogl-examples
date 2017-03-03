@@ -157,7 +157,7 @@ public class WorldWithUBO extends Framework {
 
             modelMatrix
                     .push()
-                    .translate(0.0f, 0.0f, -camTarget.sub_(camPos.x()).length())
+                    .translate(camTarget)
                     .scale(1.0f)
                     .top().to(matBuffer);
 

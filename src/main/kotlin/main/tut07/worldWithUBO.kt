@@ -126,7 +126,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
             modelMatrix run {
 
-                translate(0.0f, 0.0f, glm.length(camTarget))
+                translate(camTarget)
                 scale(1.0f)
 
                 glUseProgram(objectColor.theProgram)

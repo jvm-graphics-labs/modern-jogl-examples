@@ -125,7 +125,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
                 val cameraAimVec = camTarget - camPos
 
-                translate(0.0f, 0.0f, glm.length(cameraAimVec))
+                translate(0.0f, 0.0f, -glm.length(cameraAimVec))
                 scale(1.0f)
 
                 glUseProgram(objectColor.theProgram)

@@ -113,7 +113,7 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .scale(new Vec3(100.0f, 1.0f, 100.0f))
+                    .scale(100.0f, 1.0f, 100.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColor.theProgram);
@@ -132,7 +132,7 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .translate(new Vec3(20.0f, 0.0f, -10.0f));
+                    .translate(20.0f, 0.0f, -10.0f);
 
             drawParthenon(gl, modelMatrix);
 
@@ -143,10 +143,12 @@ public class WorldScene extends Framework {
 
             gl.glDisable(GL3.GL_DEPTH_TEST);
 
+            Vec3 camAimVec = camTarget.sub(camPos);
+
             modelMatrix
                     .push()
-                    .translate(new Vec3(0.0f, 0.0f, -camTarget.sub_(camPos.x()).length()))
-                    .scale(new Vec3(1.0f))
+                    .translate(0.0f, 0.0f, -glm.length(camAimVec))
+                    .scale(1.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(objectColor.theProgram);
@@ -201,7 +203,7 @@ public class WorldScene extends Framework {
         for (TreeData tree : forest) {
             modelMatrix
                     .push()
-                    .translate(new Vec3(tree.xPos, 1.0f, tree.zPos));
+                    .translate(tree.xPos, 1.0f, tree.zPos);
             drawTree(gl, modelMatrix, tree.trunkHeight, tree.coneHeight);
             modelMatrix.pop();
         }
@@ -214,8 +216,8 @@ public class WorldScene extends Framework {
             modelStack.push();
 
             modelStack
-                    .scale(new Vec3(1.0f, trunkHeight, 1.0f))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .scale(1.0f, trunkHeight, 1.0f)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -230,8 +232,8 @@ public class WorldScene extends Framework {
         //  Draw the treetop
         {
             modelStack.push()
-                    .translate(new Vec3(0.0f, trunkHeight, 0.0f))
-                    .scale(new Vec3(3.0f, coneHeight, 3.0f))
+                    .translate(0.0f, trunkHeight, 0.0f)
+                    .scale(3.0f, coneHeight, 3.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -256,8 +258,8 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .scale(new Vec3(parthenonWidth, parthenonBaseHeight, parthenonLength))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .scale(parthenonWidth, parthenonBaseHeight, parthenonLength)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -272,9 +274,9 @@ public class WorldScene extends Framework {
         //  Draw top
         {
             modelMatrix.push()
-                    .translate(new Vec3(0.0f, parthenonColumnHeight + parthenonBaseHeight, 0.0f))
-                    .scale(new Vec3(parthenonWidth, parthenonTopHeight, parthenonLength))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .translate(0.0f, parthenonColumnHeight + parthenonBaseHeight, 0.0f)
+                    .scale(parthenonWidth, parthenonTopHeight, parthenonLength)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -294,7 +296,7 @@ public class WorldScene extends Framework {
             {
                 modelMatrix
                         .push()
-                        .translate(new Vec3(2.0f * iColumnNum - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval));
+                        .translate(2.0f * iColumnNum - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval);
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight);
 
@@ -303,7 +305,7 @@ public class WorldScene extends Framework {
             {
                 modelMatrix
                         .push()
-                        .translate(new Vec3(2.0f * iColumnNum - parthenonWidth / 2.0f + 1.0f, parthenonBaseHeight, -frontZval));
+                        .translate(2.0f * iColumnNum - parthenonWidth / 2.0f + 1.0f, parthenonBaseHeight, -frontZval);
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight);
 
@@ -315,7 +317,7 @@ public class WorldScene extends Framework {
             {
                 modelMatrix
                         .push()
-                        .translate(new Vec3(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f));
+                        .translate(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f);
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight);
 
@@ -324,7 +326,7 @@ public class WorldScene extends Framework {
             {
                 modelMatrix
                         .push()
-                        .translate(new Vec3(-rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f));
+                        .translate(-rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f);
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight);
 
@@ -336,9 +338,9 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .translate(new Vec3(0.0f, 1.0f, 0.0f))
-                    .scale(new Vec3(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .translate(0.0f, 1.0f, 0.0f)
+                    .scale(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(objectColor.theProgram);
@@ -353,10 +355,10 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .translate(new Vec3(
+                    .translate(
                             0.0f,
                             parthenonColumnHeight + parthenonBaseHeight + parthenonTopHeight / 2.0f,
-                            parthenonLength / 2.0f))
+                            parthenonLength / 2.0f)
                     .rotateX(-135.0f)
                     .rotateY(45.0f)
                     .top().to(matBuffer);
@@ -379,8 +381,8 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .scale(new Vec3(1.0f, columnBaseHeight, 1.0f))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .scale(1.0f, columnBaseHeight, 1.0f)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -396,9 +398,9 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .translate(new Vec3(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f))
-                    .scale(new Vec3(1.0f, columnBaseHeight, 1.0f))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .translate(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f)
+                    .scale(1.0f, columnBaseHeight, 1.0f)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
@@ -414,9 +416,9 @@ public class WorldScene extends Framework {
         {
             modelMatrix
                     .push()
-                    .translate(new Vec3(0.0f, columnBaseHeight, 0.0f))
-                    .scale(new Vec3(0.8f, parthenonColumnHeight - columnBaseHeight * 2.0f, 0.8f))
-                    .translate(new Vec3(0.0f, 0.5f, 0.0f))
+                    .translate(0.0f, columnBaseHeight, 0.0f)
+                    .scale(0.8f, parthenonColumnHeight - columnBaseHeight * 2.0f, 0.8f)
+                    .translate(0.0f, 0.5f, 0.0f)
                     .top().to(matBuffer);
 
             gl.glUseProgram(uniformColorTint.theProgram);
