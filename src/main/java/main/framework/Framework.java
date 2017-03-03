@@ -9,10 +9,7 @@ import buffer.BufferUtils;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
-import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.KeyListener;
-import com.jogamp.newt.event.MouseEvent;
-import com.jogamp.newt.event.MouseListener;
+import com.jogamp.newt.event.*;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -81,6 +78,19 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         animator = new Animator();
         animator.add(window);
         animator.start();
+
+        window.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowDestroyed(WindowEvent e) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        //stop the animator thread when user close the window
+                        animator.stop();
+                        System.exit(0);
+                    }
+                }).start();
+            }
+        });
     }
 
     @Override
@@ -122,7 +132,6 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);
@@ -131,8 +140,6 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         BufferUtils.destroyDirectBuffer(clearDepth);
         BufferUtils.destroyDirectBuffer(matBuffer);
         BufferUtils.destroyDirectBuffer(vecBuffer);
-
-        System.exit(1);
     }
 
     protected void end(GL3 gl) {
