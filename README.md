@@ -1,4 +1,4 @@
-Note: at the moment there is a gradle, a general refreshing and kotlin implementation in progress, it'll be back to normal asap
+Note: at the moment there is ~~a gradle~~, a general refreshing and kotlin implementation in progress, it'll be back to normal asap
 
 modern-jogl-examples
 ====================
