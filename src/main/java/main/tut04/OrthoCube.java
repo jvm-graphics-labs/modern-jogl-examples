@@ -5,28 +5,20 @@
 package main.tut04;
 
 import com.jogamp.newt.event.KeyEvent;
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_BACK;
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_CW;
-import static com.jogamp.opengl.GL.GL_FLOAT;
-import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
-import buffer.BufferUtils;
-import glsl.ShaderCodeKt;
-import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._4.Vec4;
+import glm.vec._4.Vec4;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static uno.buffer.UtilKt.destroyBuffer;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  *
@@ -61,7 +53,7 @@ public class OrthoCube extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut04", "ortho-with-offset.vert", "standard-colors.frag");
+        theProgram = programOf(gl, getClass(), "tut04", "ortho-with-offset.vert", "standard-colors.frag");
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
     }
@@ -76,7 +68,7 @@ public class OrthoCube extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
+        destroyBuffer(vertexBuffer);
     }
 
     @Override
@@ -92,8 +84,8 @@ public class OrthoCube extends Framework {
         gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorData);
 
         gl.glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -115,8 +107,7 @@ public class OrthoCube extends Framework {
         gl.glDeleteBuffers(1, vertexBufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(vertexBufferObject);
+        destroyBuffers(vao, vertexBufferObject);
     }
 
     @Override

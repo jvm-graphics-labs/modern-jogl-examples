@@ -4,15 +4,13 @@
  */
 package main.tut05;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -21,6 +19,8 @@ import java.nio.ShortBuffer;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
@@ -72,7 +72,7 @@ public class OverlapNoDepth extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
+        theProgram = programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
 
@@ -106,8 +106,7 @@ public class OverlapNoDepth extends Framework {
         gl3.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
         gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
+        destroyBuffers(vertexBuffer, indexBuffer);
     }
 
     private void initializeVertexArrays(GL3 gl3) {
@@ -133,8 +132,8 @@ public class OverlapNoDepth extends Framework {
         //Use the same buffer object previously bound to GL_ARRAY_BUFFER.
         gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, positionDataOffset);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, positionDataOffset);
+        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
         gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl3.glBindVertexArray(0);
@@ -180,9 +179,7 @@ public class OverlapNoDepth extends Framework {
         gl.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl.glDeleteVertexArrays(VertexArray.MAX, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
-        BufferUtils.destroyDirectBuffer(perspectiveMatrix);
+        destroyBuffers(vao, bufferObject, perspectiveMatrix);
     }
 
     @Override

@@ -4,30 +4,27 @@
  */
 package main.framework.component;
 
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import buffer.BufferUtils;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import one.util.streamex.IntStreamEx;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static com.jogamp.opengl.GL.*;
+import static uno.buffer.UtilKt.destroyBuffer;
 
 /**
  *
@@ -231,8 +228,8 @@ public class Mesh {
 
     public void dispose(GL3 gl3) {
 
-        attribs.forEach(attrib -> BufferUtils.destroyDirectBuffer(attrib.dataArray()));
-        indexData.forEach(cmd -> BufferUtils.destroyDirectBuffer(cmd.dataArray()));
+        attribs.forEach(attrib -> destroyBuffer(attrib.dataArray()));
+        indexData.forEach(cmd -> destroyBuffer(cmd.dataArray()));
         
         gl3.glDeleteBuffers(1, attribArraysBuffer);
         if (!indexData.isEmpty()) {

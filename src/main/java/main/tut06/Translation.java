@@ -4,16 +4,14 @@
  */
 package main.tut06;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import mat.Mat4x4;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import glm.mat.Mat4x4;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -22,7 +20,9 @@ import java.nio.ShortBuffer;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-import static main.GlmKt.glm;
+import static glm.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  *
@@ -51,7 +51,7 @@ public class Translation extends Framework {
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = (float) Math.toRadians(fovDeg);
+        float fovRad = glm.toRad(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -117,8 +117,8 @@ public class Translation extends Framework {
         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl.glBindVertexArray(0);
@@ -137,7 +137,7 @@ public class Translation extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
+        theProgram = programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
 
         modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
@@ -172,8 +172,7 @@ public class Translation extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
+        destroyBuffers(vertexBuffer, indexBuffer);
     }
 
     @Override
@@ -219,8 +218,7 @@ public class Translation extends Framework {
         gl.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
+        destroyBuffers(vao, bufferObject);
     }
 
     @Override
@@ -267,7 +265,7 @@ public class Translation extends Framework {
 
                 case OvalOffset:
                     float loopDuration = 3.0f;
-                    float scale = (float) (Math.PI * 2.0f / loopDuration);
+                    float scale = (float) glm.pi * 2.0f / loopDuration;
 
                     float currTimeThroughLoop = elapsedTime % loopDuration;
 
@@ -278,7 +276,7 @@ public class Translation extends Framework {
 
                 case BottomCircleOffset:
                     loopDuration = 12.0f;
-                    scale = (float) (Math.PI * 2.0f / loopDuration);
+                    scale = (float) glm.pi * 2.0f / loopDuration;
 
                     currTimeThroughLoop = elapsedTime % loopDuration;
                     return vec.put(

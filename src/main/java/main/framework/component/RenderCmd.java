@@ -5,15 +5,14 @@
  */
 package main.framework.component;
 
-import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
+import org.w3c.dom.Element;
+
 import java.nio.ByteBuffer;
 import java.util.StringTokenizer;
-import org.w3c.dom.Element;
+
+import static com.jogamp.opengl.GL.*;
 
 /**
  *

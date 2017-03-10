@@ -4,29 +4,26 @@
  */
 package main.tut03;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glsl.ShaderCodeKt;
-import glsl.ShaderProgramKt;
+import glm.Glm;
+import glm.vec._2.Vec2;
+import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._2.Vec2;
-import vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-
-import static main.GlmKt.glm;
+import static glm.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffer;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
- *
  * @author gbarbieri
  */
 public class CpuPositionOffset extends Framework {
@@ -42,9 +39,9 @@ public class CpuPositionOffset extends Framework {
     private int theProgram;
     private IntBuffer positionBufferObject = GLBuffers.newDirectIntBuffer(1), vao = GLBuffers.newDirectIntBuffer(1);
     private float[] vertexPositions = {
-        +0.25f, +0.25f, 0.0f, 1.0f,
-        +0.25f, -0.25f, 0.0f, 1.0f,
-        -0.25f, -0.25f, 0.0f, 1.0f};
+            +0.25f, +0.25f, 0.0f, 1.0f,
+            +0.25f, -0.25f, 0.0f, 1.0f,
+            -0.25f, -0.25f, 0.0f, 1.0f};
     private long startingTime;
 
     @Override
@@ -60,7 +57,7 @@ public class CpuPositionOffset extends Framework {
     }
 
     private void initializeProgram(GL3 gl) {
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut03", "standard.vert", "standard.frag");
+        theProgram = programOf(gl, getClass(), "tut03", "standard.vert", "standard.frag");
     }
 
     private void initializeVertexBuffer(GL3 gl) {
@@ -73,7 +70,7 @@ public class CpuPositionOffset extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
+        destroyBuffer(vertexBuffer);
     }
 
     @Override
@@ -90,9 +87,9 @@ public class CpuPositionOffset extends Framework {
 
         gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0);
 
-        gl.glDrawArrays(GL3.GL_TRIANGLES, 0, 3);
+        gl.glDrawArrays(GL_TRIANGLES, 0, 3);
 
         gl.glDisableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glUseProgram(0);
@@ -101,14 +98,14 @@ public class CpuPositionOffset extends Framework {
     private void computePositionOffsets(Vec2 offset) {
 
         float loopDuration = 5.0f;
-        float scale = (float) (Math.PI * 2.0f / loopDuration);
+        float scale = (float) Glm.pi * 2.0f / loopDuration;
 
         float elapsedTime = (System.currentTimeMillis() - startingTime) / 1_000.0f;
 
         float fCurrTimeThroughLoop = elapsedTime % loopDuration;
 
-        offset.x(glm.cos(fCurrTimeThroughLoop * scale) * 0.5f);
-        offset.y(glm.sin(fCurrTimeThroughLoop * scale) * 0.5f);
+        offset.x = glm.cos(fCurrTimeThroughLoop * scale) * 0.5f;
+        offset.y = glm.sin(fCurrTimeThroughLoop * scale) * 0.5f;
     }
 
     private void adjustVertexData(GL3 gl, Vec2 offset) {
@@ -118,8 +115,8 @@ public class CpuPositionOffset extends Framework {
 
         for (int iVertex = 0; iVertex < vertexPositions.length; iVertex += 4) {
 
-            newData[iVertex + 0] += offset.x();
-            newData[iVertex + 1] += offset.x();
+            newData[iVertex] += offset.x;
+            newData[iVertex + 1] += offset.y;
         }
 
         FloatBuffer buffer = GLBuffers.newDirectFloatBuffer(newData);
@@ -128,25 +125,24 @@ public class CpuPositionOffset extends Framework {
         gl.glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.capacity() * Float.BYTES, buffer);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(buffer);
+        destroyBuffer(buffer);
     }
 
     @Override
     public void reshape(GL3 gl, int w, int h) {
         gl.glViewport(0, 0, w, h);
     }
-    
+
     @Override
     public void end(GL3 gl) {
 
         gl.glDeleteProgram(theProgram);
         gl.glDeleteBuffers(1, positionBufferObject);
         gl.glDeleteVertexArrays(1, vao);
-        
-        BufferUtils.destroyDirectBuffer(positionBufferObject);
-        BufferUtils.destroyDirectBuffer(vao);
+
+        destroyBuffers(positionBufferObject, vao);
     }
-    
+
     @Override
     public void keyPressed(KeyEvent keyEvent) {
 

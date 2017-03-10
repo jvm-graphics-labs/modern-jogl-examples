@@ -4,17 +4,15 @@
  */
 package main.tut06;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import mat.Mat3x3;
-import mat.Mat4x4;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import glm.mat.Mat3x3;
+import glm.mat.Mat4x4;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -24,7 +22,9 @@ import java.util.Stack;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-import static main.GlmKt.glm;
+import static glm.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
@@ -52,7 +52,7 @@ public class Hierarchy extends Framework {
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = (float) Math.toRadians(fovDeg);
+        float fovRad = glm.toRad(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -173,7 +173,7 @@ public class Hierarchy extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
+        theProgram = programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
 
         modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
@@ -213,14 +213,13 @@ public class Hierarchy extends Framework {
         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl.glBindVertexArray(0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
+        destroyBuffers(vertexBuffer, indexBuffer);
     }
 
     @Override
@@ -252,8 +251,7 @@ public class Hierarchy extends Framework {
         gl.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
+        destroyBuffers(vao, bufferObject);
     }
 
     @Override
@@ -558,17 +556,17 @@ public class Hierarchy extends Framework {
         }
 
         MatrixStack rotateX(float angDeg) {
-            currMat.mul_(new Mat4x4(Hierarchy.this.rotateX(angDeg)));
+            currMat.times_(new Mat4x4(Hierarchy.this.rotateX(angDeg)));
             return this;
         }
 
         MatrixStack rotateY(float angDeg) {
-            currMat.mul_(new Mat4x4(Hierarchy.this.rotateY(angDeg)));
+            currMat.times_(new Mat4x4(Hierarchy.this.rotateY(angDeg)));
             return this;
         }
 
         MatrixStack rotateZ(float angDeg) {
-            currMat.mul_(new Mat4x4(Hierarchy.this.rotateZ(angDeg)));
+            currMat.times_(new Mat4x4(Hierarchy.this.rotateZ(angDeg)));
             return this;
         }
 
@@ -576,7 +574,7 @@ public class Hierarchy extends Framework {
 
             Mat4x4 scaleMat = new Mat4x4(scaleVec);
 
-            currMat.mul_(scaleMat);
+            currMat.times_(scaleMat);
 
             return this;
         }
@@ -586,7 +584,7 @@ public class Hierarchy extends Framework {
             Mat4x4 translateMat = new Mat4x4(1f);
             translateMat.set(3, new Vec4(offsetVec));
 
-            currMat.mul_(translateMat);
+            currMat.times_(translateMat);
 
             return this;
         }

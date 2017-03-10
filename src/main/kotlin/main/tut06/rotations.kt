@@ -1,22 +1,19 @@
 package main.tut06
 
-import buffer.destroy
+import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import extensions.toShortBuffer
-import glsl.programOf
-import main.*
+import uno.glsl.programOf
+import glm.*
 import main.framework.Framework
 import main.framework.Semantic
-import mat.Mat3
-import mat.Mat4
-import vec._3.Vec3
-import vec._4.Vec4
+import glm.mat.Mat3
+import glm.mat.Mat4
+import glm.vec._3.Vec3
+import glm.vec._4.Vec4
 
 /**
  * Created by elect on 23/02/17.
@@ -66,15 +63,15 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
             -1.0f, +1.0f, +1.0f,
 
 
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
+            *GREEN_COLOR,
+            *BLUE_COLOR,
+            *RED_COLOR,
+            *BROWN_COLOR,
 
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3])
+            *GREEN_COLOR,
+            *BLUE_COLOR,
+            *RED_COLOR,
+            *BROWN_COLOR)
 
     val indexData = shortArrayOf(
 
@@ -109,8 +106,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray(0)
@@ -165,13 +162,12 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         glBufferData(GL_ARRAY_BUFFER, indexBuffer.SIZE.L, indexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-        vertexBuffer.destroy()
-        indexBuffer.destroy()
+        destroyBuffers(vertexBuffer, indexBuffer)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         glUseProgram(theProgram)
@@ -209,8 +205,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         glDeleteBuffers(Buffer.MAX, bufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vao.destroy()
-        bufferObject.destroy()
+        destroyBuffers(vao, bufferObject)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -240,8 +235,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     fun rotateX(elapsedTime: Float): Mat3 {
 
         val angRad = computeAngleRad(elapsedTime, 3f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
+        val cos = angRad.cos
+        val sin = angRad.sin
 
         val theMat = Mat3(1f)
         theMat[1].y = cos; theMat[2].y = -sin
@@ -252,8 +247,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     fun rotateY(elapsedTime: Float): Mat3 {
 
         val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
+        val cos = angRad.cos
+        val sin = angRad.sin
 
         val theMat = Mat3(1f)
         theMat[0].x = cos; theMat[2].x = sin
@@ -264,8 +259,8 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     fun rotateZ(elapsedTime: Float): Mat3 {
 
         val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
-        val sin = glm.sin(angRad)
+        val cos = angRad.cos
+        val sin = angRad.sin
 
         val theMat = Mat3(1f)
         theMat[0].x = cos; theMat[1].x = -sin
@@ -276,32 +271,32 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     fun rotateAxis(elapsedTime: Float): Mat3 {
 
         val angRad = computeAngleRad(elapsedTime, 2f)
-        val cos = glm.cos(angRad)
+        val cos = angRad.cos
         val invCos = 1f - cos
-        val sin = glm.sin(angRad)
+        val sin = angRad.sin
 
         val axis = Vec3(1f).normalize_()
 
         val theMat = Mat3(1f)
 
-        theMat[0].x = (axis.x * axis.x) + ((1 - axis.x * axis.x) * cos)
-        theMat[1].x = axis.x * axis.y * (invCos) - (axis.z * sin)
-        theMat[2].x = axis.x * axis.z * (invCos) + (axis.y * sin)
+        theMat[0].x = axis.x * axis.x + (1 - axis.x * axis.x) * cos
+        theMat[1].x = axis.x * axis.y * invCos - axis.z * sin
+        theMat[2].x = axis.x * axis.z * invCos + axis.y * sin
 
-        theMat[0].y = axis.x * axis.y * (invCos) + (axis.z * sin)
-        theMat[1].y = (axis.y * axis.y) + ((1 - axis.y * axis.y) * cos)
-        theMat[2].y = axis.y * axis.z * (invCos) - (axis.x * sin)
+        theMat[0].y = axis.x * axis.y * invCos + axis.z * sin
+        theMat[1].y = axis.y * axis.y + (1 - axis.y * axis.y) * cos
+        theMat[2].y = axis.y * axis.z * invCos - axis.x * sin
 
-        theMat[0].z = axis.x * axis.z * (invCos) - (axis.y * sin)
-        theMat[1].z = axis.y * axis.z * (invCos) + (axis.x * sin)
-        theMat[2].z = (axis.z * axis.z) + ((1 - axis.z * axis.z) * cos)
+        theMat[0].z = axis.x * axis.z * invCos - axis.y * sin
+        theMat[1].z = axis.y * axis.z * invCos + axis.x * sin
+        theMat[2].z = axis.z * axis.z + (1 - axis.z * axis.z) * cos
 
         return theMat
     }
 
 
     fun computeAngleRad(elapsedTime: Float, loopDuration: Float): Float {
-        val scale = (Math.PI * 2.0f / loopDuration).f
+        val scale = glm.pi.f * 2.0f / loopDuration
         val currentTimeThroughLoop = elapsedTime % loopDuration
         return currentTimeThroughLoop * scale
     }

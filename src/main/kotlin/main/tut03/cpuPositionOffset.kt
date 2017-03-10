@@ -1,18 +1,16 @@
 package main.tut03
 
-import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import glsl.programOf
-import main.*
+import glm.*
+import glm.vec._2.Vec2
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import vec._2.Vec2
-import vec._4.Vec4
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 21.02.2017.
@@ -68,13 +66,13 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
         computePositionOffsets(offset)
         adjustVertexData(gl, offset)
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 1f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 1f))
 
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
 
         glDrawArrays(GL3.GL_TRIANGLES, 0, 3)
 
@@ -85,7 +83,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
     fun computePositionOffsets(offset: Vec2) {
 
         val loopDuration = 5.0f
-        val scale = (Math.PI * 2.0f / loopDuration).f
+        val scale = (glm.pi * 2.0f / loopDuration).f
 
         val elapsedTime = (System.currentTimeMillis() - startingTime) / 1_000f
 
@@ -124,8 +122,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
         glDeleteBuffers(1, positionBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        positionBufferObject.destroy()
-        vao.destroy()
+        destroyBuffers(positionBufferObject, vao)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

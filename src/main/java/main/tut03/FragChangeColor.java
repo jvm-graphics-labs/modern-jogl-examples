@@ -4,23 +4,21 @@
  */
 package main.tut03;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glsl.ShaderCodeKt;
-import glsl.ShaderProgramKt;
+import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static uno.buffer.UtilKt.destroyBuffer;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
@@ -57,7 +55,7 @@ public class FragChangeColor extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut03", "calc-offset.vert", "calc-color.frag");
+        theProgram = programOf(gl, getClass(), "tut03", "calc-offset.vert", "calc-color.frag");
 
         elapsedTimeUniform = gl.glGetUniformLocation(theProgram, "time");
 
@@ -80,7 +78,7 @@ public class FragChangeColor extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
+        destroyBuffer(vertexBuffer);
     }
 
     @Override
@@ -94,7 +92,7 @@ public class FragChangeColor extends Framework {
 
         gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0);
 
         gl.glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -115,8 +113,7 @@ public class FragChangeColor extends Framework {
         gl.glDeleteBuffers(1, positionBufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(positionBufferObject);
-        BufferUtils.destroyDirectBuffer(vao);
+        destroyBuffers(positionBufferObject, vao);
     }
 
     @Override

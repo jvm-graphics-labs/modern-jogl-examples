@@ -5,16 +5,12 @@
  */
 package main.framework.component;
 
-import static com.jogamp.opengl.GL.GL_BYTE;
-import static com.jogamp.opengl.GL.GL_FLOAT;
-import static com.jogamp.opengl.GL.GL_HALF_FLOAT;
-import static com.jogamp.opengl.GL.GL_SHORT;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_BYTE;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
-import static com.jogamp.opengl.GL2ES2.GL_INT;
 import com.jogamp.opengl.GL3;
+
 import java.nio.ByteBuffer;
+
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES2.GL_INT;
 
 /**
  *

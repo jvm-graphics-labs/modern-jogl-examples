@@ -6,18 +6,16 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import glm.MatrixStack
-import glsl.Program
-import main.f
+import uno.glm.MatrixStack
+import uno.glsl.Program
+import glm.*
 import main.framework.Framework
 import main.framework.component.Mesh
-import main.glm
-import main.i
-import main.rad
-import mat.Mat4
-import mat.Mat4x4
-import vec._3.Vec3
-import vec._4.Vec4
+import glm.mat.Mat4
+import glm.mat.Mat4x4
+import glm.vec._3.Vec3
+import glm.vec._4.Vec4
+import uno.buffer.put
 import kotlin.properties.Delegates
 
 /**
@@ -76,7 +74,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         val camPos = resolveCamPosition()
@@ -143,12 +141,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val phi = sphereCamRelPos.x.rad
         val theta = (sphereCamRelPos.y + 90.0f).rad
 
-        val sinTheta = glm.sin(theta)
-        val cosTheta = glm.cos(theta)
-        val cosPhi = glm.cos(phi)
-        val sinPhi = glm.sin(phi)
-
-        val dirToCamera = Vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi)
+        val dirToCamera = Vec3(theta.sin * phi.cos, theta.cos, theta.sin * phi.sin)
 
         return (dirToCamera * sphereCamRelPos.z) + camTarget
     }

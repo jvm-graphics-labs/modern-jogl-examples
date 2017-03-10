@@ -4,27 +4,28 @@
  */
 package main.tut01;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GL3ES3;
 import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
-import glsl.ShaderCodeKt;
+import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._4.Vec4;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_FALSE;
+import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL2ES2.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER;
+import static uno.buffer.UtilKt.destroyBuffer;
+import static uno.buffer.UtilKt.destroyBuffers;
 
 /**
  * @author gbarbieri
@@ -127,11 +128,9 @@ public class HelloTriangle extends Framework {
             }
             System.err.println("Compiler failure in " + strShaderType + " shader: " + strInfoLog);
 
-            BufferUtils.destroyDirectBuffer(infoLogLength);
-            BufferUtils.destroyDirectBuffer(bufferInfoLog);
+            destroyBuffers(infoLogLength, bufferInfoLog);
         }
-        BufferUtils.destroyDirectBuffer(length);
-        BufferUtils.destroyDirectBuffer(status);
+        destroyBuffers(length, status);
 
         return shader;
     }
@@ -159,13 +158,12 @@ public class HelloTriangle extends Framework {
 
             System.err.println("Linker failure: " + strInfoLog);
 
-            BufferUtils.destroyDirectBuffer(infoLogLength);
-            BufferUtils.destroyDirectBuffer(bufferInfoLog);
+            destroyBuffers(infoLogLength, bufferInfoLog);
         }
 
         shaderList.forEach(shader -> gl.glDetachShader(program, shader));
 
-        BufferUtils.destroyDirectBuffer(status);
+        destroyBuffer(status);
 
         return program;
     }
@@ -180,7 +178,7 @@ public class HelloTriangle extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
+        destroyBuffer(vertexBuffer);
     }
 
     /**
@@ -199,7 +197,7 @@ public class HelloTriangle extends Framework {
 
         gl.glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject.get(0));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0);
 
         gl.glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -233,8 +231,7 @@ public class HelloTriangle extends Framework {
         gl.glDeleteBuffers(1, positionBufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(positionBufferObject);
-        BufferUtils.destroyDirectBuffer(vao);
+        destroyBuffers(positionBufferObject, vao);
     }
 
     /**

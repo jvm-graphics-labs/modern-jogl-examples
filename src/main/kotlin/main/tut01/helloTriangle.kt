@@ -5,21 +5,17 @@
 package main.tut01
 
 
-import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES2.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
-import extensions.byteBufferOf
-import extensions.intBufferBig
-import extensions.intBufferOf
-import extensions.toFloatBuffer
-import main.L
-import main.SIZE
+import glm.L
+import glm.SIZE
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import vec._4.Vec4
+import uno.buffer.*
 
 
 fun main(args: Array<String>) {
@@ -105,13 +101,11 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
                 GL_GEOMETRY_SHADER -> strShaderType = "geometry"
                 GL_FRAGMENT_SHADER -> strShaderType = "fragment"
             }
-            System.err.println("Compiler failure in $strShaderType shader: ${bytes.toString()}")
+            System.err.println("Compiler failure in $strShaderType shader: $bytes")
 
-            infoLogLength.destroy()
-            bufferInfoLog.destroy()
+            destroyBuffers(infoLogLength, bufferInfoLog)
         }
-        length.destroy()
-        status.destroy()
+        destroyBuffers(length, status)
 
         return shader
     }
@@ -138,8 +132,7 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
 
             System.err.println("Linker failure: " + bytes.toString())
 
-            infoLogLength.destroy()
-            bufferInfoLog.destroy()
+            destroyBuffers(infoLogLength, bufferInfoLog)
         }
 
         shaderList.forEach { glDetachShader(program, it) }
@@ -169,13 +162,13 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
      */
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 1f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 1f))
 
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
 
         glDrawArrays(GL_TRIANGLES, 0, 3)
 
@@ -204,8 +197,7 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
         glDeleteBuffers(1, positionBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        positionBufferObject.destroy()
-        vao.destroy()
+        destroyBuffers(positionBufferObject, vao)
     }
 
     /**

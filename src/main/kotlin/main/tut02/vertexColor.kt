@@ -1,20 +1,17 @@
 package main.tut02
 
-import buffer.destroy
+import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.glsl.ShaderProgram
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import glsl.programOf
-import glsl.shaderCodeOf
-import main.L
-import main.SIZE
+import uno.glsl.programOf
+import uno.glsl.shaderCodeOf
+import glm.L
+import glm.SIZE
 import main.framework.Framework
 import main.framework.Semantic
-import vec._4.Vec4
+import glm.vec._4.Vec4
 
 /**
  * Created by GBarbieri on 21.02.2017.
@@ -68,15 +65,15 @@ class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
 
     override fun display(gl: GL3) = with(gl){
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 0f))
 
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, Vec4.SIZE * 3.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, Vec4.SIZE * 3.L)
 
         glDrawArrays(GL_TRIANGLES, 0, 3)
 
@@ -95,8 +92,7 @@ class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
         glDeleteBuffers(1, vertexBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vertexBufferObject.destroy()
-        vao.destroy()
+        destroyBuffers(vertexBufferObject, vao)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

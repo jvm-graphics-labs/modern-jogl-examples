@@ -1,22 +1,18 @@
 package main.tut06
 
-import buffer.BufferUtils
-import buffer.destroy
+import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import extensions.toShortBuffer
-import glsl.programOf
-import main.*
+import uno.glsl.programOf
+import glm.*
 import main.framework.Framework
 import main.framework.Semantic
-import mat.Mat4
-import vec._3.Vec3
-import vec._4.Vec4
+import glm.mat.Mat4
+import glm.vec._3.Vec3
+import glm.vec._4.Vec4
 
 /**
  * Created by GBarbieri on 24.02.2017.
@@ -66,15 +62,15 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
             -1.0f, +1.0f, +1.0f,
 
 
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3],
+            *GREEN_COLOR,
+            *BLUE_COLOR,
+            *RED_COLOR,
+            *BROWN_COLOR,
 
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            BROWN_COLOR[0], BROWN_COLOR[1], BROWN_COLOR[2], BROWN_COLOR[3])
+            *GREEN_COLOR,
+            *BLUE_COLOR,
+            *RED_COLOR,
+            *BROWN_COLOR)
 
     val indexData = shortArrayOf(
 
@@ -107,8 +103,8 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray(0)
@@ -161,13 +157,12 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
         glBufferData(GL_ARRAY_BUFFER, indexBuffer.SIZE.L, indexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-        vertexBuffer.destroy()
-        indexBuffer.destroy()
+        destroyBuffers(vertexBuffer, indexBuffer)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         glUseProgram(theProgram)
@@ -205,8 +200,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
         glDeleteBuffers(Buffer.MAX, bufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vao.destroy()
-        bufferObject.destroy()
+        destroyBuffers(vao, bufferObject)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -236,7 +230,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
     fun ovalOffset(elapsedTime: Float): Vec3 {
 
         val loopDuration = 3.0f
-        val scale = Math.PI.f * 2.0f / loopDuration
+        val scale = glm.pi.f * 2.0f / loopDuration
 
         val currTimeThroughLoop = elapsedTime % loopDuration
 
@@ -249,7 +243,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
     fun bottomCircleOffset(elapsedTime: Float): Vec3 {
 
         val loopDuration = 12.0f
-        val scale = Math.PI.f * 2.0f / loopDuration
+        val scale = glm.pi.f * 2.0f / loopDuration
 
         val currTimeThroughLoop = elapsedTime % loopDuration
 

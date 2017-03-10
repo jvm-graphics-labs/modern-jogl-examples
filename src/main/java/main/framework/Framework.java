@@ -5,24 +5,20 @@
  */
 package main.framework;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
 import com.jogamp.newt.event.*;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLContext;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
-import debug.GlDebugOutput;
-import vec._2.Vec2i;
+import uno.debug.GlDebugOutput;
+import glm.vec._2.Vec2i;
 
 import java.nio.FloatBuffer;
+
+import static uno.buffer.UtilKt.destroyBuffers;
 
 /**
  *
@@ -63,7 +59,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
         window.setPointerVisible(true);
         window.confinePointer(false);
         window.setTitle(title);
-        window.setSize(windowSize.x(), windowSize.y());
+        window.setSize(windowSize.x, windowSize.y);
 
         window.setVisible(true);
 
@@ -138,10 +134,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
         end(gl3);
 
-        BufferUtils.destroyDirectBuffer(clearColor);
-        BufferUtils.destroyDirectBuffer(clearDepth);
-        BufferUtils.destroyDirectBuffer(matBuffer);
-        BufferUtils.destroyDirectBuffer(vecBuffer);
+        destroyBuffers(clearColor, clearDepth, matBuffer, vecBuffer);
     }
 
     protected void end(GL3 gl) {

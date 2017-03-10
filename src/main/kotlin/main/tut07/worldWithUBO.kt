@@ -5,17 +5,18 @@ import com.jogamp.opengl.GL2ES2.GL_STREAM_DRAW
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import extensions.intBufferBig
-import glm.MatrixStack
-import glsl.Program
-import main.*
+import uno.glm.MatrixStack
+import uno.glsl.Program
+import glm.*
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import mat.Mat4
+import glm.mat.Mat4
 import one.util.streamex.StreamEx
-import vec._3.Vec3
-import vec._4.Vec4
+import glm.vec._3.Vec3
+import glm.vec._4.Vec4
+import uno.buffer.intBufferBig
+import uno.buffer.put
 import kotlin.properties.Delegates
 
 /**
@@ -84,7 +85,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
     override fun display(gl: GL3) = with(gl) {
 
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
 
         val camPos = resolveCamPosition()
 
@@ -144,12 +145,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val phi = sphereCamRelPos.x.rad
         val theta = (sphereCamRelPos.y + 90.0f).rad
 
-        val sinTheta = glm.sin(theta)
-        val cosTheta = glm.cos(theta)
-        val cosPhi = glm.cos(phi)
-        val sinPhi = glm.sin(phi)
-
-        val dirToCamera = Vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi)
+        val dirToCamera = Vec3(theta.sin * phi.cos, theta.cos, theta.sin * phi.sin)
 
         return (dirToCamera * sphereCamRelPos.z) + camTarget
     }

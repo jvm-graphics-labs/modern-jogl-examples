@@ -1,22 +1,19 @@
 package main.tut06
 
-import buffer.destroy
+import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import extensions.toShortBuffer
-import glsl.programOf
-import main.*
+import uno.glsl.programOf
+import glm.*
 import main.framework.Framework
 import main.framework.Semantic
-import mat.Mat3x3
-import mat.Mat4x4
-import vec._3.Vec3
-import vec._4.Vec4
+import glm.mat.Mat3x3
+import glm.mat.Mat4
+import glm.vec._3.Vec3
+import glm.vec._4.Vec4
 import java.nio.FloatBuffer
 import java.util.*
 
@@ -40,7 +37,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
     var modelToCameraMatrixUnif = 0
     var cameraToClipMatrixUnif = 0
 
-    val cameraToClipMatrix = Mat4x4(0.0f)
+    val cameraToClipMatrix = Mat4(0.0f)
     val frustumScale = calcFrustumScale(45.0f)
 
     fun calcFrustumScale(fovDeg: Float) = 1.0f / glm.tan(fovDeg.rad / 2.0f)
@@ -49,102 +46,6 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
     val vao = intBufferBig(1)
 
     val numberOfVertices = 24
-
-    val GREEN_COLOR = floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f)
-    val BLUE_COLOR = floatArrayOf(0.0f, 0.0f, 1.0f, 1.0f)
-    val RED_COLOR = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
-    val YELLOW_COLOR = floatArrayOf(1.0f, 1.0f, 0.0f, 1.0f)
-    val CYAN_COLOR = floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f)
-    val MAGENTA_COLOR = floatArrayOf(1.0f, 0.0f, 1.0f, 1.0f)
-
-    val vertexData = floatArrayOf(
-
-            //Front
-            +1.0f, +1.0f, +1.0f,
-            +1.0f, -1.0f, +1.0f,
-            -1.0f, -1.0f, +1.0f,
-            -1.0f, +1.0f, +1.0f,
-
-            //Top
-            +1.0f, +1.0f, +1.0f,
-            -1.0f, +1.0f, +1.0f,
-            -1.0f, +1.0f, -1.0f,
-            +1.0f, +1.0f, -1.0f,
-
-            //Left
-            +1.0f, +1.0f, +1.0f,
-            +1.0f, +1.0f, -1.0f,
-            +1.0f, -1.0f, -1.0f,
-            +1.0f, -1.0f, +1.0f,
-
-            //Back
-            +1.0f, +1.0f, -1.0f,
-            -1.0f, +1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            +1.0f, -1.0f, -1.0f,
-
-            //Bottom
-            +1.0f, -1.0f, +1.0f,
-            +1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, +1.0f,
-
-            //Right
-            -1.0f, +1.0f, +1.0f,
-            -1.0f, -1.0f, +1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, +1.0f, -1.0f,
-
-
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-            GREEN_COLOR[0], GREEN_COLOR[1], GREEN_COLOR[2], GREEN_COLOR[3],
-
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-            BLUE_COLOR[0], BLUE_COLOR[1], BLUE_COLOR[2], BLUE_COLOR[3],
-
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-            RED_COLOR[0], RED_COLOR[1], RED_COLOR[2], RED_COLOR[3],
-
-            YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-            YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-            YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-            YELLOW_COLOR[0], YELLOW_COLOR[1], YELLOW_COLOR[2], YELLOW_COLOR[3],
-
-            CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-            CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-            CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-            CYAN_COLOR[0], CYAN_COLOR[1], CYAN_COLOR[2], CYAN_COLOR[3],
-
-            MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-            MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-            MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3],
-            MAGENTA_COLOR[0], MAGENTA_COLOR[1], MAGENTA_COLOR[2], MAGENTA_COLOR[3])
-
-    val indexData = shortArrayOf(
-
-            0, 1, 2,
-            2, 3, 0,
-
-            4, 5, 6,
-            6, 7, 4,
-
-            8, 9, 10,
-            10, 11, 8,
-
-            12, 13, 14,
-            14, 15, 12,
-
-            16, 17, 18,
-            18, 19, 16,
-
-            20, 21, 22,
-            22, 23, 20)
 
     val armature = Armature()
 
@@ -206,19 +107,18 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray(0)
 
-        vertexBuffer.destroy()
-        indexBuffer.destroy()
+        destroyBuffers(vertexBuffer, indexBuffer)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
         armature.draw(gl)
@@ -242,8 +142,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
         glDeleteBuffers(Buffer.MAX, bufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vao.destroy()
-        bufferObject.destroy()
+        destroyBuffers(vao, bufferObject)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -515,47 +414,47 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
 
     inner class MatrixStack {
 
-        val matrices = Stack<Mat4x4>()
-        var currMat = Mat4x4(1f)
+        val matrices = Stack<Mat4>()
+        var currMat = Mat4(1f)
 
         internal fun top() = currMat
 
         internal fun rotateX(angDeg: Float): MatrixStack {
-            currMat.mul_(Mat4x4(this@Hierarchy_.rotateX(angDeg)))
+            currMat.times_(Mat4(this@Hierarchy_.rotateX(angDeg)))
             return this
         }
 
         internal fun rotateY(angDeg: Float): MatrixStack {
-            currMat.mul_(Mat4x4(this@Hierarchy_.rotateY(angDeg)))
+            currMat.times_(Mat4(this@Hierarchy_.rotateY(angDeg)))
             return this
         }
 
         internal fun rotateZ(angDeg: Float): MatrixStack {
-            currMat.mul_(Mat4x4(this@Hierarchy_.rotateZ(angDeg)))
+            currMat.times_(Mat4(this@Hierarchy_.rotateZ(angDeg)))
             return this
         }
 
         internal fun scale(scaleVec: Vec3): MatrixStack {
 
-            val scaleMat = Mat4x4(scaleVec)
+            val scaleMat = Mat4(scaleVec)
 
-            currMat.mul_(scaleMat)
+            currMat.times_(scaleMat)
 
             return this
         }
 
         internal fun translate(offsetVec: Vec3): MatrixStack {
 
-            val translateMat = Mat4x4(1f)
+            val translateMat = Mat4(1f)
             translateMat[3] = Vec4(offsetVec)
 
-            currMat.mul_(translateMat)
+            currMat.times_(translateMat)
 
             return this
         }
 
         internal fun push(): MatrixStack {
-            matrices.push(Mat4x4(currMat))
+            matrices.push(Mat4(currMat))
             return this
         }
 
@@ -569,9 +468,8 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
 
     fun rotateX(angDeg: Float): Mat3x3 {
 
-        val andRad = angDeg.rad
-        val cos = glm.cos(andRad)
-        val sin = glm.sin(andRad)
+        val cos = angDeg.rad.cos
+        val sin = angDeg.rad.sin
 
         val theMat = Mat3x3(1f)
         theMat[1].y = cos; theMat[2].y = -sin
@@ -581,9 +479,8 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
 
     fun rotateY(angDeg: Float): Mat3x3 {
 
-        val andRad = angDeg.rad
-        val cos = glm.cos(andRad)
-        val sin = glm.sin(andRad)
+        val cos = angDeg.rad.cos
+        val sin = angDeg.rad.sin
 
         val theMat = Mat3x3(1f)
         theMat[0].x = cos; theMat[2].x = sin
@@ -593,13 +490,108 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
 
     fun rotateZ(angDeg: Float): Mat3x3 {
 
-        val andRad = angDeg.rad
-        val cos = glm.cos(andRad)
-        val sin = glm.sin(andRad)
+        val cos = angDeg.rad.cos
+        val sin = angDeg.rad.sin
 
         val theMat = Mat3x3(1f)
         theMat[0].x = cos; theMat[1].x = -sin
         theMat[0].y = sin; theMat[1].y = cos
         return theMat
     }
+
+    val GREEN_COLOR = floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f)
+    val BLUE_COLOR = floatArrayOf(0.0f, 0.0f, 1.0f, 1.0f)
+    val RED_COLOR = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
+    val YELLOW_COLOR = floatArrayOf(1.0f, 1.0f, 0.0f, 1.0f)
+    val CYAN_COLOR = floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f)
+    val MAGENTA_COLOR = floatArrayOf(1.0f, 0.0f, 1.0f, 1.0f)
+
+    val vertexData = floatArrayOf(
+
+            //Front
+            +1.0f, +1.0f, +1.0f,
+            +1.0f, -1.0f, +1.0f,
+            -1.0f, -1.0f, +1.0f,
+            -1.0f, +1.0f, +1.0f,
+
+            //Top
+            +1.0f, +1.0f, +1.0f,
+            -1.0f, +1.0f, +1.0f,
+            -1.0f, +1.0f, -1.0f,
+            +1.0f, +1.0f, -1.0f,
+
+            //Left
+            +1.0f, +1.0f, +1.0f,
+            +1.0f, +1.0f, -1.0f,
+            +1.0f, -1.0f, -1.0f,
+            +1.0f, -1.0f, +1.0f,
+
+            //Back
+            +1.0f, +1.0f, -1.0f,
+            -1.0f, +1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            +1.0f, -1.0f, -1.0f,
+
+            //Bottom
+            +1.0f, -1.0f, +1.0f,
+            +1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, +1.0f,
+
+            //Right
+            -1.0f, +1.0f, +1.0f,
+            -1.0f, -1.0f, +1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, +1.0f, -1.0f,
+
+
+            *GREEN_COLOR,
+            *GREEN_COLOR,
+            *GREEN_COLOR,
+            *GREEN_COLOR,
+
+            *BLUE_COLOR,
+            *BLUE_COLOR,
+            *BLUE_COLOR,
+            *BLUE_COLOR,
+
+            *RED_COLOR,
+            *RED_COLOR,
+            *RED_COLOR,
+            *RED_COLOR,
+
+            *YELLOW_COLOR,
+            *YELLOW_COLOR,
+            *YELLOW_COLOR,
+            *YELLOW_COLOR,
+
+            *CYAN_COLOR,
+            *CYAN_COLOR,
+            *CYAN_COLOR,
+            *CYAN_COLOR,
+
+            *MAGENTA_COLOR,
+            *MAGENTA_COLOR,
+            *MAGENTA_COLOR,
+            *MAGENTA_COLOR)
+
+    val indexData = shortArrayOf(
+
+            0, 1, 2,
+            2, 3, 0,
+
+            4, 5, 6,
+            6, 7, 4,
+
+            8, 9, 10,
+            10, 11, 8,
+
+            12, 13, 14,
+            14, 15, 12,
+
+            16, 17, 18,
+            18, 19, 16,
+
+            20, 21, 22,
+            22, 23, 20)
 }

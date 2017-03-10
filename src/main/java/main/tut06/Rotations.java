@@ -4,17 +4,15 @@
  */
 package main.tut06;
 
-import buffer.BufferUtils;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import glsl.ShaderProgramKt;
 import main.framework.Framework;
 import main.framework.Semantic;
-import mat.Mat3x3;
-import mat.Mat4x4;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import glm.mat.Mat3x3;
+import glm.mat.Mat4x4;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -23,7 +21,9 @@ import java.nio.ShortBuffer;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-import static main.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
+import static glm.GlmKt.glm;
 
 /**
  * @author gbarbieri
@@ -51,7 +51,7 @@ public class Rotations extends Framework {
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = (float) Math.toRadians(fovDeg);
+        float fovRad = glm.toRad(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -118,8 +118,8 @@ public class Rotations extends Framework {
         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl.glBindVertexArray(0);
@@ -138,7 +138,7 @@ public class Rotations extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
+        theProgram = programOf(gl, getClass(), "tut06", "pos-color-local-transform.vert", "color-passthrough.frag");
 
         modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
@@ -171,8 +171,7 @@ public class Rotations extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
+        destroyBuffers(vertexBuffer, indexBuffer);
     }
 
     @Override
@@ -218,8 +217,7 @@ public class Rotations extends Framework {
         gl.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
+        destroyBuffers(vao, bufferObject);
     }
 
     @Override
@@ -274,8 +272,8 @@ public class Rotations extends Framework {
                 case RotateX:
 
                     angRad = computeAngleRad(elapsedTime, 3.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                    cos = glm.cos(angRad);
+                    sin = glm.sin(angRad);
 
                     theMat.put(1f);
                     theMat.v11(cos);
@@ -287,8 +285,8 @@ public class Rotations extends Framework {
                 case RotateY:
 
                     angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                    cos = glm.cos(angRad);
+                    sin = glm.sin(angRad);
 
                     theMat.put(1f);
                     theMat.v00(cos);
@@ -300,8 +298,8 @@ public class Rotations extends Framework {
                 case RotateZ:
 
                     angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                    cos = glm.cos(angRad);
+                    sin = glm.sin(angRad);
 
                     theMat.put(1f);
                     theMat.v00(cos);
@@ -313,32 +311,32 @@ public class Rotations extends Framework {
                 case RotateAxis:
 
                     angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = (float) Math.cos(angRad);
-                    sin = (float) Math.sin(angRad);
+                    cos = glm.cos(angRad);
+                    sin = glm.sin(angRad);
                     float invCos = 1.0f - cos;
                     float invSin = 1.0f - sin;
 
                     Vec3 axis = new Vec3(1.0f).normalize_();
                     theMat.put(1f);
 
-                    theMat.v00((axis.x() * axis.x()) + ((1 - axis.x() * axis.x()) * cos));
-                    theMat.v10(axis.x() * axis.y() * (invCos) - (axis.z() * sin));
-                    theMat.v20(axis.x() * axis.z() * (invCos) + (axis.y() * sin));
+                    theMat.v00(axis.x * axis.x + (1 - axis.x * axis.x) * cos);
+                    theMat.v10(axis.x * axis.y * invCos - axis.z * sin);
+                    theMat.v20(axis.x * axis.z * invCos + axis.y * sin);
 
-                    theMat.v01(axis.x() * axis.y() * (invCos) + (axis.z() * sin));
-                    theMat.v11((axis.y() * axis.y()) + ((1 - axis.y() * axis.y()) * cos));
-                    theMat.v21(axis.y() * axis.z() * (invCos) - (axis.x() * sin));
+                    theMat.v01(axis.x * axis.y * invCos + axis.z * sin);
+                    theMat.v11(axis.y * axis.y + (1 - axis.y * axis.y) * cos);
+                    theMat.v21(axis.y * axis.z * invCos - axis.x * sin);
 
-                    theMat.v02(axis.x() * axis.z() * (invCos) - (axis.y() * sin));
-                    theMat.v12(axis.y() * axis.z() * (invCos) + (axis.x() * sin));
-                    theMat.v22((axis.z() * axis.z()) + ((1 - axis.z() * axis.z()) * cos));
+                    theMat.v02(axis.x * axis.z * invCos - axis.y * sin);
+                    theMat.v12(axis.y * axis.z * invCos + axis.x * sin);
+                    theMat.v22(axis.z * axis.z + (1 - axis.z * axis.z) * cos);
 
                     return theMat;
             }
         }
 
         private float computeAngleRad(float elapsedTime, float loopDuration) {
-            float scale = (float) (Math.PI * 2.0f / loopDuration);
+            float scale = (float) glm.pi * 2.0f / loopDuration;
             float currentTimeThroughLoop = elapsedTime % loopDuration;
             return currentTimeThroughLoop * scale;
         }

@@ -5,36 +5,25 @@
 package main.tut05;
 
 import com.jogamp.newt.event.KeyEvent;
-
-import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_BACK;
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_CW;
-import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-import static com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER;
-import static com.jogamp.opengl.GL.GL_FLOAT;
-import static com.jogamp.opengl.GL.GL_LEQUAL;
-import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
-import static com.jogamp.opengl.GL.GL_UNSIGNED_SHORT;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-
 import com.jogamp.opengl.GL3;
-
-import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
-
 import com.jogamp.opengl.util.GLBuffers;
-import buffer.BufferUtils;
-import glsl.ShaderProgramKt;
+import glm.Glm;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.Semantic;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import uno.glsl.ShaderProgramKt;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
+import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
+import static uno.buffer.UtilKt.destroyBuffers;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * Unfinished.
@@ -118,8 +107,8 @@ public class DepthFighting extends Framework {
         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorData);
         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
         gl.glBindVertexArray(0);
@@ -138,7 +127,7 @@ public class DepthFighting extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
+        theProgram = programOf(gl, getClass(), "tut05", "standard.vert", "standard.frag");
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset");
 
@@ -172,8 +161,7 @@ public class DepthFighting extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferUtils.destroyDirectBuffer(vertexBuffer);
-        BufferUtils.destroyDirectBuffer(indexBuffer);
+        destroyBuffers(vertexBuffer, indexBuffer);
     }
 
     @Override
@@ -202,7 +190,7 @@ public class DepthFighting extends Framework {
 
         float start = 2534.0f;
         float loopDuration = 5.0f;
-        float scale = (float) (Math.PI * 2.0f / loopDuration);
+        float scale = (float) Glm.pi * 2.0f / loopDuration;
 
         float elapsedTime = (System.currentTimeMillis() - timeStart) / 1_000.0f;
 
@@ -234,9 +222,7 @@ public class DepthFighting extends Framework {
         gl.glDeleteBuffers(Buffer.MAX, bufferObject);
         gl.glDeleteVertexArrays(1, vao);
 
-        BufferUtils.destroyDirectBuffer(vao);
-        BufferUtils.destroyDirectBuffer(bufferObject);
-        BufferUtils.destroyDirectBuffer(perspectiveMatrix);
+        destroyBuffers(vao, bufferObject, perspectiveMatrix);
     }
 
     @Override

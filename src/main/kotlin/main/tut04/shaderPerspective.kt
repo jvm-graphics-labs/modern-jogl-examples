@@ -1,19 +1,16 @@
 package main.tut04
 
-import buffer.BufferUtils
-import buffer.destroy
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import glsl.programOf
-import main.L
-import main.SIZE
+import glm.L
+import glm.SIZE
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import vec._4.Vec4
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 22.02.2017.
@@ -75,7 +72,7 @@ class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
 
         glUseProgram(theProgram)
 
@@ -85,8 +82,8 @@ class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorData.toLong())
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorData.L)
 
         glDrawArrays(GL_TRIANGLES, 0, 36)
 
@@ -106,8 +103,7 @@ class ShaderPerspective_ : Framework("Tutorial 04 - Shader Perspective") {
         glDeleteBuffers(1, vertexBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        vao.destroy()
-        vertexBufferObject.destroy()
+        destroyBuffers(vao, vertexBufferObject)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

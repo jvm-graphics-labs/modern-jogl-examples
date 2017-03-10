@@ -6,14 +6,14 @@ package main.tut07;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import glm.MatrixStack;
-import glsl.Program;
+import glm.mat.Mat4x4;
+import glm.vec._3.Vec3;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import mat.Mat4x4;
 import one.util.streamex.StreamEx;
 import org.xml.sax.SAXException;
-import vec._3.Vec3;
+import uno.glm.MatrixStack;
+import uno.glsl.Program;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
-import static main.GlmKt.glm;
+import static glm.GlmKt.glm;
 
 /**
  * @author gbarbieri
@@ -143,7 +143,7 @@ public class WorldScene extends Framework {
 
             gl.glDisable(GL3.GL_DEPTH_TEST);
 
-            Vec3 camAimVec = camTarget.sub(camPos);
+            Vec3 camAimVec = camTarget.minus(camPos);
 
             modelMatrix
                     .push()
@@ -164,8 +164,8 @@ public class WorldScene extends Framework {
 
     private Vec3 resolveCamPosition() {
 
-        float phi = glm.toRad(sphereCamRelPos.x());
-        float theta = glm.toRad(sphereCamRelPos.y() + 90.0f);
+        float phi = glm.toRad(sphereCamRelPos.x);
+        float theta = glm.toRad(sphereCamRelPos.y + 90.0f);
 
         float sinTheta = glm.sin(theta);
         float cosTheta = glm.cos(theta);
@@ -174,12 +174,12 @@ public class WorldScene extends Framework {
 
         Vec3 dirToCamera = new Vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
 
-        return dirToCamera.mul_(sphereCamRelPos.z()).add_(camTarget);
+        return dirToCamera.times_(sphereCamRelPos.z).plus_(camTarget);
     }
 
     private Mat4x4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
 
-        Vec3 lookDir = lookPt.sub(cameraPt).normalize();
+        Vec3 lookDir = lookPt.minus(cameraPt).normalize();
         Vec3 upDir = upPt.normalize();
 
         Vec3 rightDir = lookDir.cross(upDir).normalize();
@@ -195,7 +195,7 @@ public class WorldScene extends Framework {
         Mat4x4 transMat = new Mat4x4(1.0f);
         transMat.set(3, cameraPt.negate(), 1.0f);
 
-        return rotMat.mul_(transMat);
+        return rotMat.times_(transMat);
     }
 
     private void drawForest(GL3 gl, MatrixStack modelMatrix) {
@@ -466,45 +466,45 @@ public class WorldScene extends Framework {
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_W:
-                camTarget.z(camTarget.z() - (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.z -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
             case KeyEvent.VK_S:
-                camTarget.z(camTarget.z() + (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.z += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_D:
-                camTarget.x(camTarget.x() + (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.x += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
             case KeyEvent.VK_A:
-                camTarget.x(camTarget.x() - (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.x -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_E:
-                camTarget.y(camTarget.y() - (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.y -= e.isShiftDown() ? 0.4f : 4.0f;
                 break;
             case KeyEvent.VK_Q:
-                camTarget.y(camTarget.y() + (e.isShiftDown() ? 0.4f : 4.0f));
+                camTarget.y += e.isShiftDown() ? 0.4f : 4.0f;
                 break;
 
             case KeyEvent.VK_I:
-                sphereCamRelPos.y(sphereCamRelPos.y() - (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.y -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
             case KeyEvent.VK_K:
-                sphereCamRelPos.y(sphereCamRelPos.y() + (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.y += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_J:
-                sphereCamRelPos.x(sphereCamRelPos.x() - (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.x -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
             case KeyEvent.VK_L:
-                sphereCamRelPos.x(sphereCamRelPos.x() + (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.x += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_O:
-                sphereCamRelPos.z(sphereCamRelPos.z() - (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.z -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
             case KeyEvent.VK_U:
-                sphereCamRelPos.z(sphereCamRelPos.z() + (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.z += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_SPACE:
@@ -519,9 +519,9 @@ public class WorldScene extends Framework {
                 break;
         }
 
-        sphereCamRelPos.y(glm.clamp(sphereCamRelPos.y(), -78.75f, -1.0f));
-        camTarget.y(glm.clamp(camTarget.y(), 0.0f, camTarget.y()));
-        sphereCamRelPos.z(glm.clamp(sphereCamRelPos.z(), 5.0f, sphereCamRelPos.z()));
+        sphereCamRelPos.y = glm.clamp(sphereCamRelPos.y, -78.75f, -1.0f);
+        camTarget.y = glm.clamp(camTarget.y, 0.0f, camTarget.y);
+        sphereCamRelPos.z = glm.clamp(sphereCamRelPos.z, 5.0f, sphereCamRelPos.z);
     }
 
     class ProgramData {

@@ -1,20 +1,16 @@
 package main.tut03
 
-import buffer.destroy
+import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.util.glsl.ShaderProgram
-import extensions.intBufferBig
-import extensions.toFloatBuffer
-import glsl.programOf
-import glsl.shaderCodeOf
-import main.L
-import main.SIZE
+import uno.glsl.programOf
+import uno.glsl.shaderCodeOf
+import glm.*
 import main.framework.Framework
 import main.framework.Semantic
-import vec._4.Vec4
+import glm.vec._4.Vec4
 
 /**
  * Created by elect on 21/02/17.
@@ -75,7 +71,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 0f))
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 0f))
 
         glUseProgram(theProgram)
 
@@ -83,7 +79,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, 4, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
 
         glDrawArrays(GL_TRIANGLES, 0, 3)
 
@@ -102,8 +98,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
         glDeleteBuffers(1, positionBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        positionBufferObject.destroy()
-        vao.destroy()
+        destroyBuffers(positionBufferObject, vao)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

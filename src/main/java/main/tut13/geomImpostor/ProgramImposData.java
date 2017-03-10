@@ -5,13 +5,14 @@
  */
 package main.tut13.geomImpostor;
 
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 import com.jogamp.opengl.GL3;
-import static com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import main.framework.Semantic;
+
+import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
+import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
+import static com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER;
 
 /**
  *

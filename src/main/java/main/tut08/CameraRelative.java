@@ -6,15 +6,14 @@ package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import glm.MatrixStack;
-import glsl.ShaderProgramKt;
+import glm.mat.Mat4x4;
+import glm.quat.Quat;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import mat.Mat4x4;
 import org.xml.sax.SAXException;
-import quat.Quat;
-import vec._3.Vec3;
-import vec._4.Vec4;
+import uno.glm.MatrixStack;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -25,7 +24,8 @@ import java.util.logging.Logger;
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-import static main.GlmKt.glm;
+import static glm.GlmKt.glm;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
@@ -52,10 +52,10 @@ public class CameraRelative extends Framework {
 
     private Mesh ship, plane;
 
-    private float frustumScale = calcFrustumScale(45.0f);
+    private float frustumScale = calcFrustumScale(20.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = (float) Math.toRadians(fovDeg);
+        float fovRad = glm.toRad(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -93,7 +93,7 @@ public class CameraRelative extends Framework {
 
     private void initializeProgram(GL3 gl) {
 
-        theProgram = ShaderProgramKt.programOf(gl, getClass(), "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag");
+        theProgram = programOf(gl, getClass(), "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag");
 
         modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
         cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix");
@@ -159,8 +159,8 @@ public class CameraRelative extends Framework {
 
     private Vec3 resolveCamPosition() {
 
-        float phi = glm.toRad(sphereCamRelPos.x());
-        float theta = glm.toRad(sphereCamRelPos.y() + 90.0f);
+        float phi = glm.toRad(sphereCamRelPos.x);
+        float theta = glm.toRad(sphereCamRelPos.y + 90.0f);
 
         float sinTheta = glm.sin(theta);
         float cosTheta = glm.cos(theta);
@@ -169,12 +169,12 @@ public class CameraRelative extends Framework {
 
         Vec3 dirToCamera = new Vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
 
-        return dirToCamera.mul(sphereCamRelPos.z()).add(camTarget);
+        return dirToCamera.times(sphereCamRelPos.z).plus(camTarget);
     }
 
     private Mat4x4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
 
-        Vec3 lookDir = lookPt.sub(cameraPt).normalize();
+        Vec3 lookDir = lookPt.minus(cameraPt).normalize();
         Vec3 upDir = upPt.normalize();
 
         Vec3 rightDir = lookDir.cross(upDir).normalize();
@@ -190,7 +190,7 @@ public class CameraRelative extends Framework {
         Mat4x4 translMat = new Mat4x4(1.0f);
         translMat.set(3, new Vec4(cameraPt.negate(), 1.0f));
 
-        return rotationMat.mul(translMat);
+        return rotationMat.times(translMat);
     }
 
     @Override
@@ -207,12 +207,12 @@ public class CameraRelative extends Framework {
     }
 
     @Override
-    public void end(GL3 gl3) {
+    public void end(GL3 gl) {
 
-        gl3.glDeleteProgram(theProgram);
+        gl.glDeleteProgram(theProgram);
 
-        plane.dispose(gl3);
-        ship.dispose(gl3);
+        plane.dispose(gl);
+        ship.dispose(gl);
     }
 
     @Override
@@ -270,23 +270,23 @@ public class CameraRelative extends Framework {
             }
 
             case KeyEvent.VK_I:
-                sphereCamRelPos.y(sphereCamRelPos.y() - (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.y -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_K:
-                sphereCamRelPos.y(sphereCamRelPos.y() + (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.y += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_J:
-                sphereCamRelPos.x(sphereCamRelPos.x() - (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.x -= e.isShiftDown() ? 1.125f : 11.25f;
                 break;
 
             case KeyEvent.VK_L:
-                sphereCamRelPos.x(sphereCamRelPos.x() + (e.isShiftDown() ? 1.125f : 11.25f));
+                sphereCamRelPos.x += e.isShiftDown() ? 1.125f : 11.25f;
                 break;
         }
 
-        sphereCamRelPos.y(glm.clamp(sphereCamRelPos.y(), -78.75f, 10.0f));
+        sphereCamRelPos.y = glm.clamp(sphereCamRelPos.y, -78.75f, 10.0f);
     }
 
     private void offsetOrientation(Vec3 axis, float angDeg) {
@@ -295,7 +295,7 @@ public class CameraRelative extends Framework {
 
         axis.normalize();
 
-        axis.mul(glm.sin(angRad / 2.0f));
+        axis.times_(glm.sin(angRad / 2.0f));
         float scalar = glm.cos(angRad / 2.0f);
 
         Quat offsetQuat = new Quat(scalar, axis);
@@ -324,6 +324,6 @@ public class CameraRelative extends Framework {
             break;
         }
 
-        orientation.normalize();
+        orientation.normalize_();
     }
 }
