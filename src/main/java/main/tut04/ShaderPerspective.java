@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package main.tut04;
 
 import com.jogamp.newt.event.KeyEvent;
@@ -67,15 +64,15 @@ public class ShaderPerspective extends Framework {
         gl.glUseProgram(0);
     }
 
-    private void initializeVertexBuffer(GL3 gl3) {
+    private void initializeVertexBuffer(GL3 gl) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
 
-        gl3.glGenBuffers(1, vertexBufferObject);
+        gl.glGenBuffers(1, vertexBufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
-        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         destroyBuffer(vertexBuffer);
     }

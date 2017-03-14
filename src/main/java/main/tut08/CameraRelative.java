@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
@@ -303,11 +300,11 @@ public class CameraRelative extends Framework {
         switch (offset) {
 
             case OffsetRelative.MODEL:
-                orientation = orientation.mul(offsetQuat);
+                orientation.times_(offsetQuat);
                 break;
 
             case OffsetRelative.WORLD:
-                orientation = offsetQuat.mul(orientation);
+                orientation = offsetQuat.times(orientation);
                 break;
 
             case OffsetRelative.CAMERA: {
@@ -318,8 +315,8 @@ public class CameraRelative extends Framework {
                 Quat viewQuat = camMat.toQuat();
                 Quat invViewQuat = viewQuat.conjugate();
 
-                Quat worldQuat = invViewQuat.mul(offsetQuat).mul(viewQuat);
-                orientation = worldQuat.mul(orientation);
+                Quat worldQuat = invViewQuat.times(offsetQuat).times(viewQuat);
+                orientation = worldQuat.times(orientation);
             }
             break;
         }

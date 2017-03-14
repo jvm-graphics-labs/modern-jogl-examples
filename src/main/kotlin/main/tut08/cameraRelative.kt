@@ -211,7 +211,7 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
             KeyEvent.VK_SPACE -> {
 
-                offset = (offset++) % OffsetRelative.MAX
+                offset = (++offset) % OffsetRelative.MAX
 
                 when (offset) {
 
@@ -221,8 +221,6 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
                     OffsetRelative.CAMERA -> println("CAMERA_RELATIVE")
                 }
-
-                sphereCamRelPos.y -= if (e.isShiftDown) 1.125f else 11.25f
             }
 
             KeyEvent.VK_I -> sphereCamRelPos.y -= if (e.isShiftDown) 1.125f else 11.25f
@@ -248,9 +246,9 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
         when (offset) {
 
-            OffsetRelative.MODEL -> orientation = orientation.mul(offsetQuat)
+            OffsetRelative.MODEL -> orientation times_ offsetQuat
 
-            OffsetRelative.WORLD -> orientation = offsetQuat.mul(orientation)
+            OffsetRelative.WORLD -> orientation = offsetQuat * orientation
 
             OffsetRelative.CAMERA -> {
 
@@ -260,8 +258,8 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
                 val viewQuat = camMat.toQuat()
                 val invViewQuat = viewQuat.conjugate()
 
-                val worldQuat = invViewQuat.mul(offsetQuat).mul(viewQuat)
-                orientation = worldQuat.mul(orientation)
+                val worldQuat = invViewQuat * offsetQuat * viewQuat
+                orientation = worldQuat * orientation
             }
         }
 

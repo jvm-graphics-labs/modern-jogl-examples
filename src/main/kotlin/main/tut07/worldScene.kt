@@ -12,7 +12,6 @@ import glm.*
 import main.framework.Framework
 import main.framework.component.Mesh
 import glm.mat.Mat4
-import glm.mat.Mat4x4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import uno.buffer.put
@@ -146,7 +145,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         return (dirToCamera * sphereCamRelPos.z) + camTarget
     }
 
-    fun calcLookAtMatrix(cameraPt: Vec3, lookPt: Vec3, upPt: Vec3): Mat4x4 {
+    fun calcLookAtMatrix(cameraPt: Vec3, lookPt: Vec3, upPt: Vec3): Mat4 {
 
         val lookDir = (lookPt - cameraPt).normalize()
         val upDir = upPt.normalize()
@@ -161,7 +160,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
         rotMat.transpose_()
 
-        val transMat = Mat4x4(1.0f)
+        val transMat = Mat4(1.0f)
         transMat[3] = Vec4(cameraPt.negate(), 1.0f)
 
         return rotMat * transMat

@@ -7,7 +7,7 @@ import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glm.f
 import glm.glm
-import glm.mat.Mat4x4
+import glm.mat.Mat4
 import glm.rad
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
@@ -53,18 +53,18 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
 
     var gimbals by Delegates.notNull<Array<Mesh>>()
 
-    var `object`: Mesh? = null
+    var `object` by Delegates.notNull<Mesh>()
 
-    var theProgram: Int = 0
-    var modelToCameraMatrixUnif: Int = 0
-    var cameraToClipMatrixUnif: Int = 0
-    var baseColorUnif: Int = 0
+    var theProgram = 0
+    var modelToCameraMatrixUnif = 0
+    var cameraToClipMatrixUnif = 0
+    var baseColorUnif = 0
 
     val frustumScale = calcFrustumScale(20.0f)
 
     fun calcFrustumScale(fovDeg: Float) = 1.0f / glm.tan(fovDeg.rad / 2.0f)
 
-    val cameraToClipMatrix = Mat4x4(0.0f)
+    val cameraToClipMatrix = Mat4(0.0f)
 
     val angles = GimbalAngles()
 
@@ -133,7 +133,7 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
         glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
         glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().to(Framework.matBuffer))
 
-        `object`!!.render(gl, "tint")
+        `object`.render(gl, "tint")
 
         glUseProgram(0)
     }
@@ -187,7 +187,7 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
 
         gl.glDeleteProgram(theProgram)
 
-        `object`!!.dispose(gl)
+        `object`.dispose(gl)
         gimbals.forEach { it.dispose(gl) }
     }
 

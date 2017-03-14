@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package main.tut05;
 
 import com.jogamp.newt.event.KeyEvent;
@@ -91,52 +88,52 @@ public class OverlapNoDepth extends Framework {
         gl.glUseProgram(0);
     }
 
-    private void initializeBuffers(GL3 gl3) {
+    private void initializeBuffers(GL3 gl) {
 
         FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertexData);
         ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indexData);
 
-        gl3.glGenBuffers(Buffer.MAX, bufferObject);
+        gl.glGenBuffers(Buffer.MAX, bufferObject);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl3.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
-        gl3.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         destroyBuffers(vertexBuffer, indexBuffer);
     }
 
-    private void initializeVertexArrays(GL3 gl3) {
+    private void initializeVertexArrays(GL3 gl) {
 
-        gl3.glGenVertexArrays(VertexArray.MAX, vao);
+        gl.glGenVertexArrays(VertexArray.MAX, vao);
 
-        gl3.glBindVertexArray(vao.get(VertexArray._1));
+        gl.glBindVertexArray(vao.get(VertexArray._1));
 
         int colorDataOffset = Float.BYTES * 3 * numberOfVertices;
 
-        gl3.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
-        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
-        gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
+        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, 3, GL_FLOAT, false, Vec3.SIZE, 0);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, 4, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
-        gl3.glBindVertexArray(vao.get(VertexArray._2));
+        gl.glBindVertexArray(vao.get(VertexArray._2));
 
         int positionDataOffset = Float.BYTES * 3 * (numberOfVertices / 2);
         colorDataOffset += Float.BYTES * 4 * (numberOfVertices / 2);
 
         //Use the same buffer object previously bound to GL_ARRAY_BUFFER.
-        gl3.glEnableVertexAttribArray(Semantic.Attr.POSITION);
-        gl3.glEnableVertexAttribArray(Semantic.Attr.COLOR);
-        gl3.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, positionDataOffset);
-        gl3.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
-        gl3.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
+        gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
+        gl.glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, positionDataOffset);
+        gl.glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
 
-        gl3.glBindVertexArray(0);
+        gl.glBindVertexArray(0);
     }
 
     @Override

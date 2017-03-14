@@ -2,6 +2,7 @@
 package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
+
 import static com.jogamp.opengl.GL.GL_BACK;
 import static com.jogamp.opengl.GL.GL_CULL_FACE;
 import static com.jogamp.opengl.GL.GL_CW;
@@ -16,43 +17,29 @@ import com.jogamp.opengl.GL3;
 import main.framework.Framework;
 import main.framework.component.Mesh;
 import glm.mat.Mat4x4;
+import glm.quat.Quat;
 import glm.vec._3.Vec3;
-import glm.vec._4.Vec4;
 import uno.glm.MatrixStack;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
-import one.util.streamex.IntStreamEx;
+
 import org.xml.sax.SAXException;
 
 /**
- *
  * @author gbarbieri
  */
-public class GimbalLock extends Framework {
-
-   private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
+public class QuaternionYPR extends Framework {
 
     public static void main(String[] args) {
-        new GimbalLock("Tutorial 08 - Gimbal Lock");
+        new QuaternionYPR("Tutorial 08 - Quaternion YPR");
     }
 
-    public GimbalLock(String title) {
+    public QuaternionYPR(String title) {
         super(title);
-    }
-
-    private interface Gimbal {
-
-        int LARGE = 0;
-        int MEDIUM = 1;
-        int SMALL = 2;
-        int MAX = 3;
-    }
-
-    private enum GimbalAxis {
-        X, Y, Z
     }
 
     private class GimbalAngles {
@@ -68,9 +55,7 @@ public class GimbalLock extends Framework {
         }
     }
 
-    private Mesh[] gimbals = new Mesh[Gimbal.MAX];
-
-    private Mesh object;
+    private Mesh ship;
 
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif, baseColorUnif;
 
@@ -85,7 +70,9 @@ public class GimbalLock extends Framework {
 
     private GimbalAngles angles = new GimbalAngles();
 
-    private boolean drawGimbals = true;
+    private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+    private boolean rightMultiply = true;
 
     @Override
     public void init(GL3 gl) {
@@ -93,12 +80,9 @@ public class GimbalLock extends Framework {
         initializeProgram(gl);
 
         try {
-            for (int loop = 0; loop < Gimbal.MAX; loop++) {
-                gimbals[loop] = new Mesh(gl, getClass(), "tut08/" + GIMBALS_SCR[loop]);
-            }
-            object = new Mesh(gl, getClass(), "tut08/Ship.xml");
+            ship = new Mesh(gl, getClass(), "tut08/Ship.xml");
         } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
-            Logger.getLogger(GimbalLock.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(QuaternionYPR.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         gl.glEnable(GL_CULL_FACE);
@@ -138,65 +122,22 @@ public class GimbalLock extends Framework {
         gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
-        MatrixStack currMatrix = new MatrixStack()
-                .translate(new Vec3(0.0f, 0.0f, -200.0f))
-                .rotateX(angles.angleX);
-        drawGimbal(gl, currMatrix, GimbalAxis.X, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
-
-        currMatrix.rotateY(angles.angleY);
-        drawGimbal(gl, currMatrix, GimbalAxis.Y, new Vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        currMatrix.rotateY(angles.angleZ);
-        drawGimbal(gl, currMatrix, GimbalAxis.Z, new Vec4(1.0f, 0.3f, 0.3f, 1.0f));
+        MatrixStack matrixStack = new MatrixStack()
+                .translate(0.0f, 0.0f, -200.0f)
+                .applyMatrix(orientation.toMat4());
 
         gl.glUseProgram(theProgram);
-        currMatrix
-                .scale(new Vec3(3.0f))
-                .rotateX(-90);
-        //Set the base color for this object.
+
+        matrixStack
+                .scale(new Vec3(3.0f, 3.0f, 3.0f))
+                .rotateX(-90.0f);
+
         gl.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);
-        gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().to(matBuffer));
-
-        object.render(gl, "tint");
-
-        gl.glUseProgram(0);
-    }
-
-    private void drawGimbal(GL3 gl, MatrixStack matrixStack, GimbalAxis axis, Vec4 baseColor) {
-
-        if (!drawGimbals) {
-            return;
-        }
-
-        matrixStack.push();
-
-        switch (axis) {
-
-            case X:
-                break;
-
-            case Y:
-                matrixStack
-                        .rotateZ(90.0f)
-                        .rotateX(90.0f);
-                break;
-
-            case Z:
-                matrixStack
-                        .rotateY(90.0f)
-                        .rotateX(90.0f);
-                break;
-        }
-
-        gl.glUseProgram(theProgram);
-        //Set the base color for this object.
-        gl.glUniform4fv(baseColorUnif, 1, baseColor.to(vecBuffer));
         gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top().to(matBuffer));
 
-        gimbals[axis.ordinal()].render(gl);
+        ship.render(gl, "tint");
 
         gl.glUseProgram(0);
-        matrixStack.pop();
     }
 
     @Override
@@ -217,8 +158,24 @@ public class GimbalLock extends Framework {
 
         gl.glDeleteProgram(theProgram);
 
-        object.dispose(gl);
-        IntStreamEx.range(Gimbal.MAX).forEach(i -> gimbals[i].dispose(gl));
+        ship.dispose(gl);
+    }
+
+    private void offsetOrientation(Vec3 axis, float angDeg) {
+
+        float angRad = glm.toRad(angDeg);
+
+        axis.normalize_();
+
+        axis.times_(glm.sin(angRad / 2.0f));
+        float scalar = glm.cos(angRad / 2.0f);
+
+        Quat offset = new Quat(scalar, axis);
+
+        if (rightMultiply)
+            orientation.times_(offset);
+        else
+            orientation = offset.times(orientation);
     }
 
     @Override
@@ -234,28 +191,29 @@ public class GimbalLock extends Framework {
                 break;
 
             case KeyEvent.VK_W:
-                angles.angleX += smallAngleIncrement;
+                offsetOrientation(new Vec3(1.0f, 0.0f, 0.0f), smallAngleIncrement);
                 break;
             case KeyEvent.VK_S:
-                angles.angleX -= smallAngleIncrement;
+                offsetOrientation(new Vec3(1.0f, 0.0f, 0.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_A:
-                angles.angleY += smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 0.0f, 1.0f), smallAngleIncrement);
                 break;
             case KeyEvent.VK_D:
-                angles.angleY -= smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 0.0f, 1.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_Q:
-                angles.angleZ += smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 1.0f, 0.0f), smallAngleIncrement);
                 break;
             case KeyEvent.VK_E:
-                angles.angleZ -= smallAngleIncrement;
+                offsetOrientation(new Vec3(0.0f, 1.0f, 0.0f), -smallAngleIncrement);
                 break;
 
             case KeyEvent.VK_SPACE:
-                drawGimbals = !drawGimbals;
+                rightMultiply = !rightMultiply;
+                System.out.println(rightMultiply ? "Right-multiply" : "Left-multiply");
                 break;
         }
     }

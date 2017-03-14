@@ -8,7 +8,8 @@
 //import glm.Glm;
 //import glm.quat.Quat;
 //import glm.vec._4.Vec4;
-//import glutil.Timer;
+//import uno.time.Timer;
+//import static glm.GlmKt.glm;
 //
 ///**
 // *
@@ -75,7 +76,7 @@
 //
 //        public void startAnimation(int destination, float duration) {
 //            finalOrient = destination;
-//            currTimer = new Timer(Timer.Type.SINGLE, duration);
+//            currTimer = new Timer(Timer.Type.Single, duration);
 //        }
 //
 //        public int getFinalX() {
@@ -84,26 +85,27 @@
 //
 //        private Quat slerp(Quat v0, Quat v1, float alpha) {
 //
-//            float dot = Glm.dot(v0, v1);
+//            float dot = glm.dot(v0, v1);
+//
 //            final float DOT_THRESHOLD = 0.9995f;
 //            if (dot > DOT_THRESHOLD) {
 //                return lerp(v0, v1, alpha);
 //            }
-//            Glm.clamp(dot, -1.0f, 1.0f);
+//            glm.clamp(dot, -1.0f, 1.0f);
 //            float theta0 = (float) Math.acos(dot);
 //            float theta = theta0 * alpha;
 //
-//            Quat v2 = v1.sub_(v0.mul_(dot));
+//            Quat v2 = v1.minus(v0.times(dot));
 //            v2.normalize();
 //
-//            return v0.mul_(Math.cos(theta)).add_(v2.mul_(Math.sin(theta)));
+//            return v0.times(glm.cos(theta)).plus(v2.times(glm.sin(theta)));
 //        }
 //
 //        private Quat lerp(Quat v0, Quat v1, float alpha) {
 //
 //            Vec4 start = vectorize(v0);
 //            Vec4 end = vectorize(v1);
-//            Vec4 interp = Glm.mix_(start, end, alpha);
+//            Vec4 interp = glm.mix(start, end, alpha);
 //
 //            System.out.println("alpha: " + alpha + ", " + interp.toString());
 //
