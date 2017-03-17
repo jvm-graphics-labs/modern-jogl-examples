@@ -1,8 +1,5 @@
-///*
-// * To change this template, choose Tools | Templates
-// * and open the template in the editor.
-// */
-//package main.tut09.basicLighting;
+//
+//package main.tut09;
 //
 //import com.jogamp.newt.event.KeyEvent;
 //import com.jogamp.newt.event.MouseEvent;
@@ -12,44 +9,35 @@
 //import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
 //import static com.jogamp.opengl.GL.GL_DYNAMIC_DRAW;
 //import static com.jogamp.opengl.GL.GL_LEQUAL;
+//import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
+//import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
 //import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 //import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 //import static com.jogamp.opengl.GL2ES3.GL_UNIFORM_BUFFER;
 //import com.jogamp.opengl.GL3;
 //import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 //import com.jogamp.opengl.util.GLBuffers;
-//import glutil.BufferUtils;
+//import com.jogamp.opengl.util.glsl.ShaderCode;
+//import com.jogamp.opengl.util.glsl.ShaderProgram;
+//import glm.mat.Mat4x4;
 //import main.framework.Framework;
 //import main.framework.Semantic;
 //import main.framework.component.Mesh;
-//import glm.mat._3.Mat3;
-//import glm.mat._4.Mat4;
 //import glm.quat.Quat;
 //import glm.vec._3.Vec3;
 //import glm.vec._4.Vec4;
-//import glutil.MatrixStack;
 //import java.io.IOException;
-//import java.nio.FloatBuffer;
 //import java.nio.IntBuffer;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 //import javax.xml.parsers.ParserConfigurationException;
 //import org.xml.sax.SAXException;
-//import view.ObjectData;
-//import view.ObjectPole;
-//import view.ViewData;
-//import view.ViewPole;
-//import view.ViewScale;
 //
 ///**
 // *
 // * @author gbarbieri
 // */
 //public class BasicLighting extends Framework {
-//
-//    private final String SHADERS_ROOT = "/tut09/basicLighting/shaders", MESHES_ROOT = "/tut09/data/",
-//            WHITE_VERT_SHADER_SRC = "dir-vertex-lighting-pn", COLOR_VERT_SHADER_SRC = "dir-vertex-lighting-pcn",
-//            FRAG_SHADER_SRC = "color-passthrough", CYLINDER_SRC = "UnitCylinder.xml", PLANE_SRC = "LargePlane.xml";
 //
 //    public static void main(String[] args) {
 //        new BasicLighting("Tutorial 09 - Basic Lighting");
@@ -60,11 +48,12 @@
 //    }
 //
 //    private ProgramData whiteDiffuseColor, vertexDiffuseColor;
+//
 //    private Mesh cylinderMesh, planeMesh;
+//
 //    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 //
-//    private float frustumScale = (float) (1.0f / Math.tan(Math.toRadians(20.0f) / 2.0));
-//    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
+//    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
 //
 //    private ViewData initialViewData = new ViewData(
 //            new Vec3(0.0f, 0.5f, 0.0f),
@@ -266,5 +255,45 @@
 //        planeMesh.dispose(gl3);
 //
 //        BufferUtils.destroyDirectBuffer(projectionUniformBuffer);
+//    }
+//
+//    class ProgramData {
+//
+//        public int theProgram;
+//
+//        public int dirToLightUnif;
+//        public int lightIntensityUnif;
+//
+//        public int modelToCameraMatrixUnif;
+//        public int normalModelToCameraMatrixUnif;
+//
+//        public ProgramData(GL3 gl3, String shaderRoot, String vertSrc, String fragSrc) {
+//
+//            ShaderProgram shaderProgram = new ShaderProgram();
+//
+//            ShaderCode vertShaderCode = ShaderCode.create(gl3, GL_VERTEX_SHADER, this.getClass(), shaderRoot, null,
+//                    vertSrc, "vert", null, true);
+//            ShaderCode fragShaderCode = ShaderCode.create(gl3, GL_FRAGMENT_SHADER, this.getClass(), shaderRoot, null,
+//                    fragSrc, "frag", null, true);
+//
+//            shaderProgram.add(vertShaderCode);
+//            shaderProgram.add(fragShaderCode);
+//
+//            shaderProgram.link(gl3, System.out);
+//
+//            theProgram = shaderProgram.program();
+//
+//            vertShaderCode.destroy(gl3);
+//            fragShaderCode.destroy(gl3);
+//
+//            modelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "modelToCameraMatrix");
+//            normalModelToCameraMatrixUnif = gl3.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
+//            dirToLightUnif = gl3.glGetUniformLocation(theProgram, "dirToLight");
+//            lightIntensityUnif = gl3.glGetUniformLocation(theProgram, "lightIntensity");
+//
+//            gl3.glUniformBlockBinding(theProgram,
+//                    gl3.glGetUniformBlockIndex(theProgram, "Projection"),
+//                    Semantic.Uniform.PROJECTION);
+//        }
 //    }
 //}

@@ -2,38 +2,26 @@
 package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
-
-import static com.jogamp.opengl.GL.GL_BACK;
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_CW;
-import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-import static com.jogamp.opengl.GL.GL_LEQUAL;
-import static com.jogamp.opengl.GL2ES2.GL_FRAGMENT_SHADER;
-import static com.jogamp.opengl.GL2ES2.GL_VERTEX_SHADER;
-import static com.jogamp.opengl.GL2ES3.GL_COLOR;
-import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
-
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.util.glsl.ShaderCode;
-import com.jogamp.opengl.util.glsl.ShaderProgram;
 import glm.mat.Mat4x4;
 import glm.quat.Quat;
+import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import glm.mat.Mat4x4;
-import glm.vec._3.Vec3;
+import org.xml.sax.SAXException;
 import uno.glm.MatrixStack;
+import uno.time.Timer;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.xml.sax.SAXException;
-import uno.time.Timer;
-
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES3.GL_COLOR;
+import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import static glm.GlmKt.glm;
 import static uno.glsl.UtilKt.programOf;
 
@@ -62,6 +50,7 @@ public class Interpolation extends Framework {
     }
 
     private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+
     private Orientation orient = new Orientation();
 
     @Override
@@ -160,17 +149,14 @@ public class Interpolation extends Framework {
                 break;
         }
 
-        for (int i = 0; i < orientKeys.length; i++) {
-            if (e.getKeyCode() == orientKeys[i]) {
+        for (int i = 0; i < orientKeys.length; i++)
+            if (e.getKeyCode() == orientKeys[i])
                 applyOrientation(i);
-            }
-        }
     }
 
     private void applyOrientation(int index) {
-        if (!orient.isAnimating()) {
+        if (!orient.isAnimating())
             orient.animateToOrient(index);
-        }
     }
 
     private final short[] orientKeys = {
@@ -204,11 +190,10 @@ public class Interpolation extends Framework {
         }
 
         public Quat getOrient() {
-            if (isAnimating) {
+            if (isAnimating)
                 return anim.getOrient(orients[currentOrient], slerp);
-            } else {
+            else
                 return orients[currentOrient];
-            }
         }
 
         public boolean isAnimating() {
@@ -226,9 +211,9 @@ public class Interpolation extends Framework {
         }
 
         public void animateToOrient(int destination) {
-            if (currentOrient == destination) {
+            if (currentOrient == destination)
                 return;
-            }
+
             anim.startAnimation(destination, 1.0f);
             isAnimating = true;
         }
@@ -243,11 +228,10 @@ public class Interpolation extends Framework {
             }
 
             public Quat getOrient(Quat initial, boolean slerp) {
-                if (slerp) {
+                if (slerp)
                     return slerp(initial, orients[finalOrient], currTimer.getAlpha());
-                } else {
+                else
                     return lerp(initial, orients[finalOrient], currTimer.getAlpha());
-                }
             }
 
             public void startAnimation(int destination, float duration) {
@@ -265,41 +249,30 @@ public class Interpolation extends Framework {
 
         float dot = glm.dot(v0, v1);
         final float DOT_THRESHOLD = 0.9995f;
-        if (dot > DOT_THRESHOLD) {
+        if (dot > DOT_THRESHOLD)
             return lerp(v0, v1, alpha);
-        }
-        glm.clamp(dot, -1.0f, 1.0f);
-        float theta0 = (float) Math.acos(dot);
+
+        dot = glm.clamp(dot, -1.0f, 1.0f);
+        float theta0 = glm.acos(dot);
         float theta = theta0 * alpha;
 
         Quat v2 = v1.minus(v0.times(dot));
-        v2.normalize();
+        v2.normalize_();
 
         return v0.times(glm.cos(theta)).plus(v2.times(glm.sin(theta)));
     }
 
+    // TODO check lerp thinkness
     private Quat lerp(Quat v0, Quat v1, float alpha) {
 
-        Vec4 start = vectorize(v0);
-        Vec4 end = vectorize(v1);
+        Vec4 start = v0.vectorize();
+        Vec4 end = v1.vectorize();
         Vec4 interp = glm.mix(start, end, alpha);
 
         System.out.println("alpha: " + alpha + ", " + interp);
 
-        interp.normalize();
-        return new Quat(interp.w, interp.x, interp.y, interp.z);
-    }
-
-    private Vec4 vectorize(Quat theQuat) {
-
-        Vec4 ret = new Vec4();
-
-        ret.x = theQuat.x;
-        ret.y = theQuat.y;
-        ret.z = theQuat.z;
-        ret.w = theQuat.w;
-
-        return ret;
+        interp.normalize_();
+        return new Quat(interp);
     }
 
     private final Quat[] orients = {
@@ -307,7 +280,7 @@ public class Interpolation extends Framework {
             new Quat(0.5f, 0.5f, -0.5f, 0.5f),
             new Quat(-0.4895f, -0.7892f, -0.3700f, -0.02514f),
             new Quat(0.4895f, 0.7892f, 0.3700f, 0.02514f),
-            //
+
             new Quat(0.3840f, -0.1591f, -0.7991f, -0.4344f),
             new Quat(0.5537f, 0.5208f, 0.6483f, 0.0410f),
             new Quat(0.0f, 0.0f, 1.0f, 0.0f)};
