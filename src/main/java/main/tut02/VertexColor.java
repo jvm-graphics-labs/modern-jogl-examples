@@ -107,8 +107,7 @@ public class VertexColor extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.remove(window);
-                window.destroy();
+                quit();
                 break;
         }
     }

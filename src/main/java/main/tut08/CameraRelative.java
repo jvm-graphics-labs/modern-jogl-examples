@@ -220,8 +220,7 @@ public class CameraRelative extends Framework {
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_ESCAPE:
-                animator.remove(window);
-                window.destroy();
+                quit();
                 break;
 
             case KeyEvent.VK_W:

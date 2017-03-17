@@ -151,10 +151,7 @@ class VertexClipping_ : Framework("Tutorial 05 - Vertex Clipping") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
     }
 

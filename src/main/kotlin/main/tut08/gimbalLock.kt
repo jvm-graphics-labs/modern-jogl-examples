@@ -197,10 +197,7 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
 
         when (e.keyCode) {
 
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
 
             KeyEvent.VK_W -> angles.angleX += smallAngleIncrement
             KeyEvent.VK_S -> angles.angleX -= smallAngleIncrement

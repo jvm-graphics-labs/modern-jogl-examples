@@ -398,10 +398,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
             KeyEvent.VK_SPACE -> drawLookAtPoint = !drawLookAtPoint
 
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
         //                camTarget.print("Target"); TODO
         //                sphereCamRelPos.print("Position");

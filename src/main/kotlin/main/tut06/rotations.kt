@@ -211,10 +211,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
     }
 

@@ -104,10 +104,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
     }
 }

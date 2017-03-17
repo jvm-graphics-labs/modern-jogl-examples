@@ -125,10 +125,7 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
     }
 

@@ -127,10 +127,7 @@ class Interpolation_ : Framework("Tutorial 08 - Interpolation") {
 
         when (e.keyCode) {
 
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
 
             KeyEvent.VK_SPACE -> {
                 val slerp = orient.toggleSlerp()

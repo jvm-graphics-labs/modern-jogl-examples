@@ -511,8 +511,7 @@ public class WorldScene extends Framework {
                 break;
 
             case KeyEvent.VK_ESCAPE:
-                animator.remove(window);
-                window.destroy();
+                quit();
                 break;
         }
 

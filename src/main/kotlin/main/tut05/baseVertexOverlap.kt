@@ -143,10 +143,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
         }
     }
 
