@@ -6,7 +6,7 @@ apply plugin: 'kotlin'
 
 buildscript {
 
-    ext.kotlin_version = '1.1.0'
+    ext.kotlin_version = '1.1.1'
 
     repositories {
         mavenCentral()
@@ -22,8 +22,8 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile 'com.github.elect86:glm:c64070b8452cf1fa4f23fd2d5a1f913b724abc43'
-    compile 'com.github.elect86:uno-sdk:925235b75fa5f9d68868c50ce3c658c00e3dc361'
+    compile 'com.github.kotlin-graphics:glm:f4e2b5903a28960cb9f6da0e1cf70b7275da9905'
+    compile 'com.github.kotlin-graphics:uno-sdk:2265449f9627274073e0394ca15afcb3621ab25e'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'

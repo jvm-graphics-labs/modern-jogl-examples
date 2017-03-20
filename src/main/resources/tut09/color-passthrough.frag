@@ -3,12 +3,12 @@
 
 #include semantic.glsl
 
-smooth in vec4 theColor;
-uniform vec4 baseColor;
+
+smooth in vec4 interpColor;
 
 layout (location = FRAG_COLOR) out vec4 outputColor;
 
 void main()
 {
-    outputColor = theColor * baseColor;
+    outputColor = interpColor;
 }
