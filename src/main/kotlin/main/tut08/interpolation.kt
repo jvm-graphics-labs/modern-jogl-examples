@@ -124,7 +124,7 @@ class Interpolation_ : Framework("Tutorial 08 - Interpolation") {
     }
 
     override fun keyPressed(e: KeyEvent) {
-
+        println(e)
         when (e.keyCode) {
 
             KeyEvent.VK_ESCAPE -> quit()

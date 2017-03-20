@@ -146,7 +146,6 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
     }
 
     @Override
