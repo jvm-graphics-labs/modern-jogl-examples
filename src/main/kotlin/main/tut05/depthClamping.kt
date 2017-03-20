@@ -159,10 +159,7 @@ class DepthClamping_ : Framework("Tutorial 05 - Depth Clamping") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
             KeyEvent.VK_SPACE -> depthClampingActive = !depthClampingActive
         }
     }

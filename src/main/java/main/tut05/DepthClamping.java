@@ -171,8 +171,7 @@ public class DepthClamping extends Framework {
 
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_ESCAPE:
-                animator.remove(window);
-                window.destroy();
+                quit();
                 break;
             case KeyEvent.VK_SPACE:
                 depthClampingActive = !depthClampingActive;

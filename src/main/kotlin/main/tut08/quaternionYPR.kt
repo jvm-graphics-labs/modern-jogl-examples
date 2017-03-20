@@ -157,10 +157,7 @@ class QuaternionYPR_() : Framework("Tutorial 08 - Quaternion YPR") {
 
         when (e.keyCode) {
 
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
 
             KeyEvent.VK_W -> offsetOrientation(Vec3(1.0f, 0.0f, 0.0f), smallAngleIncrement)
             KeyEvent.VK_S -> offsetOrientation(Vec3(1.0f, 0.0f, 0.0f), -smallAngleIncrement)

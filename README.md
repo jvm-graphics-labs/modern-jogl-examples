@@ -22,7 +22,7 @@ Status:
 - [x] Chapter 5, Objects at Depth
 - [x] Chapter 6, Objects in Motion
 - [x] Chapter 7, World in Motion
-- [ ] Chapter 8, Getting Oriented
+- [x] Chapter 8, Getting Oriented
 - [ ] Chapter 9, Lights On
 - [ ] Chapter 10, Plane Lights
 - [ ] Chapter 11, Shinies

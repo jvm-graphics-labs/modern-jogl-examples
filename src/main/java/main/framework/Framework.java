@@ -13,6 +13,7 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
+import com.sun.org.apache.xpath.internal.SourceTree;
 import uno.debug.GlDebugOutput;
 import glm.vec._2.Vec2i;
 
@@ -80,11 +81,12 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
             public void windowDestroyed(WindowEvent e) {
                 new Thread(new Runnable() {
                     public void run() {
+                        System.out.println("in");
                         //stop the animator thread when user close the window
                         animator.stop();
                         // This is actually redundant since the JVM will terminate when all threads are closed.
                         // It's useful just in case you create a thread and you forget to stop it.
-                        System.exit(0);
+                        System.exit(1);
                     }
                 }).start();
             }
@@ -130,6 +132,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
+        System.out.println("dispose");
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);
@@ -143,7 +146,6 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
     }
 
     @Override
@@ -189,4 +191,14 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
     public void mouseWheelMoved(MouseEvent e) {
     }
 
+    /** Note: calling System.exit() synchronously inside the draw, reshape or init callbacks can lead to deadlocks on
+     * certain platforms (in particular, X11) because the JAWT's locking routines cause a global AWT lock to be grabbed.
+     * Instead run the exit routine in another thread.  */
+    protected void quit() {
+        new Thread(new Runnable() {
+            public void run() {
+                window.destroy();
+            }
+        }).start();
+    }
 }

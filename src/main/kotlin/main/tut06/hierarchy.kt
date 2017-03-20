@@ -148,10 +148,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
     override fun keyPressed(keyEvent: KeyEvent) {
 
         when (keyEvent.keyCode) {
-            KeyEvent.VK_ESCAPE -> {
-                animator.remove(window)
-                window.destroy()
-            }
+            KeyEvent.VK_ESCAPE -> quit()
             KeyEvent.VK_A -> armature.adjBase(true)
             KeyEvent.VK_D -> armature.adjBase(false)
             KeyEvent.VK_W -> armature.adjUpperArm(false)
