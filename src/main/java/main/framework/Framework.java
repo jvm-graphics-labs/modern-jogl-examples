@@ -13,7 +13,6 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
-import com.sun.org.apache.xpath.internal.SourceTree;
 import uno.debug.GlDebugOutput;
 import glm.vec._2.Vec2i;
 

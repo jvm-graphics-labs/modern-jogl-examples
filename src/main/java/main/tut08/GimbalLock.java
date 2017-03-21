@@ -15,7 +15,7 @@ import static uno.glsl.UtilKt.programOf;
 import com.jogamp.opengl.GL3;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import glm.mat.Mat4x4;
+import glm.mat.Mat4;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import uno.glm.MatrixStack;
@@ -81,7 +81,7 @@ public class GimbalLock extends Framework {
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
-    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
 
     private GimbalAngles angles = new GimbalAngles();
 

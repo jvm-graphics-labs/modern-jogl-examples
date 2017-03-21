@@ -3,7 +3,7 @@ package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import glm.mat.Mat4x4;
+import glm.mat.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
@@ -49,7 +49,7 @@ public class Interpolation extends Framework {
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
-    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
 
     private Orientation orient = new Orientation();
 

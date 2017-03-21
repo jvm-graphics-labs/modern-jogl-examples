@@ -6,8 +6,8 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.mat.Mat3x3;
-import glm.mat.Mat4x4;
+import glm.mat.Mat3;
+import glm.mat.Mat4;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 
@@ -44,7 +44,7 @@ public class Rotations extends Framework {
 
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
 
-    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
@@ -184,7 +184,7 @@ public class Rotations extends Framework {
         float elapsedTime = (System.currentTimeMillis() - start) / 1_000f;
         for (Instance currInst : instanceList) {
 
-            Mat4x4 transformMatrix = currInst.constructMatrix(elapsedTime);
+            Mat4 transformMatrix = currInst.constructMatrix(elapsedTime);
 
             gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
@@ -240,23 +240,23 @@ public class Rotations extends Framework {
 
         private Mode mode;
         private Vec3 offset;
-        private Mat3x3 theMat = new Mat3x3();
+        private Mat3 theMat = new Mat3();
 
         Instance(Mode mode, Vec3 offset) {
             this.mode = mode;
             this.offset = offset;
         }
 
-        Mat4x4 constructMatrix(float elapsedTime) {
+        Mat4 constructMatrix(float elapsedTime) {
 
-            Mat3x3 rotMatrix = calcRotation(elapsedTime);
-            Mat4x4 theMat = new Mat4x4(rotMatrix);
+            Mat3 rotMatrix = calcRotation(elapsedTime);
+            Mat4 theMat = new Mat4(rotMatrix);
             theMat.set(3, new Vec4(offset, 1.0f));
 
             return theMat;
         }
 
-        private Mat3x3 calcRotation(float elapsedTime) {
+        private Mat3 calcRotation(float elapsedTime) {
 
             float angRad, cos, sin;
 

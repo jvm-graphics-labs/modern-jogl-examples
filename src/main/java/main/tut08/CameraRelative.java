@@ -3,7 +3,7 @@ package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import glm.mat.Mat4x4;
+import glm.mat.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
@@ -56,7 +56,7 @@ public class CameraRelative extends Framework {
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
-    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
 
     private Vec3 camTarget = new Vec3(0.0f, 10.0f, 0.0f);
     private Quat orientation = new Quat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -169,7 +169,7 @@ public class CameraRelative extends Framework {
         return dirToCamera.times(sphereCamRelPos.z).plus(camTarget);
     }
 
-    private Mat4x4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
+    private Mat4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
 
         Vec3 lookDir = lookPt.minus(cameraPt).normalize();
         Vec3 upDir = upPt.normalize();
@@ -177,14 +177,14 @@ public class CameraRelative extends Framework {
         Vec3 rightDir = lookDir.cross(upDir).normalize();
         Vec3 perpUpDir = rightDir.cross(lookDir);
 
-        Mat4x4 rotationMat = new Mat4x4(1.0f);
+        Mat4 rotationMat = new Mat4(1.0f);
         rotationMat.set(0, new Vec4(rightDir, 0.0f));
         rotationMat.set(1, new Vec4(perpUpDir, 0.0f));
         rotationMat.set(2, new Vec4(lookDir.negate(), 0.0f));
 
         rotationMat.transpose_();
 
-        Mat4x4 translMat = new Mat4x4(1.0f);
+        Mat4 translMat = new Mat4(1.0f);
         translMat.set(3, new Vec4(cameraPt.negate(), 1.0f));
 
         return rotationMat.times(translMat);
@@ -309,7 +309,7 @@ public class CameraRelative extends Framework {
             case OffsetRelative.CAMERA: {
 
                 Vec3 camPos = resolveCamPosition();
-                Mat4x4 camMat = calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f));
+                Mat4 camMat = calcLookAtMatrix(camPos, camTarget, new Vec3(0.0f, 1.0f, 0.0f));
 
                 Quat viewQuat = camMat.toQuat();
                 Quat invViewQuat = viewQuat.conjugate();

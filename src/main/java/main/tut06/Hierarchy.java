@@ -6,8 +6,8 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import main.framework.Framework;
 import main.framework.Semantic;
-import glm.mat.Mat3x3;
-import glm.mat.Mat4x4;
+import glm.mat.Mat3;
+import glm.mat.Mat4;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 
@@ -45,7 +45,7 @@ public class Hierarchy extends Framework {
 
     private int theProgram, modelToCameraMatrixUnif, cameraToClipMatrixUnif;
 
-    private Mat4x4 cameraToClipMatrix = new Mat4x4(0.0f);
+    private Mat4 cameraToClipMatrix = new Mat4(0.0f);
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
@@ -544,31 +544,31 @@ public class Hierarchy extends Framework {
 
     private class MatrixStack {
 
-        private Stack<Mat4x4> matrices = new Stack<>();
-        private Mat4x4 currMat = new Mat4x4(1f);
+        private Stack<Mat4> matrices = new Stack<>();
+        private Mat4 currMat = new Mat4(1f);
 
-        Mat4x4 top() {
+        Mat4 top() {
             return currMat;
         }
 
         MatrixStack rotateX(float angDeg) {
-            currMat.times_(new Mat4x4(Hierarchy.this.rotateX(angDeg)));
+            currMat.times_(new Mat4(Hierarchy.this.rotateX(angDeg)));
             return this;
         }
 
         MatrixStack rotateY(float angDeg) {
-            currMat.times_(new Mat4x4(Hierarchy.this.rotateY(angDeg)));
+            currMat.times_(new Mat4(Hierarchy.this.rotateY(angDeg)));
             return this;
         }
 
         MatrixStack rotateZ(float angDeg) {
-            currMat.times_(new Mat4x4(Hierarchy.this.rotateZ(angDeg)));
+            currMat.times_(new Mat4(Hierarchy.this.rotateZ(angDeg)));
             return this;
         }
 
         MatrixStack scale(Vec3 scaleVec) {
 
-            Mat4x4 scaleMat = new Mat4x4(scaleVec);
+            Mat4 scaleMat = new Mat4(scaleVec);
 
             currMat.times_(scaleMat);
 
@@ -577,7 +577,7 @@ public class Hierarchy extends Framework {
 
         MatrixStack translate(Vec3 offsetVec) {
 
-            Mat4x4 translateMat = new Mat4x4(1f);
+            Mat4 translateMat = new Mat4(1f);
             translateMat.set(3, new Vec4(offsetVec));
 
             currMat.times_(translateMat);
@@ -586,7 +586,7 @@ public class Hierarchy extends Framework {
         }
 
         MatrixStack push() {
-            matrices.push(new Mat4x4(currMat));
+            matrices.push(new Mat4(currMat));
             return this;
         }
 
@@ -600,13 +600,13 @@ public class Hierarchy extends Framework {
         }
     }
 
-    Mat3x3 rotateX(float angDeg) {
+    Mat3 rotateX(float angDeg) {
 
         float andRad = glm.toRad(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 
-        Mat3x3 theMat = new Mat3x3(1f);
+        Mat3 theMat = new Mat3(1f);
         theMat.v11(cos);
         theMat.v12(sin);
         theMat.v21(-sin);
@@ -614,13 +614,13 @@ public class Hierarchy extends Framework {
         return theMat;
     }
 
-    Mat3x3 rotateY(float angDeg) {
+    Mat3 rotateY(float angDeg) {
 
         float andRad = glm.toRad(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 
-        Mat3x3 theMat = new Mat3x3(1f);
+        Mat3 theMat = new Mat3(1f);
         theMat.v00(cos);
         theMat.v02(-sin);
         theMat.v20(sin);
@@ -628,13 +628,13 @@ public class Hierarchy extends Framework {
         return theMat;
     }
 
-    Mat3x3 rotateZ(float angDeg) {
+    Mat3 rotateZ(float angDeg) {
 
         float andRad = glm.toRad(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 
-        Mat3x3 theMat = new Mat3x3(1f);
+        Mat3 theMat = new Mat3(1f);
         theMat.v00(cos);
         theMat.v01(sin);
         theMat.v10(-sin);

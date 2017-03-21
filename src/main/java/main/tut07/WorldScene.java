@@ -3,7 +3,7 @@ package main.tut07;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
-import glm.mat.Mat4x4;
+import glm.mat.Mat4;
 import glm.vec._3.Vec3;
 import main.framework.Framework;
 import main.framework.component.Mesh;
@@ -150,7 +150,7 @@ public class WorldScene extends Framework {
 
             gl.glUseProgram(objectColor.theProgram);
             gl.glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, matBuffer);
-            gl.glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, new Mat4x4(1.0f).to(matBuffer));
+            gl.glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, new Mat4(1.0f).to(matBuffer));
             meshes[MESH.CUBE_COLOR].render(gl);
             gl.glUseProgram(0);
 
@@ -174,7 +174,7 @@ public class WorldScene extends Framework {
         return dirToCamera.times_(sphereCamRelPos.z).plus_(camTarget);
     }
 
-    private Mat4x4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
+    private Mat4 calcLookAtMatrix(Vec3 cameraPt, Vec3 lookPt, Vec3 upPt) {
 
         Vec3 lookDir = lookPt.minus(cameraPt).normalize();
         Vec3 upDir = upPt.normalize();
@@ -182,14 +182,14 @@ public class WorldScene extends Framework {
         Vec3 rightDir = lookDir.cross(upDir).normalize();
         Vec3 perpUpDir = rightDir.cross(lookDir);
 
-        Mat4x4 rotMat = new Mat4x4(1.0f);
+        Mat4 rotMat = new Mat4(1.0f);
         rotMat.set(0, rightDir, 0.0f);
         rotMat.set(1, perpUpDir, 0.0f);
         rotMat.set(2, lookDir.negate(), 0.0f);
 
         rotMat.transpose_();
 
-        Mat4x4 transMat = new Mat4x4(1.0f);
+        Mat4 transMat = new Mat4(1.0f);
         transMat.set(3, cameraPt.negate(), 1.0f);
 
         return rotMat.times_(transMat);
