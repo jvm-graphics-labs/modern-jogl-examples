@@ -6,6 +6,8 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import com.jogamp.opengl.GLAutoDrawable
+import com.jogamp.opengl.GLRunnable
 import glm.*
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
@@ -113,11 +115,6 @@ class DepthClamping_ : Framework("Tutorial 05 - Depth Clamping") {
 
     override fun display(gl: GL3) = with(gl) {
 
-        if (depthClampingActive)
-            glDisable(GL_DEPTH_CLAMP)
-        else
-            glEnable(GL_DEPTH_CLAMP)
-
         glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
         glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
@@ -160,7 +157,18 @@ class DepthClamping_ : Framework("Tutorial 05 - Depth Clamping") {
 
         when (keyEvent.keyCode) {
             KeyEvent.VK_ESCAPE -> quit()
-            KeyEvent.VK_SPACE -> depthClampingActive = !depthClampingActive
+            KeyEvent.VK_SPACE -> {
+                window.invoke(false) { glAutoDrawable ->
+                    with(glAutoDrawable.gl.gL3) {
+                        if (depthClampingActive)
+                            glDisable(GL_DEPTH_CLAMP)
+                        else
+                            glEnable(GL_DEPTH_CLAMP)
+                    }
+                    depthClampingActive = !depthClampingActive
+                    false
+                }
+            }
         }
     }
 
