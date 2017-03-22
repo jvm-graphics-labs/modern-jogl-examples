@@ -36,6 +36,8 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
     lateinit var cylinderMesh: Mesh
     lateinit var planeMesh: Mesh
 
+    var mat: Mat4? = null
+
     val projectionUniformBuffer = intBufferBig(1)
 
     val cameraToClipMatrix = Mat4(0.0f)
@@ -103,7 +105,18 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
             glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
             glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
-            val modelMatrix = MatrixStack(viewPole.calcMatrix())
+
+            val t = synchronized(lock) {viewPole.calcMatrix()}
+            if (mat == null)
+                mat = t
+//            if (t != mat) {
+//                println("different")
+//                println("mat: ${mat.toString()}")
+//                println("viewPole: ${t.toString()}")
+//                mat = t
+//            }
+            val modelMatrix = MatrixStack(t)
+            println(t)
 
             val lightDirCameraSpace = modelMatrix.top() * lightDirection
 
@@ -133,8 +146,8 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
                 //  Render the Cylinder
                 modelMatrix run {
-
-                    applyMatrix(objectPole.calcMatrix())
+                    //                    println(objectPole.calcMatrix())
+                    applyMatrix(synchronized(lock) {objectPole.calcMatrix()})
                     top() to matBuffer
 
                     if (drawColoredCyl) {
@@ -186,23 +199,32 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
         }
     }
 
+    val lock = Any()
+
     override fun mousePressed(e: MouseEvent) {
-        viewPole.mousePressed(e)
-        objectPole.mousePressed(e)
+        synchronized(lock) {
+            viewPole.mousePressed(e)
+            objectPole.mousePressed(e)
+        }
     }
 
     override fun mouseDragged(e: MouseEvent) {
-        viewPole.mouseDragged(e)
-        objectPole.mouseDragged(e)
+        println(Thread.currentThread().id)
+        synchronized(lock) {
+            viewPole.mouseDragged(e)
+            objectPole.mouseDragged(e)
+        }
     }
 
     override fun mouseReleased(e: MouseEvent) {
-        viewPole.mouseReleased(e)
-        objectPole.mouseReleased(e)
+        synchronized(lock) {
+            viewPole.mouseReleased(e)
+            objectPole.mouseReleased(e)
+        }
     }
 
     override fun mouseWheelMoved(e: MouseEvent) {
-        viewPole.mouseWheel(e)
+        synchronized(lock) { viewPole.mouseWheel(e) }
     }
 
     override fun end(gl: GL3) = with(gl) {
