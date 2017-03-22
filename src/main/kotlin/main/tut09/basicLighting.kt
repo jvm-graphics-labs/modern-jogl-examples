@@ -7,7 +7,6 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glm.L
 import glm.f
-import glm.i
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._3.Vec3
@@ -59,7 +58,7 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
             Vec3(0.0f, 0.5f, 0.0f),
             Quat(1.0f, 0.0f, 0.0f, 0.0f))
 
-    val objectPole = ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3.i, viewPole)
+    val objectPole = ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole)
 
     val lightDirection = Vec4(0.866f, 0.5f, 0.0f, 0.0f)
 
@@ -69,8 +68,8 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
         initializeProgram(gl)
 
-        cylinderMesh = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
-        planeMesh = Mesh(gl, javaClass, "tut09/UnitPlane.xml")
+        cylinderMesh = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
+        planeMesh = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -133,31 +132,31 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
                 }
 
                 //  Render the Cylinder
-//                modelMatrix run {
-//
-//                    applyMatrix(objectPole.calcMatrix())
-//                    top() to matBuffer
-//
-//                    if (drawColoredCyl) {
-//
-//                        glUseProgram(vertexDiffuseColor.theProgram)
-//                        glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-//                        val normalMatrix = modelMatrix.top().toMat3()
-//                        glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-//                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-//                        cylinderMesh.render(gl, "lit-color")
-//
-//                    } else {
-//
-//                        glUseProgram(whiteDiffuseColor.theProgram)
-//                        glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-//                        val normalMatrix = modelMatrix.top().toMat3()
-//                        glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-//                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-//                        cylinderMesh.render(gl, "lit")
-//                    }
-//                    glUseProgram(0)
-//                }
+                modelMatrix run {
+
+                    applyMatrix(objectPole.calcMatrix())
+                    top() to matBuffer
+
+                    if (drawColoredCyl) {
+
+                        glUseProgram(vertexDiffuseColor.theProgram)
+                        glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                        val normalMatrix = modelMatrix.top().toMat3()
+                        glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
+                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                        cylinderMesh.render(gl, "lit-color")
+
+                    } else {
+
+                        glUseProgram(whiteDiffuseColor.theProgram)
+                        glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                        val normalMatrix = modelMatrix.top().toMat3()
+                        glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
+                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                        cylinderMesh.render(gl, "lit")
+                    }
+                    glUseProgram(0)
+                }
             }
         }
     }
@@ -194,7 +193,7 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
     override fun mouseDragged(e: MouseEvent) {
         viewPole.mouseDragged(e)
-        objectPole.mouseMove(e)
+        objectPole.mouseDragged(e)
     }
 
     override fun mouseReleased(e: MouseEvent) {

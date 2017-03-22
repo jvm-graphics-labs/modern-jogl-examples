@@ -124,6 +124,8 @@ public class BasicLighting extends Framework {
 
         MatrixStack modelMatrix = new MatrixStack().setMatrix(viewPole.calcMatrix());
 
+        System.out.println(modelMatrix.top());
+
         Vec4 lightDirCameraSpace = modelMatrix.top().times(lightDirection);
 
         gl.glUseProgram(whiteDiffuseColor.theProgram);
@@ -140,8 +142,6 @@ public class BasicLighting extends Framework {
                 modelMatrix
                         .push()
                         .top().to(matBuffer);
-
-                System.out.println(modelMatrix.top());
 
                 gl.glUseProgram(whiteDiffuseColor.theProgram);
                 gl.glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer);
@@ -221,25 +221,25 @@ public class BasicLighting extends Framework {
 
     @Override
     public void mousePressed(MouseEvent e) {
-//        viewPole.mousePressed(e);
+        viewPole.mousePressed(e);
         objectPole.mousePressed(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-//        viewPole.mouseDragged(e);
-        objectPole.mouseMove(e);
+        viewPole.mouseDragged(e);
+        objectPole.mouseDragged(e);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-//        viewPole.mouseReleased(e);
+        viewPole.mouseReleased(e);
         objectPole.mouseReleased(e);
     }
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
-//        viewPole.mouseWheel(e);
+        viewPole.mouseWheel(e);
     }
 
     @Override
