@@ -13,6 +13,7 @@ import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
+import main.framework.gl3
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -157,17 +158,12 @@ class DepthClamping_ : Framework("Tutorial 05 - Depth Clamping") {
 
         when (keyEvent.keyCode) {
             KeyEvent.VK_ESCAPE -> quit()
-            KeyEvent.VK_SPACE -> {
-                window.invoke(false) { glAutoDrawable ->
-                    with(glAutoDrawable.gl.gL3) {
-                        if (depthClampingActive)
-                            glDisable(GL_DEPTH_CLAMP)
-                        else
-                            glEnable(GL_DEPTH_CLAMP)
-                    }
-                    depthClampingActive = !depthClampingActive
-                    false
-                }
+            KeyEvent.VK_SPACE -> window.gl3 {
+                if (depthClampingActive)
+                    glDisable(GL_DEPTH_CLAMP)
+                else
+                    glEnable(GL_DEPTH_CLAMP)
+                depthClampingActive = !depthClampingActive
             }
         }
     }
