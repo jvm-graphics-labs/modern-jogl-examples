@@ -93,12 +93,6 @@ public class Rotations extends Framework {
             7, 6, 4,
             6, 7, 5};
 
-    private Instance[] instanceList = {
-            new Instance(Mode.NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
-            new Instance(Mode.RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
-            new Instance(Mode.RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
-            new Instance(Mode.RotateAxis, new Vec3(5.0f, -5.0f, -25.0f))};
 
     private long start;
 
@@ -227,115 +221,113 @@ public class Rotations extends Framework {
         }
     }
 
-    private enum Mode {
+    private RotationFun NullRotation = (elapsedTime) -> new Mat3(1f);
 
-        NullRotation,
-        RotateX,
-        RotateY,
-        RotateZ,
-        RotateAxis
+    private RotationFun RotateX = (elapsedTime) -> {
+
+        float angRad = computeAngleRad(elapsedTime, 3.0f);
+        float cos = glm.cos(angRad);
+        float sin = glm.sin(angRad);
+
+        Mat3 theMat = new Mat3(1f);
+        theMat.v11(cos);
+        theMat.v12(sin);
+        theMat.v21(-sin);
+        theMat.v22(cos);
+        return theMat;
+    };
+
+    private RotationFun RotateY = (elapsedTime) -> {
+
+        float angRad = computeAngleRad(elapsedTime, 2.0f);
+        float cos = glm.cos(angRad);
+        float sin = glm.sin(angRad);
+
+        Mat3 theMat = new Mat3(1f);
+        theMat.v00(cos);
+        theMat.v02(-sin);
+        theMat.v20(sin);
+        theMat.v22(cos);
+        return theMat;
+    };
+
+    private RotationFun RotateZ = (elapsedTime) -> {
+
+        float angRad = computeAngleRad(elapsedTime, 2.0f);
+        float cos = glm.cos(angRad);
+        float sin = glm.sin(angRad);
+
+        Mat3 theMat = new Mat3(1f);
+        theMat.v00(cos);
+        theMat.v01(sin);
+        theMat.v10(-sin);
+        theMat.v11(cos);
+        return theMat;
+    };
+
+    private RotationFun RotateAxis = (elapsedTime) -> {
+
+        float angRad = computeAngleRad(elapsedTime, 2.0f);
+        float cos = glm.cos(angRad);
+        float invCos = 1.0f - cos;
+        float sin = glm.sin(angRad);
+        float invSin = 1.0f - sin;
+
+        Vec3 axis = new Vec3(1.0f).normalize_();
+
+        Mat3 theMat = new Mat3(1f);
+
+        theMat.v00(axis.x * axis.x + (1 - axis.x * axis.x) * cos);
+        theMat.v10(axis.x * axis.y * invCos - axis.z * sin);
+        theMat.v20(axis.x * axis.z * invCos + axis.y * sin);
+
+        theMat.v01(axis.x * axis.y * invCos + axis.z * sin);
+        theMat.v11(axis.y * axis.y + (1 - axis.y * axis.y) * cos);
+        theMat.v21(axis.y * axis.z * invCos - axis.x * sin);
+
+        theMat.v02(axis.x * axis.z * invCos - axis.y * sin);
+        theMat.v12(axis.y * axis.z * invCos + axis.x * sin);
+        theMat.v22(axis.z * axis.z + (1 - axis.z * axis.z) * cos);
+
+        return theMat;
+    };
+
+    private float computeAngleRad(float elapsedTime, float loopDuration) {
+        float scale = (float) glm.pi * 2.0f / loopDuration;
+        float currentTimeThroughLoop = elapsedTime % loopDuration;
+        return currentTimeThroughLoop * scale;
+    }
+
+
+    private Instance[] instanceList = {
+            new Instance(NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
+            new Instance(RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
+            new Instance(RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
+            new Instance(RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
+            new Instance(RotateAxis, new Vec3(5.0f, -5.0f, -25.0f))};
+
+    @FunctionalInterface
+    private interface RotationFun {
+        Mat3 execute(Float elapsedTime);
     }
 
     private class Instance {
 
-        private Mode mode;
+        private RotationFun calcRotation;
         private Vec3 offset;
-        private Mat3 theMat = new Mat3();
 
-        Instance(Mode mode, Vec3 offset) {
-            this.mode = mode;
+        Instance(RotationFun calcRotation, Vec3 offset) {
+            this.calcRotation = calcRotation;
             this.offset = offset;
         }
 
         Mat4 constructMatrix(float elapsedTime) {
 
-            Mat3 rotMatrix = calcRotation(elapsedTime);
+            Mat3 rotMatrix = calcRotation.execute(elapsedTime);
             Mat4 theMat = new Mat4(rotMatrix);
-            theMat.set(3, new Vec4(offset, 1.0f));
+            theMat.set(3, offset, 1.0f);
 
             return theMat;
-        }
-
-        private Mat3 calcRotation(float elapsedTime) {
-
-            float angRad, cos, sin;
-
-            switch (mode) {
-
-                default:
-                    return theMat.put(1f);
-
-                case RotateX:
-
-                    angRad = computeAngleRad(elapsedTime, 3.0f);
-                    cos = glm.cos(angRad);
-                    sin = glm.sin(angRad);
-
-                    theMat.put(1f);
-                    theMat.v11(cos);
-                    theMat.v12(sin);
-                    theMat.v21(-sin);
-                    theMat.v22(cos);
-                    return theMat;
-
-                case RotateY:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = glm.cos(angRad);
-                    sin = glm.sin(angRad);
-
-                    theMat.put(1f);
-                    theMat.v00(cos);
-                    theMat.v02(-sin);
-                    theMat.v20(sin);
-                    theMat.v22(cos);
-                    return theMat;
-
-                case RotateZ:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = glm.cos(angRad);
-                    sin = glm.sin(angRad);
-
-                    theMat.put(1f);
-                    theMat.v00(cos);
-                    theMat.v01(sin);
-                    theMat.v10(-sin);
-                    theMat.v11(cos);
-                    return theMat;
-
-                case RotateAxis:
-
-                    angRad = computeAngleRad(elapsedTime, 2.0f);
-                    cos = glm.cos(angRad);
-                    float invCos = 1.0f - cos;
-                    sin = glm.sin(angRad);
-                    float invSin = 1.0f - sin;
-
-                    Vec3 axis = new Vec3(1.0f).normalize_();
-
-                    theMat.put(1f);
-
-                    theMat.v00(axis.x * axis.x + (1 - axis.x * axis.x) * cos);
-                    theMat.v10(axis.x * axis.y * invCos - axis.z * sin);
-                    theMat.v20(axis.x * axis.z * invCos + axis.y * sin);
-
-                    theMat.v01(axis.x * axis.y * invCos + axis.z * sin);
-                    theMat.v11(axis.y * axis.y + (1 - axis.y * axis.y) * cos);
-                    theMat.v21(axis.y * axis.z * invCos - axis.x * sin);
-
-                    theMat.v02(axis.x * axis.z * invCos - axis.y * sin);
-                    theMat.v12(axis.y * axis.z * invCos + axis.x * sin);
-                    theMat.v22(axis.z * axis.z + (1 - axis.z * axis.z) * cos);
-
-                    return theMat;
-            }
-        }
-
-        private float computeAngleRad(float elapsedTime, float loopDuration) {
-            float scale = (float) glm.pi * 2.0f / loopDuration;
-            float currentTimeThroughLoop = elapsedTime % loopDuration;
-            return currentTimeThroughLoop * scale;
         }
     }
 }

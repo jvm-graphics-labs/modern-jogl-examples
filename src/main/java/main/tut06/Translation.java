@@ -94,11 +94,6 @@ public class Translation extends Framework {
             7, 6, 4,
             6, 7, 5};
 
-    private Instance[] instanceList = {
-        new Instance(Mode.StationaryOffset),
-        new Instance(Mode.OvalOffset),
-        new Instance(Mode.BottomCircleOffset)};
-
     private long start;
 
     @Override
@@ -228,58 +223,58 @@ public class Translation extends Framework {
         }
     }
 
-     private enum Mode {
+    private OffsetFun StationaryOffset = (elapsedTime) -> new Vec3(0.0f, 0.0f, -20.0f);
 
-        StationaryOffset,
-        OvalOffset,
-        BottomCircleOffset
+    private OffsetFun OvalOffset = (elapsedTime) -> {
+        float loopDuration = 3.0f;
+        float scale = (float) glm.pi * 2.0f / loopDuration;
+
+        float currTimeThroughLoop = elapsedTime % loopDuration;
+
+        return new Vec3(
+                glm.cos(currTimeThroughLoop * scale) * 4,
+                glm.sin(currTimeThroughLoop * scale) * 6,
+                -20.0f);
+    };
+
+    private OffsetFun BottomCircleOffset = (elapsedTime) -> {
+
+        float loopDuration = 12.0f;
+        float scale = (float) glm.pi * 2.0f / loopDuration;
+
+        float currTimeThroughLoop = elapsedTime % loopDuration;
+        return new Vec3(
+                glm.cos(currTimeThroughLoop * scale) * 5,
+                -3.5f,
+                glm.sin(currTimeThroughLoop * scale) * 5 - 20.0f);
+    };
+
+
+    private Instance[] instanceList = {
+            new Instance(StationaryOffset),
+            new Instance(OvalOffset),
+            new Instance(BottomCircleOffset)};
+
+    @FunctionalInterface
+    private interface OffsetFun {
+        Vec3 execute(Float elapsedTime);
     }
 
     private class Instance {
 
-        private Mode mode;
+        private OffsetFun calcOffset;
         private Vec3 vec = new Vec3();
 
-        Instance(Mode mode) {
-            this.mode = mode;
+        Instance(OffsetFun offsetFun) {
+            this.calcOffset = offsetFun;
         }
 
         Mat4 constructMatrix(float elapsedTime) {
 
             Mat4 theMat = new Mat4(1.0f);
-            theMat.set(3, new Vec4(calcOffset(elapsedTime), 1.0f));
+            theMat.set(3, calcOffset.execute(elapsedTime), 1.0f);
 
             return theMat;
-        }
-
-        private Vec3 calcOffset(float elapsedTime) {
-
-            switch (mode) {
-
-                default:
-                    return vec.put(0.0f, 0.0f, -20.0f);
-
-                case OvalOffset:
-                    float loopDuration = 3.0f;
-                    float scale = (float) glm.pi * 2.0f / loopDuration;
-
-                    float currTimeThroughLoop = elapsedTime % loopDuration;
-
-                    return vec.put(
-                            glm.cos(currTimeThroughLoop * scale) * 4,
-                            glm.sin(currTimeThroughLoop * scale) * 6,
-                            -20.0f);
-
-                case BottomCircleOffset:
-                    loopDuration = 12.0f;
-                    scale = (float) glm.pi * 2.0f / loopDuration;
-
-                    currTimeThroughLoop = elapsedTime % loopDuration;
-                    return vec.put(
-                            glm.cos(currTimeThroughLoop * scale) * 5,
-                            -3.5f,
-                            glm.sin(currTimeThroughLoop * scale) * 5 - 20.0f);
-            }
         }
     }
 }

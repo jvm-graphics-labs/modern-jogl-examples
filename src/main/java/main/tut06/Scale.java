@@ -22,11 +22,10 @@ import static uno.buffer.UtilKt.destroyBuffers;
 import static uno.glsl.UtilKt.programOf;
 
 /**
- *
  * @author gbarbieri
  */
 public class Scale extends Framework {
-    
+
     public static void main(String[] args) {
         new Scale("Tutorial 06 - Scale");
     }
@@ -93,13 +92,6 @@ public class Scale extends Framework {
             7, 6, 4,
             6, 7, 5};
 
-
-    private Instance[] instanceList = {
-        new Instance(Mode.NullScale, new Vec3(0.0f, 0.0f, -45.0f)),
-        new Instance(Mode.StaticUniformScale, new Vec3(-10.0f, -10.0f, -45.0f)),
-        new Instance(Mode.StaticNonUniformScale, new Vec3(-10.0f, 10.0f, -45.0f)),
-        new Instance(Mode.DynamicUniformScale, new Vec3(10.0f, 10.0f, -45.0f)),
-        new Instance(Mode.DynamicNonUniformScale, new Vec3(10.0f, -10.0f, -45.0f))};
     private long start;
 
     @Override
@@ -227,68 +219,64 @@ public class Scale extends Framework {
         }
     }
 
-    public enum Mode {
+    private ScaleFun NullScale = (elapsedTime) -> new Vec3(1f);
 
-        NullScale,
-        StaticUniformScale,
-        StaticNonUniformScale,
-        DynamicUniformScale,
-        DynamicNonUniformScale
+    private ScaleFun StaticUniformScale = (elapsedTime) -> new Vec3(4f);
+
+    private ScaleFun StaticNonUniformScale = (elapsedTime) -> new Vec3(0.5f, 1.0f, 10.0f);
+
+    private ScaleFun DynamicUniformScale = (elapsedTime) -> {
+        float loopDuration = 3.0f;
+        return new Vec3(glm.mix(1.0f, 4.0f, calculateLerpFactor(elapsedTime, loopDuration)));
+    };
+
+    private ScaleFun DynamicNonUniformScale = (elapsedTime) -> {
+        float xLoopDuration = 3.0f;
+        float zLoopDuration = 5.0f;
+        return new Vec3(
+                glm.mix(1.0f, 0.5f, calculateLerpFactor(elapsedTime, xLoopDuration)),
+                1.0f,
+                glm.mix(1.0f, 10.0f, calculateLerpFactor(elapsedTime, zLoopDuration)));
+    };
+
+    private float calculateLerpFactor(float elapsedTime, float loopDuration) {
+        float value = elapsedTime % loopDuration / loopDuration;
+        if (value > 0.5f) {
+            value = 1.0f - value;
+        }
+        return value * 2.0f;
+    }
+
+    private Instance[] instanceList = {
+            new Instance(NullScale, new Vec3(0.0f, 0.0f, -45.0f)),
+            new Instance(StaticUniformScale, new Vec3(-10.0f, -10.0f, -45.0f)),
+            new Instance(StaticNonUniformScale, new Vec3(-10.0f, 10.0f, -45.0f)),
+            new Instance(DynamicUniformScale, new Vec3(10.0f, 10.0f, -45.0f)),
+            new Instance(DynamicNonUniformScale, new Vec3(10.0f, -10.0f, -45.0f))};
+
+    @FunctionalInterface
+    private interface ScaleFun {
+        Vec3 execute(Float elapsedTime);
     }
 
     private class Instance {
 
-        private Mode mode;
+        private ScaleFun calcScale;
         private Vec3 offset;
         private Vec3 vec = new Vec3();
 
-        Instance(Mode mode, Vec3 offset) {
-            this.mode = mode;
+        Instance(ScaleFun scaleFun, Vec3 offset) {
+            calcScale = calcScale;
             this.offset = offset;
         }
 
         Mat4 constructMatrix(float elapsedTime) {
 
-            Vec3 theScale = calcScale(elapsedTime);
+            Vec3 theScale = calcScale.execute(elapsedTime);
             Mat4 theMat = new Mat4(theScale, 1.0f);
             theMat.set(3, new Vec4(offset, 1.0f));
 
             return theMat;
-        }
-
-        private Vec3 calcScale(float elapsedTime) {
-
-            switch (mode) {
-
-                default:
-                    return vec.put(1.0f);
-
-                case StaticUniformScale:
-                    return vec.put(4.0f);
-
-                case StaticNonUniformScale:
-                    return vec.put(0.5f, 1.0f, 10.0f);
-
-                case DynamicUniformScale:
-                    final float loopDuration = 3.0f;
-                    return new Vec3(glm.mix(1.0f, 4.0f, calculateLerpFactor(elapsedTime, loopDuration)));
-
-                case DynamicNonUniformScale:
-                    final float xLoopDuration = 3.0f;
-                    final float zLoopDuration = 5.0f;
-                    return new Vec3(
-                            glm.mix(1.0f, 0.5f, calculateLerpFactor(elapsedTime, xLoopDuration)),
-                            1.0f,
-                            glm.mix(1.0f, 10.0f, calculateLerpFactor(elapsedTime, zLoopDuration)));
-            }
-        }
-
-        private float calculateLerpFactor(float elapsedTime, float loopDuration) {
-            float value = elapsedTime % loopDuration / loopDuration;
-            if (value > 0.5f) {
-                value = 1.0f - value;
-            }
-            return value * 2.0f;
         }
     }
 }
