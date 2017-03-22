@@ -308,11 +308,12 @@ public class Rotations extends Framework {
 
                     angRad = computeAngleRad(elapsedTime, 2.0f);
                     cos = glm.cos(angRad);
-                    sin = glm.sin(angRad);
                     float invCos = 1.0f - cos;
+                    sin = glm.sin(angRad);
                     float invSin = 1.0f - sin;
 
                     Vec3 axis = new Vec3(1.0f).normalize_();
+
                     theMat.put(1f);
 
                     theMat.v00(axis.x * axis.x + (1 - axis.x * axis.x) * cos);

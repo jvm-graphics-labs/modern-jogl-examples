@@ -80,7 +80,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
             public void windowDestroyed(WindowEvent e) {
                 new Thread(new Runnable() {
                     public void run() {
-                        System.out.println("in");
+
                         //stop the animator thread when user close the window
                         animator.stop();
                         // This is actually redundant since the JVM will terminate when all threads are closed.
@@ -131,7 +131,7 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-        System.out.println("dispose");
+
         GL3 gl3 = drawable.getGL().getGL3();
 
         end(gl3);

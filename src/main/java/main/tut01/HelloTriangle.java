@@ -3,6 +3,8 @@ package main.tut01;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.util.GLBuffers;
 import glm.vec._4.Vec4;
 import main.framework.Framework;

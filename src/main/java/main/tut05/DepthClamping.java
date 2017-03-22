@@ -3,6 +3,8 @@ package main.tut05;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.util.GLBuffers;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
@@ -121,11 +123,6 @@ public class DepthClamping extends Framework {
     @Override
     public void display(GL3 gl) {
 
-        if (depthClampingActive)
-            gl.glDisable(GL_DEPTH_CLAMP);
-        else
-            gl.glEnable(GL_DEPTH_CLAMP);
-
         gl.glClearBufferfv(GL_COLOR, 0, clearColor.put(0, 0.0f).put(1, 0.0f).put(2, 0.0f).put(3, 0.0f));
         gl.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
@@ -174,7 +171,18 @@ public class DepthClamping extends Framework {
                 quit();
                 break;
             case KeyEvent.VK_SPACE:
-                depthClampingActive = !depthClampingActive;
+                window.invoke(false, new GLRunnable() {
+                    @Override
+                    public boolean run(final GLAutoDrawable glAutoDrawable) {
+                        GL3 gl = glAutoDrawable.getGL().getGL3();
+                        if(depthClampingActive)
+                            gl.glDisable(GL_DEPTH_CLAMP);
+                        else
+                            gl.glEnable(GL_DEPTH_CLAMP);
+                        depthClampingActive = !depthClampingActive;
+                        return false;
+                    }
+                });
                 break;
         }
     }

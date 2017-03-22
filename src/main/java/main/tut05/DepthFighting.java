@@ -52,7 +52,7 @@ public class DepthFighting extends Framework {
     private IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(Buffer.MAX), vao = GLBuffers.newDirectIntBuffer(1);
 
     private final float Z_OFFSET = 0.5f;
-    private final float[] GREEN_COLOR = {0.75f, 0.75f, 1.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.5f, 0.0f, 1.0f},
+    private final float[] GREEN_COLOR = {0.0f, 1.0f, 0.0f, 1.0f}, BLUE_COLOR = {0.0f, 0.5f, 0.0f, 1.0f},
             RED_COLOR = {1.0f, 0.0f, 0.0f, 1.0f};
 
     private float[] vertexData = {
@@ -100,7 +100,7 @@ public class DepthFighting extends Framework {
         gl.glGenVertexArrays(1, vao);
         gl.glBindVertexArray(vao.get(0));
 
-        int colorData = Float.BYTES * 3 * numberOfVertices;
+        int colorData = Vec3.SIZE * numberOfVertices;
         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.VERTEX));
         gl.glEnableVertexAttribArray(Semantic.Attr.POSITION);
         gl.glEnableVertexAttribArray(Semantic.Attr.COLOR);
