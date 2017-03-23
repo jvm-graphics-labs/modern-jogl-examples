@@ -23,7 +23,7 @@ Status:
 - [x] Chapter 6, Objects in Motion
 - [x] Chapter 7, World in Motion
 - [x] Chapter 8, Getting Oriented
-- [ ] Chapter 9, Lights On
+- [x] Chapter 9, Lights On
 - [ ] Chapter 10, Plane Lights
 - [ ] Chapter 11, Shinies
 - [ ] Chapter 12, Dynamic Lights
