@@ -111,20 +111,20 @@ public class Attribute {
         dataArray.position(0);
     }
 
-    public void fillBoundBufferObject(GL3 gl3, int offset) {
-        attribType.writeToBuffer(gl3, GL_ARRAY_BUFFER, dataArray, offset);
+    public void fillBoundBufferObject(GL3 gl, int offset) {
+        attribType.writeToBuffer(gl, GL_ARRAY_BUFFER, dataArray, offset);
     }
 
-    public void setupAttributeArray(GL3 gl3, int offset) {
+    public void setupAttributeArray(GL3 gl, int offset) {
 //        System.out.println("glEnableVertexAttribArray(" + index + ")");
-        gl3.glEnableVertexAttribArray(index);
+        gl.glEnableVertexAttribArray(index);
         if (isIntegral) {
-            gl3.glVertexAttribIPointer(index, size, attribType.glType(), size * attribType.numBytes(), offset);
+            gl.glVertexAttribIPointer(index, size, attribType.glType(), size * attribType.numBytes(), offset);
         } else {
 //            System.out.println("glVertexAttribPointer(" + index + ", " + size + ", " + (attribType.glType == GL_FLOAT
 //                    ? "GL_FLOAT" : attribType.glType) + ", " + attribType.normalized + ", "
 //                    + (size * attribType.numBytes) + ", " + offset + ")");
-            gl3.glVertexAttribPointer(index, size, attribType.glType(), attribType.normalized(),
+            gl.glVertexAttribPointer(index, size, attribType.glType(), attribType.normalized(),
                     size * attribType.numBytes(), offset);
         }
     }

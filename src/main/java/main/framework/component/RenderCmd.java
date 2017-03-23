@@ -112,23 +112,23 @@ public class RenderCmd {
         }
     }
 
-    public void fillBoundBufferObject(GL3 gl3, int offset) {
-        attribType.writeToBuffer(gl3, GL_ELEMENT_ARRAY_BUFFER, dataArray, offset);
+    public void fillBoundBufferObject(GL3 gl, int offset) {
+        attribType.writeToBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, dataArray, offset);
     }
 
     public int calcByteSize() {
         return dataArray.capacity();
     }
 
-    public void render(GL3 gl3) {
+    public void render(GL3 gl) {
         if (isIndexedCmd) {
 //            System.out.println("glDrawElements(" + (primType == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN"
 //                    : primType == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" : primType) + ", " + elemCount + ", "
 //                    + (indexDataType == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" : indexDataType) + ", "
 //                    + (start * attribType.numBytes) + ")");
-            gl3.glDrawElements(primType, elemCount, indexDataType, start * attribType.numBytes());
+            gl.glDrawElements(primType, elemCount, indexDataType, start * attribType.numBytes());
         } else {
-            gl3.glDrawArrays(primType, start, elemCount);
+            gl.glDrawArrays(primType, start, elemCount);
         }
     }
 

@@ -204,42 +204,42 @@ public class Mesh {
         }
     }
 
-    public void render(GL3 gl3) {
+    public void render(GL3 gl) {
 
         if (vao.get(0) == 0) {
             return;
         }
 
-        gl3.glBindVertexArray(vao.get(0));
-        primatives.forEach(renderCmd -> renderCmd.render(gl3));
-        gl3.glBindVertexArray(0);
+        gl.glBindVertexArray(vao.get(0));
+        primatives.forEach(renderCmd -> renderCmd.render(gl));
+        gl.glBindVertexArray(0);
     }
 
-    public void render(GL3 gl3, String meshName) {
+    public void render(GL3 gl, String meshName) {
 
         if (!namedVAOs.containsKey(meshName)) {
             return;
         }
 
-        gl3.glBindVertexArray(namedVAOs.get(meshName));
-        primatives.forEach(renderCmd -> renderCmd.render(gl3));
-        gl3.glBindVertexArray(0);
+        gl.glBindVertexArray(namedVAOs.get(meshName));
+        primatives.forEach(renderCmd -> renderCmd.render(gl));
+        gl.glBindVertexArray(0);
     }
 
-    public void dispose(GL3 gl3) {
+    public void dispose(GL3 gl) {
 
         attribs.forEach(attrib -> destroyBuffer(attrib.dataArray()));
         indexData.forEach(cmd -> destroyBuffer(cmd.dataArray()));
         
-        gl3.glDeleteBuffers(1, attribArraysBuffer);
+        gl.glDeleteBuffers(1, attribArraysBuffer);
         if (!indexData.isEmpty()) {
-            gl3.glDeleteBuffers(1, indexBuffer);
+            gl.glDeleteBuffers(1, indexBuffer);
         }
 
-        gl3.glDeleteVertexArrays(1, vao);
+        gl.glDeleteVertexArrays(1, vao);
         namedVAOs.forEach((s, i) -> {
             vao.put(0, i);
-            gl3.glDeleteVertexArrays(1, vao);
+            gl.glDeleteVertexArrays(1, vao);
         });
     }
 

@@ -11,15 +11,8 @@ import glm.quat.Quat
 import glm.vec._3.Vec3
 import main.framework.Framework
 import main.framework.component.Mesh
-import org.xml.sax.SAXException
-import uno.glm.MatrixStack
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
-import kotlin.properties.Delegates
 import uno.buffer.put
+import uno.glm.MatrixStack
 import uno.glsl.programOf
 
 /**
@@ -37,7 +30,7 @@ class QuaternionYPR_() : Framework("Tutorial 08 - Quaternion YPR") {
             var angleY: Float = 0f,
             var angleZ: Float = 0f)
 
-    var ship by Delegates.notNull<Mesh>()
+    lateinit var ship: Mesh
 
     var theProgram = 0
     var modelToCameraMatrixUnif = 0

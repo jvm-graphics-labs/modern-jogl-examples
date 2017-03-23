@@ -227,7 +227,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
     fun ovalOffset(elapsedTime: Float): Vec3 {
 
         val loopDuration = 3.0f
-        val scale = glm.pi.f * 2.0f / loopDuration
+        val scale = glm.PIf * 2.0f / loopDuration
 
         val currTimeThroughLoop = elapsedTime % loopDuration
 
@@ -240,7 +240,7 @@ class Translation_ : Framework("Tutorial 06 - Translation") {
     fun bottomCircleOffset(elapsedTime: Float): Vec3 {
 
         val loopDuration = 12.0f
-        val scale = glm.pi.f * 2.0f / loopDuration
+        val scale = glm.PIf * 2.0f / loopDuration
 
         val currTimeThroughLoop = elapsedTime % loopDuration
 

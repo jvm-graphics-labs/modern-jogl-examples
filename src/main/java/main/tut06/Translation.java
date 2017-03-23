@@ -4,6 +4,7 @@ package main.tut06;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
+import glm.Glm;
 import main.framework.Framework;
 import main.framework.Semantic;
 import glm.mat.Mat4;
@@ -227,7 +228,7 @@ public class Translation extends Framework {
 
     private OffsetFun OvalOffset = (elapsedTime) -> {
         float loopDuration = 3.0f;
-        float scale = (float) glm.pi * 2.0f / loopDuration;
+        float scale = Glm.PIf * 2.0f / loopDuration;
 
         float currTimeThroughLoop = elapsedTime % loopDuration;
 
@@ -240,7 +241,7 @@ public class Translation extends Framework {
     private OffsetFun BottomCircleOffset = (elapsedTime) -> {
 
         float loopDuration = 12.0f;
-        float scale = (float) glm.pi * 2.0f / loopDuration;
+        float scale = Glm.PIf * 2.0f / loopDuration;
 
         float currTimeThroughLoop = elapsedTime % loopDuration;
         return new Vec3(

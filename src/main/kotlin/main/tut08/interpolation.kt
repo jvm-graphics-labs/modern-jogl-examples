@@ -8,21 +8,12 @@ import com.jogamp.opengl.GL3
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
-import glm.vec._3.Vec3
-import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
-import org.xml.sax.SAXException
-import uno.glm.MatrixStack
-import uno.time.Timer
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
-import kotlin.properties.Delegates
 import uno.buffer.put
+import uno.glm.MatrixStack
 import uno.glsl.programOf
+import uno.time.Timer
 
 /**
  * Created by GBarbieri on 17.03.2017.
@@ -34,7 +25,7 @@ fun main(args: Array<String>) {
 
 class Interpolation_ : Framework("Tutorial 08 - Interpolation") {
 
-    var ship by Delegates.notNull<Mesh>()
+    lateinit var ship: Mesh
 
     var theProgram = 0
     var modelToCameraMatrixUnif = 0
@@ -200,7 +191,7 @@ class Interpolation_ : Framework("Tutorial 08 - Interpolation") {
 
             var finalX = 0
                 private set
-            var currTimer by Delegates.notNull<Timer>()
+            lateinit var currTimer: Timer
 
             fun updateTime() = currTimer.update()
 

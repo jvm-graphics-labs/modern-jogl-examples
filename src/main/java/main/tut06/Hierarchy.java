@@ -348,7 +348,7 @@ public class Hierarchy extends Framework {
                         .push()
                         .translate(posBaseLeft)
                         .scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
                 gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
                 modelToCameraStack.pop();
             }
@@ -359,7 +359,7 @@ public class Hierarchy extends Framework {
                         .push()
                         .translate(posBaseRight)
                         .scale(new Vec3(1.0f, 1.0f, scaleBaseZ));
-                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
                 gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
                 modelToCameraStack.pop();
             }
@@ -382,7 +382,7 @@ public class Hierarchy extends Framework {
                         .push()
                         .translate(new Vec3(0.0f, 0.0f, sizeUpperArm / 2.0f - 1.0f))
                         .scale(new Vec3(1.0f, 1.0f, sizeUpperArm / 2.0f));
-                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
                 gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
                 modelToCameraStack.pop();
             }
@@ -403,7 +403,7 @@ public class Hierarchy extends Framework {
                     .push()
                     .translate(new Vec3(0.0f, 0.0f, lengthLowerArm / 2.0f))
                     .scale(new Vec3(widthLowerArm / 2.0f, widthLowerArm / 2.0f, lengthLowerArm / 2.0f));
-            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -423,7 +423,7 @@ public class Hierarchy extends Framework {
             modelToCameraStack
                     .push()
                     .scale(new Vec3(widthWrist / 2.0f, widthWrist / 2.0f, lenWrist / 2.0f));
-            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -444,7 +444,7 @@ public class Hierarchy extends Framework {
                     .push()
                     .translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -459,7 +459,7 @@ public class Hierarchy extends Framework {
                         .push()
                         .translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
                 gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
                 modelToCameraStack.pop();
 
@@ -478,7 +478,7 @@ public class Hierarchy extends Framework {
                     .push()
                     .translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+            gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
             gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
             modelToCameraStack.pop();
 
@@ -493,7 +493,7 @@ public class Hierarchy extends Framework {
                         .push()
                         .translate(new Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(new Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f));
-                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(Framework.matBuffer));
+                gl.glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack.to(matBuffer));
                 gl.glDrawElements(GL_TRIANGLES, indexData.length, GL_UNSIGNED_SHORT, 0);
                 modelToCameraStack.pop();
 

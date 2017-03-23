@@ -4,6 +4,7 @@ package main.tut06;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
+import glm.Glm;
 import main.framework.Framework;
 import main.framework.Semantic;
 import glm.mat.Mat3;
@@ -293,7 +294,7 @@ public class Rotations extends Framework {
     };
 
     private float computeAngleRad(float elapsedTime, float loopDuration) {
-        float scale = (float) glm.pi * 2.0f / loopDuration;
+        float scale = Glm.PIf * 2.0f / loopDuration;
         float currentTimeThroughLoop = elapsedTime % loopDuration;
         return currentTimeThroughLoop * scale;
     }

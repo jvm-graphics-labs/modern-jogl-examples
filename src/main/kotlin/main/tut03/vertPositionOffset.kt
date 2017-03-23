@@ -89,7 +89,7 @@ class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
     fun computePositionOffsets(offset: Vec2) {
 
         val loopDuration = 5.0f
-        val scale = glm.pi.f * 2f / loopDuration // todo glm
+        val scale = glm.PIf * 2f / loopDuration
 
         val elapsedTime = (System.currentTimeMillis() - startingTime) / 1_000f
 

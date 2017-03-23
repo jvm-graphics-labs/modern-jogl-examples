@@ -187,7 +187,7 @@ public class DepthFighting extends Framework {
 
         float start = 2534.0f;
         float loopDuration = 5.0f;
-        float scale = (float) Glm.pi * 2.0f / loopDuration;
+        float scale = Glm.PIf * 2.0f / loopDuration;
 
         float elapsedTime = (System.currentTimeMillis() - timeStart) / 1_000.0f;
 

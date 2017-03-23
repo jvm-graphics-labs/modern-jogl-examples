@@ -95,7 +95,7 @@ public class CpuPositionOffset extends Framework {
     private void computePositionOffsets(Vec2 offset) {
 
         float loopDuration = 5.0f;
-        float scale = (float) Glm.pi * 2.0f / loopDuration;
+        float scale = Glm.PIf * 2.0f / loopDuration;
 
         float elapsedTime = (System.currentTimeMillis() - startingTime) / 1_000.0f;
 

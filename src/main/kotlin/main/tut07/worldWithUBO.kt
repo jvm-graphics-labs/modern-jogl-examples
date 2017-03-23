@@ -40,11 +40,12 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val MAX = 5
     }
 
-    var uniformColor by Delegates.notNull<ProgramData>()
-    var objectColor by Delegates.notNull<ProgramData>()
-    var uniformColorTint by Delegates.notNull<ProgramData>()
+    lateinit var uniformColor: ProgramData
+    lateinit var objectColor: ProgramData
+    lateinit var uniformColorTint: ProgramData
 
-    var meshes by Delegates.notNull<Array<Mesh>>()
+    lateinit var meshes: Array<Mesh>
+
     val sphereCamRelPos = Vec3(67.5f, -46.0f, 150.0f)
     val camTarget = Vec3(0.0f, 0.4f, 0.0f)
     var drawLookAtPoint = false

@@ -12,16 +12,9 @@ import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
-import org.xml.sax.SAXException
-import uno.glm.MatrixStack
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
 import uno.buffer.put
+import uno.glm.MatrixStack
 import uno.glsl.programOf
-import kotlin.properties.Delegates
 
 /**
  * Created by GBarbieri on 10.03.2017.
@@ -45,8 +38,8 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
     var cameraToClipMatrixUnif = 0
     var baseColorUnif = 0
 
-    var ship by Delegates.notNull<Mesh>()
-    var plane by Delegates.notNull<Mesh>()
+    lateinit var ship: Mesh
+    lateinit var plane: Mesh
 
     val frustumScale = calcFrustumScale(20.0f)
 

@@ -2,9 +2,11 @@ package main.tut09
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.newt.event.MouseEvent
+import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import com.jogamp.opengl.util.GLBuffers
 import glm.L
 import glm.f
 import glm.mat.Mat4
@@ -14,34 +16,40 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
+import org.xml.sax.SAXException
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*
+import java.io.IOException
+import java.net.URISyntaxException
+import java.util.logging.Level
+import java.util.logging.Logger
+import javax.xml.parsers.ParserConfigurationException
 
 /**
- * Created by elect on 20/03/17.
+ * Created by GBarbieri on 23.03.2017.
  */
 
 fun main(args: Array<String>) {
-    BasicLighting_()
+    ScaleAndLighting_()
 }
 
-class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
+class ScaleAndLighting_() : Framework("Tutorial 09 - Scale and Lighting") {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
-
-    lateinit var cylinderMesh: Mesh
-    lateinit var planeMesh: Mesh
-
-    var mat: Mat4? = null
+    lateinit var cylinder: Mesh
+    lateinit var plane: Mesh
 
     val projectionUniformBuffer = intBufferBig(1)
 
-    val cameraToClipMatrix = Mat4(0.0f)
+    val lightDirection = Vec4(0.866f, 0.5f, 0.0f, 0.0f)
+
+    var scaleCylinder = false
+    var doInverseTranspose = true
 
     val initialViewData = ViewData(
             Vec3(0.0f, 0.5f, 0.0f),
@@ -63,16 +71,12 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
     val objectPole = ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole)
 
-    val lightDirection = Vec4(0.866f, 0.5f, 0.0f, 0.0f)
-
-    var drawColoredCyl = true
-
     override fun init(gl: GL3) = with(gl) {
 
         initializeProgram(gl)
 
-        cylinderMesh = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
-        planeMesh = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
+        cylinder = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
+        plane = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -99,69 +103,63 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
         vertexDiffuseColor = ProgramData(gl, "dir-vertex-lighting-PCN.vert", "color-passthrough.frag")
     }
 
-    override fun display(gl: GL3) {
+    override fun display(gl: GL3) = with(gl) {
 
-        with(gl) {
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
+        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
 
-            glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-            glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        val modelMatrix = MatrixStack().setMatrix(viewPole.calcMatrix())
 
-            val modelMatrix = MatrixStack(viewPole.calcMatrix())
+        val lightDirCameraSpace = modelMatrix.top() * lightDirection
 
-            val lightDirCameraSpace = modelMatrix.top() * lightDirection
+        glUseProgram(whiteDiffuseColor.theProgram)
+        glUniform3fv(whiteDiffuseColor.dirToLightUnif, 1, lightDirCameraSpace to vecBuffer)
+        glUseProgram(vertexDiffuseColor.theProgram)
+        glUniform3fv(vertexDiffuseColor.dirToLightUnif, 1, vecBuffer)
+        glUseProgram(0)
 
-            lightDirCameraSpace to vecBuffer
+        modelMatrix run {
 
-            glUseProgram(whiteDiffuseColor.theProgram)
-            glUniform3fv(whiteDiffuseColor.dirToLightUnif, 1, vecBuffer)
-            glUseProgram(vertexDiffuseColor.theProgram)
-            glUniform3fv(vertexDiffuseColor.dirToLightUnif, 1, vecBuffer)
-            glUseProgram(0)
+            //Render the ground plane.
+            run {
 
-            modelMatrix run {
+                top() to matBuffer
 
-                //  Render the ground plane
-                run {
+                glUseProgram(whiteDiffuseColor.theProgram)
+                glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                top().toMat3() to matBuffer
+                glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer)
+                glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                plane.render(gl)
+                glUseProgram(0)
 
-                    top() to matBuffer
+            }
 
-                    glUseProgram(whiteDiffuseColor.theProgram)
-                    glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-                    val normalMatrix = top().toMat3()
-                    glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                    glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-                    planeMesh.render(gl)
-                    glUseProgram(0)
-                }
+            //Render the Cylinder
+            run {
 
-                //  Render the Cylinder
-                run {
+                applyMatrix(objectPole.calcMatrix())
 
-                    applyMatrix(objectPole.calcMatrix())
-                    top() to matBuffer
+                if (scaleCylinder)
+                    scale(1.0f, 1.0f, 0.2f)
 
-                    if (drawColoredCyl) {
+                top() to matBuffer
 
-                        glUseProgram(vertexDiffuseColor.theProgram)
-                        glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-                        val normalMatrix = top().toMat3()
-                        glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-                        cylinderMesh.render(gl, "lit-color")
+                glUseProgram(vertexDiffuseColor.theProgram)
+                glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
 
-                    } else {
+                val normMatrix = top().toMat3()
+                if (doInverseTranspose)
+                    normMatrix.inverse().transpose()
 
-                        glUseProgram(whiteDiffuseColor.theProgram)
-                        glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-                        val normalMatrix = top().toMat3()
-                        glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-                        cylinderMesh.render(gl, "lit")
-                    }
-                    glUseProgram(0)
-                }
+                normMatrix to matBuffer
+                glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer)
+                glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                cylinder.render(gl, "lit-color")
+                glUseProgram(0)
             }
         }
+        return@with
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -177,16 +175,6 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         glViewport(0, 0, w, h)
-    }
-
-    override fun keyPressed(e: KeyEvent) {
-
-        when (e.keyCode) {
-
-            KeyEvent.VK_ESCAPE -> quit()
-
-            KeyEvent.VK_SPACE -> drawColoredCyl = !drawColoredCyl
-        }
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -208,6 +196,21 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
         viewPole.mouseWheel(e)
     }
 
+    override fun keyPressed(e: KeyEvent) {
+
+        when (e.keyCode) {
+
+            KeyEvent.VK_ESCAPE -> quit()
+
+            KeyEvent.VK_SPACE -> scaleCylinder = !scaleCylinder
+
+            KeyEvent.VK_T -> {
+                doInverseTranspose = !doInverseTranspose
+                println(if (doInverseTranspose) "Doing Inverse Transpose." else "Bad Lighting.")
+            }
+        }
+    }
+
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(vertexDiffuseColor.theProgram)
@@ -215,15 +218,15 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
         glDeleteBuffers(1, projectionUniformBuffer)
 
-        cylinderMesh.dispose(gl)
-        planeMesh.dispose(gl)
+        cylinder.dispose(gl)
+        plane.dispose(gl)
 
         projectionUniformBuffer.destroy()
     }
 
-    class ProgramData(gl: GL3, vertex: String, fragment: String) {
+    inner class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut09", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut09", vertex, fragment)
 
         val dirToLightUnif = gl.glGetUniformLocation(theProgram, "dirToLight")
         val lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity")

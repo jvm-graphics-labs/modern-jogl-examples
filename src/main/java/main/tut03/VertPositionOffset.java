@@ -4,6 +4,7 @@ package main.tut03;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
+import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._4.Vec4;
 import main.framework.Framework;
@@ -98,7 +99,7 @@ public class VertPositionOffset extends Framework {
     private void computePositionOffsets(Vec2 offset) {
 
         float loopDuration = 5.0f;
-        float scale = (float) glm.pi * 2f / loopDuration;
+        float scale = Glm.PIf * 2f / loopDuration;
 
         float elapsedTime = (System.currentTimeMillis() - startingTime) / 1_000f;
 

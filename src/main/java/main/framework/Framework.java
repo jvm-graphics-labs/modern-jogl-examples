@@ -21,7 +21,6 @@ import java.nio.FloatBuffer;
 import static uno.buffer.UtilKt.destroyBuffers;
 
 /**
- *
  * @author elect
  */
 public class Framework implements GLEventListener, KeyListener, MouseListener {
@@ -94,53 +93,35 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public final void init(GLAutoDrawable drawable) {
-
-        GL3 gl3 = drawable.getGL().getGL3();
-
-        init(gl3);
-
+        init(drawable.getGL().getGL3());
     }
 
     protected void init(GL3 gl) {
-
     }
 
     @Override
     public final void display(GLAutoDrawable drawable) {
-
-        GL3 gl3 = drawable.getGL().getGL3();
-
-        display(gl3);
+        display(drawable.getGL().getGL3());
     }
 
     protected void display(GL3 gl) {
-
     }
 
     @Override
     public final void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-
-        GL3 gl3 = drawable.getGL().getGL3();
-
-        reshape(gl3, width, height);
+        reshape(drawable.getGL().getGL3(), width, height);
     }
 
     protected void reshape(GL3 gl, int width, int height) {
-
     }
 
     @Override
     public final void dispose(GLAutoDrawable drawable) {
-
-        GL3 gl3 = drawable.getGL().getGL3();
-
-        end(gl3);
-
+        end(drawable.getGL().getGL3());
         destroyBuffers(clearColor, clearDepth, matBuffer, vecBuffer);
     }
 
     protected void end(GL3 gl) {
-
     }
 
     @Override
@@ -190,9 +171,11 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
     public void mouseWheelMoved(MouseEvent e) {
     }
 
-    /** Note: calling System.exit() synchronously inside the draw, reshape or init callbacks can lead to deadlocks on
+    /**
+     * Note: calling System.exit() synchronously inside the draw, reshape or init callbacks can lead to deadlocks on
      * certain platforms (in particular, X11) because the JAWT's locking routines cause a global AWT lock to be grabbed.
-     * Instead run the exit routine in another thread.  */
+     * Instead run the exit routine in another thread.
+     */
     protected void quit() {
         new Thread(new Runnable() {
             public void run() {

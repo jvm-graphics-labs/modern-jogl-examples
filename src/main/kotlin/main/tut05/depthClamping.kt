@@ -6,15 +6,13 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import com.jogamp.opengl.GLAutoDrawable
-import com.jogamp.opengl.GLRunnable
 import glm.*
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import main.framework.gl3
 import uno.buffer.*
+import uno.gl.gl3
 import uno.glsl.programOf
 
 /**

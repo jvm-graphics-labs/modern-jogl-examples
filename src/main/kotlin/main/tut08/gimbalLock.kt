@@ -13,16 +13,9 @@ import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
-import one.util.streamex.IntStreamEx
-import org.xml.sax.SAXException
 import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
 import kotlin.properties.Delegates
 
 /**
@@ -51,9 +44,9 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
             var angleY: Float = 0f,
             var angleZ: Float = 0f)
 
-    var gimbals by Delegates.notNull<Array<Mesh>>()
+    lateinit var gimbals: Array<Mesh>
 
-    var `object` by Delegates.notNull<Mesh>()
+    lateinit var `object`: Mesh
 
     var theProgram = 0
     var modelToCameraMatrixUnif = 0
@@ -131,7 +124,7 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
                 .rotateX(-90f)
         //Set the base color for this object.
         glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-        glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().to(Framework.matBuffer))
+        glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().to(matBuffer))
 
         `object`.render(gl, "tint")
 

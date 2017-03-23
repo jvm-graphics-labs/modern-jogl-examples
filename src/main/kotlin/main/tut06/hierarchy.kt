@@ -238,7 +238,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
             glUseProgram(0)
         }
 
-        fun drawUpperArm(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
+        private fun drawUpperArm(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
 
             modelToCameraStack
                     .push()
@@ -259,7 +259,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
             modelToCameraStack.pop()
         }
 
-        fun drawLowerArm(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
+        private fun drawLowerArm(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
 
             modelToCameraStack
                     .push()
@@ -279,7 +279,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
             modelToCameraStack.pop()
         }
 
-        fun drawWrist(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
+        private fun drawWrist(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
 
             modelToCameraStack
                     .push()
@@ -299,7 +299,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
             modelToCameraStack.pop()
         }
 
-        fun drawFingers(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
+        private fun drawFingers(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
 
             //  Draw left finger
             modelToCameraStack
@@ -409,7 +409,7 @@ class Hierarchy_ : Framework("Tutorial 06 - Hierarchy") {
         }
     }
 
-    inner class MatrixStack {
+    private inner class MatrixStack {
 
         val matrices = Stack<Mat4>()
         var currMat = Mat4(1f)

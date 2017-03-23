@@ -30,11 +30,11 @@ public class AttributeType {
         this.numBytes = numBytes;
     }
 
-    public void writeToBuffer(GL3 gl3, int buffer, ByteBuffer theData, int offset) {
+    public void writeToBuffer(GL3 gl, int buffer, ByteBuffer theData, int offset) {
 //        System.out.println("glBufferData(" + (buffer == GL_ARRAY_BUFFER ? "GL_ARRAY_BUFFER"
 //                : buffer == GL_ELEMENT_ARRAY_BUFFER ? "GL_ELEMENT_ARRAY_BUFFER" : buffer)
 //                + ", " + offset + ", " + theData.capacity() + ")");
-        gl3.glBufferSubData(buffer, offset, theData.capacity(), theData);
+        gl.glBufferSubData(buffer, offset, theData.capacity(), theData);
     }
 
     public static AttributeType get(String type) {

@@ -293,7 +293,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
 
 
     fun computeAngleRad(elapsedTime: Float, loopDuration: Float): Float {
-        val scale = glm.pi.f * 2.0f / loopDuration
+        val scale = glm.PIf * 2.0f / loopDuration
         val currentTimeThroughLoop = elapsedTime % loopDuration
         return currentTimeThroughLoop * scale
     }

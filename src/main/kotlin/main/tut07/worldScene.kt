@@ -38,11 +38,12 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val MAX = 5
     }
 
-    var uniformColor by Delegates.notNull<ProgramData>()
-    var objectColor by Delegates.notNull<ProgramData>()
-    var uniformColorTint by Delegates.notNull<ProgramData>()
+    lateinit var uniformColor: ProgramData
+    lateinit var objectColor: ProgramData
+    lateinit var uniformColorTint: ProgramData
 
-    var meshes by Delegates.notNull<Array<Mesh>>()
+    lateinit var meshes: Array<Mesh>
+
     val sphereCamRelPos = Vec3(67.5f, -46.0f, 150.0f)
     val camTarget = Vec3(0.0f, 0.4f, 0.0f)
     var drawLookAtPoint = false
@@ -67,7 +68,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
     fun initializeProgram(gl: GL3) {
 
         uniformColor = ProgramData(gl, "pos-only-world-transform.vert", "color-uniform.frag")
-        objectColor = ProgramData(gl,"pos-color-world-transform.vert", "color-passthrough.frag")
+        objectColor = ProgramData(gl, "pos-color-world-transform.vert", "color-passthrough.frag")
         uniformColorTint = ProgramData(gl, "pos-color-world-transform.vert", "color-mult-uniform.frag")
     }
 
@@ -409,7 +410,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
     }
 
     class ProgramData(gl: GL3, vert: String, frag: String) {
-        
+
         val theProgram = Program(gl, this::class.java, "tut07", vert, frag).name
         val modelToWorldMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToWorldMatrix")
         val worldToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "worldToCameraMatrix")

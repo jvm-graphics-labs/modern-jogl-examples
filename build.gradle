@@ -1,5 +1,4 @@
 apply plugin: 'java'
-//apply plugin: 'application'
 apply plugin: 'kotlin'
 
 
@@ -22,8 +21,8 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile 'com.github.kotlin-graphics:glm:cf4471fabc7ec0f54ee2ea721b18fb6abf072335'
-    compile 'com.github.kotlin-graphics:uno-sdk:a75239db46c8ddc7ca977f87f39f18823b1d0406'
+    compile 'com.github.kotlin-graphics:glm:5bd25d4a397be05483b0d3103c1f6cc7e6e0235f'
+    compile 'com.github.kotlin-graphics:uno-sdk:4bf07ffa5ea68e5b462fac7ed8ae951c9060ac2b'
     compile 'one.util:streamex:0.6.5'
 
     def jogl = '2.3.2'
