@@ -35,20 +35,20 @@ import static com.jogamp.opengl.GL.GL_LEQUAL;
 import static com.jogamp.opengl.GL2ES3.*;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import static glm.GlmKt.glm;
+import static main.tut11.GaussianSpecularLighting.LightingModel.*;
 import static uno.buffer.UtilKt.destroyBuffer;
 import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
  */
-public class BlinnVsPhongLighting extends Framework {
+public class GaussianSpecularLighting extends Framework {
 
     public static void main(String[] args) {
-        new BlinnVsPhongLighting("Tutorial 11 - Blinn vs Phong Lighting");
+        new GaussianSpecularLighting("Tutorial 11 - Gaussian Specular Lighting");
     }
 
     private ProgramPairs[] programs = new ProgramPairs[LightingModel.MAX];
-
     private UnlitProgData unlit;
 
     private ViewData initialViewData = new ViewData(
@@ -73,6 +73,7 @@ public class BlinnVsPhongLighting extends Framework {
     private int lightModel = LightingModel.BlinnSpecular;
 
     private boolean drawColoredCyl = false, drawLightSource = false, scaleCyl = false, drawDark = false;
+
     private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.2f;
 
     private Vec4 darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f), lightColor = new Vec4(1.0f);
@@ -81,7 +82,7 @@ public class BlinnVsPhongLighting extends Framework {
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    public BlinnVsPhongLighting(String title) {
+    public GaussianSpecularLighting(String title) {
         super(title);
     }
 
@@ -95,7 +96,7 @@ public class BlinnVsPhongLighting extends Framework {
             plane = new Mesh(gl, getClass(), "tut11/LargePlane.xml");
             cube = new Mesh(gl, getClass(), "tut11/UnitCube.xml");
         } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
-            Logger.getLogger(BlinnVsPhongLighting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GaussianSpecularLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         float depthZNear = 0.0f, depthZFar = 1.0f;
@@ -122,10 +123,8 @@ public class BlinnVsPhongLighting extends Framework {
     }
 
     private void initializePrograms(GL3 gl) {
-
-        String[] FRAGMENTS = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
-
-        for (int i = 0; i < LightingModel.MAX; i++) {
+        String[] FRAGMENTS = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only", "gaussian-lighting", "gaussian-only"};
+        for (int i = 0; i < programs.length; i++) {
             programs[i] = new ProgramPairs();
             programs[i].whiteProgram = new ProgramData(gl, "pn.vert", FRAGMENTS[i] + ".frag");
             programs[i].colorProgram = new ProgramData(gl, "pcn.vert", FRAGMENTS[i] + ".frag");
@@ -188,9 +187,9 @@ public class BlinnVsPhongLighting extends Framework {
 
             //Render the Cylinder
             {
-                modelMatrix
-                        .push()
-                        .applyMatrix(objectPole.calcMatrix());
+                modelMatrix.push();
+
+                modelMatrix.applyMatrix(objectPole.calcMatrix());
 
                 if (scaleCyl)
                     modelMatrix.scale(1.0f, 1.0f, 0.2f);
@@ -373,7 +372,9 @@ public class BlinnVsPhongLighting extends Framework {
         int PhongOnly = 1;
         int BlinnSpecular = 2;
         int BlinnOnly = 3;
-        int MAX = 4;
+        int GaussianSpecular = 4;
+        int GaussianOnly = 5;
+        int MAX = 6;
 
         static String getName(int model) {
             switch (model) {
@@ -383,8 +384,12 @@ public class BlinnVsPhongLighting extends Framework {
                     return "PhongOnly";
                 case BlinnSpecular:
                     return "BlinnSpecular";
+                case BlinnOnly:
+                    return "BlinnOnly";
+                case GaussianSpecular:
+                    return "GaussianSpecular";
             }
-            return "BlinnOnly";
+            return "GaussianOnly";
         }
     }
 
@@ -439,7 +444,7 @@ public class BlinnVsPhongLighting extends Framework {
         public int objectColorUnif;
         public int modelToCameraMatrixUnif;
 
-        public UnlitProgData(GL3 gl, String vertex, String fragment) {
+        public UnlitProgData(GL3  gl, String vertex, String fragment) {
 
             theProgram = programOf(gl, getClass(), "tut11", vertex, fragment);
 
@@ -453,21 +458,26 @@ public class BlinnVsPhongLighting extends Framework {
         }
     }
 
-    private static class MaterialParameters {
+    public static class MaterialParameters {
 
         private static float phongExponent = 4.0f;
         private static float blinnExponent = 4.0f;
+        private static float gaussianRoughness = 0.5f;
 
         static float getSpecularValue(int model) {
 
             switch (model) {
 
-                case LightingModel.PhongSpecular:
-                case LightingModel.PhongOnly:
+                case PhongSpecular:
+                case PhongOnly:
                     return phongExponent;
 
-                default:
+                case BlinnSpecular:
+                case BlinnOnly:
                     return blinnExponent;
+
+                default:
+                    return gaussianRoughness;
             }
         }
 
@@ -475,16 +485,20 @@ public class BlinnVsPhongLighting extends Framework {
 
             switch (model) {
 
-                case LightingModel.PhongSpecular:
-                case LightingModel.PhongOnly:
+                case PhongSpecular:
+                case PhongOnly:
                     phongExponent += isLarge ? 0.5f : 0.1f;
                     break;
 
-                default:
+                case BlinnSpecular:
+                case BlinnOnly:
                     blinnExponent += isLarge ? 0.5f : 0.1f;
                     break;
-            }
 
+                default:
+                    gaussianRoughness += isLarge ? 0.1f : 0.01f;
+                    break;
+            }
             clampParam(model);
         }
 
@@ -492,16 +506,20 @@ public class BlinnVsPhongLighting extends Framework {
 
             switch (model) {
 
-                case LightingModel.PhongSpecular:
-                case LightingModel.PhongOnly:
+                case PhongSpecular:
+                case PhongOnly:
                     phongExponent -= isLarge ? 0.5f : 0.1f;
                     break;
 
-                default:
+                case BlinnSpecular:
+                case BlinnOnly:
                     blinnExponent -= isLarge ? 0.5f : 0.1f;
                     break;
-            }
 
+                default:
+                    gaussianRoughness -= isLarge ? 0.1f : 0.01f;
+                    break;
+            }
             clampParam(model);
         }
 
@@ -509,15 +527,22 @@ public class BlinnVsPhongLighting extends Framework {
 
             switch (model) {
 
-                case LightingModel.PhongSpecular:
-                case LightingModel.PhongOnly:
-                    if (phongExponent <= 0.0f)
+                case PhongSpecular:
+                case PhongOnly:
+                    if (phongExponent <= 0.0f) {
                         phongExponent = 0.0001f;
+                    }
+                    break;
+
+                case BlinnSpecular:
+                case BlinnOnly:
+                    if (blinnExponent <= 0.0f) {
+                        blinnExponent = 0.0001f;
+                    }
                     break;
 
                 default:
-                    if (blinnExponent <= 0.0f)
-                        blinnExponent = 0.0001f;
+                    gaussianRoughness = glm.clamp(gaussianRoughness, 0.00001f, 1.0f);
                     break;
             }
         }

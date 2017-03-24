@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glm.L
-import glm.f
 import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -15,10 +14,11 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
-import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
-import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnOnly
-import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
+import main.tut11.GaussianSpecularLighting_.LightingModel.BlinnOnly
+import main.tut11.GaussianSpecularLighting_.LightingModel.BlinnSpecular
+import main.tut11.GaussianSpecularLighting_.LightingModel.GaussianSpecular
+import main.tut11.GaussianSpecularLighting_.LightingModel.PhongOnly
+import main.tut11.GaussianSpecularLighting_.LightingModel.PhongSpecular
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.buffer.put
@@ -32,13 +32,12 @@ import uno.time.Timer
  */
 
 fun main(args: Array<String>) {
-    BlinnVsPhongLighting_()
+    GaussianSpecularLighting_()
 }
 
-class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting") {
+class GaussianSpecularLighting_() : Framework("Tutorial 11 - Gaussian Specular Lighting") {
 
     lateinit var programs: Array<ProgramPairs>
-
     lateinit var unlit: UnlitProgData
 
     val initialViewData = ViewData(
@@ -68,6 +67,7 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
     var drawLightSource = false
     var scaleCyl = false
     var drawDark = false
+
     var lightHeight = 1.5f
     var lightRadius = 1.0f
     val lightAttenuation = 1.2f
@@ -100,7 +100,6 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         glDepthRangef(depthZNear, depthZFar)
         glEnable(GL_DEPTH_CLAMP)
 
-
         glGenBuffers(1, projectionUniformBuffer)
 
         glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
@@ -113,9 +112,7 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
     }
 
     fun initializePrograms(gl: GL3) {
-
-        val FRAGMENTS = arrayOf("phong-lighting", "phong-only", "blinn-lighting", "blinn-only")
-
+        val FRAGMENTS = arrayOf("phong-lighting", "phong-only", "blinn-lighting", "blinn-only", "gaussian-lighting", "gaussian-only")
         programs = Array(LightingModel.MAX, {
             ProgramPairs(ProgramData(gl, "pn.vert", "${FRAGMENTS[it]}.frag"), ProgramData(gl, "pcn.vert", "${FRAGMENTS[it]}.frag"))
         })
@@ -141,7 +138,7 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         glUseProgram(whiteProg.theProgram)
         glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to vecBuffer)
+        glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to (vecBuffer))
         glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation)
         glUniform1f(whiteProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel))
         glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, (if (drawDark) darkColor else lightColor) to vecBuffer)
@@ -178,7 +175,7 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
                 if (scaleCyl)
                     scale(1.0f, 1.0f, 0.2f)
 
-                val normMatrix = top().toMat3()
+                val normMatrix = modelMatrix.top().toMat3()
                 normMatrix.inverse_().transpose_()
 
                 val prog = if (drawColoredCyl) colorProg else whiteProg
@@ -196,11 +193,12 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
             if (drawLightSource)
 
                 run {
+
                     translate(worldLightPos)
                     scale(0.1f)
 
                     glUseProgram(unlit.theProgram)
-                    glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top() to matBuffer)
                     glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f)
                     cube.render(gl, "flat")
                 }
@@ -226,10 +224,10 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         val zFar = 1_000f
         val perspMatrix = MatrixStack()
 
-        val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
+        val proj = perspMatrix.perspective(45.0f, w.toFloat() / h, zNear, zFar).top()
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0))
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.toLong(), proj to matBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, proj to matBuffer)
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         glViewport(0, 0, w, h)
@@ -295,7 +293,9 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
                     PhongSpecular -> "PhongSpecular"
                     PhongOnly -> "PhongOnly"
                     BlinnSpecular -> "BlinnSpecular"
-                    else -> "BlinnOnly"
+                    BlinnOnly -> "BlinnOnly"
+                    GaussianSpecular -> "GaussianSpecular"
+                    else -> "GaussianOnly"
                 })
             }
         }
@@ -329,11 +329,12 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         val PhongOnly = 1
         val BlinnSpecular = 2
         val BlinnOnly = 3
-        val MAX = 4
+        val GaussianSpecular = 4
+        val GaussianOnly = 5
+        val MAX = 6
     }
 
-
-    class ProgramPairs(var whiteProgram: ProgramData, var colorProgram: ProgramData)
+    class ProgramPairs(val whiteProgram: ProgramData, val colorProgram: ProgramData)
 
     class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
@@ -359,11 +360,12 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         }
     }
 
-    class UnlitProgData(gl: GL3, vertex: String, fragment: String) {
+    inner class UnlitProgData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut11", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut11", vertex, fragment)
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
+
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
 
         init {
@@ -376,18 +378,21 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
 
     object MaterialParameters {
 
-        private var phongExponent = 4.0f
-        private var blinnExponent = 4.0f
+        var phongExponent = 4.0f
+        var blinnExponent = 4.0f
+        var gaussianRoughness = 0.5f
 
         fun getSpecularValue(model: Int) = when (model) {
             PhongSpecular, PhongOnly -> phongExponent
-            else -> blinnExponent
+            BlinnSpecular, BlinnOnly -> blinnExponent
+            else -> gaussianRoughness
         }
 
         fun increment(model: Int, isLarge: Boolean) {
             when (model) {
                 PhongSpecular, PhongOnly -> phongExponent += if (isLarge) 0.5f else 0.1f
-                else -> blinnExponent += if (isLarge) 0.5f else 0.1f
+                BlinnSpecular, BlinnOnly -> blinnExponent += if (isLarge) 0.5f else 0.1f
+                else -> gaussianRoughness += if (isLarge) 0.1f else 0.01f
             }
             clampParam(model)
         }
@@ -395,7 +400,8 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         fun decrement(model: Int, isLarge: Boolean) {
             when (model) {
                 PhongSpecular, PhongOnly -> phongExponent -= if (isLarge) 0.5f else 0.1f
-                else -> blinnExponent -= if (isLarge) 0.5f else 0.1f
+                BlinnSpecular, BlinnOnly -> blinnExponent -= if (isLarge) 0.5f else 0.1f
+                else -> gaussianRoughness -= if (isLarge) 0.1f else 0.01f
             }
             clampParam(model)
         }
@@ -403,7 +409,8 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
         fun clampParam(model: Int) {
             when (model) {
                 PhongSpecular, PhongOnly -> if (phongExponent <= 0.0f) phongExponent = 0.0001f
-                else -> if (blinnExponent <= 0.0f) blinnExponent = 0.0001f
+                BlinnSpecular, BlinnOnly -> if (blinnExponent <= 0.0f) blinnExponent = 0.0001f
+                else -> gaussianRoughness = glm.clamp(gaussianRoughness, 0.00001f, 1.0f)
             }
         }
     }
