@@ -24,8 +24,8 @@ Status:
 - [x] Chapter 7, World in Motion
 - [x] Chapter 8, Getting Oriented
 - [x] Chapter 9, Lights On
-- [ ] Chapter 10, Plane Lights
-- [ ] Chapter 11, Shinies
+- [x] Chapter 10, Plane Lights
+- [x] Chapter 11, Shinies
 - [ ] Chapter 12, Dynamic Lights
 - [ ] Chapter 13, Lies and Impostors
 - [ ] Chapter 14, Textures are not Pictures
