@@ -50,8 +50,8 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
         val shaders =
                 if (strings[0].contains('.'))
                     strings.toList()
-                else{
-                    val root = if(strings[0].endsWith('/')) strings[0] else strings[0] + '/'
+                else {
+                    val root = if (strings[0].endsWith('/')) strings[0] else strings[0] + '/'
                     strings.drop(1).map { root + it }
                 }
 
@@ -71,7 +71,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
         return shaderProgram.program()
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl){
+    fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
         val vertexBuffer = vertexData.toFloatBuffer()
 
@@ -84,7 +84,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
         vertexBuffer.destroy()
     }
 
-    override fun display(gl: GL3) = with(gl){
+    override fun display(gl: GL3) = with(gl) {
 
         glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 1f))
 
@@ -104,7 +104,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
         gl.glViewport(0, 0, w, h)
     }
 
-    override fun end(gl: GL3) = with(gl){
+    override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(1, vertexBufferObject)

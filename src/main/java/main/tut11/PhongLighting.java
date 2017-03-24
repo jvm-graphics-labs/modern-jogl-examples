@@ -1,11 +1,12 @@
 
-package main.tut10;
+package main.tut11;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 import glm.Glm;
+import glm.mat.Mat3;
 import glm.mat.Mat4;
 import glm.quat.Quat;
 import glm.vec._3.Vec3;
@@ -40,13 +41,13 @@ import static glm.GlmKt.glm;
 /**
  * @author gbarbieri
  */
-public class FragmentPointLighting extends Framework {
+public class PhongLighting extends Framework {
 
     public static void main(String[] args) {
-        new FragmentPointLighting("Tutorial 10 - Fragment Point Lighting");
+        new PhongLighting("Tutorial 11 - Fragment Attenuation");
     }
 
-    private ProgramData whiteDiffuseColor, vertexDiffuseColor, fragWhiteDiffuseColor, fragVertexDiffuseColor;
+    private ProgramData whiteNoPhong, colorNoPhong, whitePhong, colorPhong, whitePhongOnly, colorPhongOnly;
     private UnlitProgData unlit;
 
     private ViewData initialViewData = new ViewData(
@@ -68,14 +69,19 @@ public class FragmentPointLighting extends Framework {
 
     private Mesh cylinder, plane, cube;
 
-    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
+    private LightingModel lightModel = LightingModel.DiffuseAndSpecular;
 
-    private boolean useFragmentLighting = true, drawColoredCyl = false, drawLight = false, scaleCyl = false;
-    private float lightHeight = 1.5f, lightRadius = 1.0f;
+    private boolean drawColoredCyl = false, drawLightSource = false, scaleCyl = false, drawDark = false;
+
+    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.2f, shininessFactor = 4.0f;
+
+    private Vec4 darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f), lightColor = new Vec4(1.0f);
 
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
-    private FragmentPointLighting(String title) {
+    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
+
+    public PhongLighting(String title) {
         super(title);
     }
 
@@ -85,11 +91,11 @@ public class FragmentPointLighting extends Framework {
         initializePrograms(gl);
 
         try {
-            cylinder = new Mesh(gl, getClass(), "tut10/UnitCylinder.xml");
-            plane = new Mesh(gl, getClass(), "tut10/LargePlane.xml");
-            cube = new Mesh(gl, getClass(), "tut10/UnitCube.xml");
+            cylinder = new Mesh(gl, getClass(), "tut11/UnitCylinder.xml");
+            plane = new Mesh(gl, getClass(), "tut11/LargePlane.xml");
+            cube = new Mesh(gl, getClass(), "tut11/UnitCube.xml");
         } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
-            Logger.getLogger(FragmentPointLighting.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PhongLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         gl.glEnable(GL_CULL_FACE);
@@ -103,6 +109,7 @@ public class FragmentPointLighting extends Framework {
         gl.glEnable(GL_DEPTH_CLAMP);
 
         gl.glGenBuffers(1, projectionUniformBuffer);
+
         gl.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
         gl.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
@@ -113,10 +120,16 @@ public class FragmentPointLighting extends Framework {
     }
 
     private void initializePrograms(GL3 gl) {
-        whiteDiffuseColor = new ProgramData(gl, "model-pos-vertex-lighting-PN.vert", "color-passthrough.frag");
-        vertexDiffuseColor = new ProgramData(gl, "model-pos-vertex-lighting-PCN.vert", "color-passthrough.frag");
-        fragWhiteDiffuseColor = new ProgramData(gl, "fragment-lighting-PN.vert", "fragment-lighting.frag");
-        fragVertexDiffuseColor = new ProgramData(gl, "fragment-lighting-PCN.vert", "fragment-lighting.frag");
+
+        whiteNoPhong = new ProgramData(gl, "pn.vert", "no-phong.frag");
+        colorNoPhong = new ProgramData(gl, "pcn.vert", "no-phong.frag");
+
+        whitePhong = new ProgramData(gl, "pn.vert", "phong-lighting.frag");
+        colorPhong = new ProgramData(gl, "pcn.vert", "phong-lighting.frag");
+
+        whitePhongOnly = new ProgramData(gl, "pn.vert", "phong-only.frag");
+        colorPhongOnly = new ProgramData(gl, "pcn.vert", "phong-only.frag");
+
         unlit = new UnlitProgData(gl, "pos-transform.vert", "uniform-color.frag");
     }
 
@@ -132,18 +145,42 @@ public class FragmentPointLighting extends Framework {
         modelMatrix.setMatrix(viewPole.calcMatrix());
 
         Vec4 worldLightPos = calcLightPosition();
-
         Vec4 lightPosCameraSpace = modelMatrix.top().times(worldLightPos);
 
-        ProgramData whiteProgram = useFragmentLighting ? fragWhiteDiffuseColor : whiteDiffuseColor;
-        ProgramData vertColorProgram = useFragmentLighting ? fragVertexDiffuseColor : vertexDiffuseColor;
+        ProgramData whiteProg, colorProg;
 
-        gl.glUseProgram(whiteProgram.theProgram);
-        gl.glUniform4f(whiteProgram.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl.glUniform4f(whiteProgram.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl.glUseProgram(vertColorProgram.theProgram);
-        gl.glUniform4f(vertColorProgram.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl.glUniform4f(vertColorProgram.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        switch (lightModel) {
+
+            case PureDiffuse:
+                whiteProg = whiteNoPhong;
+                colorProg = colorNoPhong;
+                break;
+
+            case DiffuseAndSpecular:
+                whiteProg = whitePhong;
+                colorProg = colorPhong;
+                break;
+
+            default: // SpecularOnly
+                whiteProg = whitePhongOnly;
+                colorProg = colorPhongOnly;
+                break;
+        }
+
+        gl.glUseProgram(whiteProg.theProgram);
+        gl.glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl.glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl.glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
+        gl.glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation);
+        gl.glUniform1f(whiteProg.shininessFactorUnif, shininessFactor);
+        gl.glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, (drawDark ? darkColor : lightColor).to(vecBuffer));
+
+        gl.glUseProgram(colorProg.theProgram);
+        gl.glUniform4f(colorProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl.glUniform4f(colorProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl.glUniform3fv(colorProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
+        gl.glUniform1f(colorProg.lightAttenuationUnif, lightAttenuation);
+        gl.glUniform1f(colorProg.shininessFactorUnif, shininessFactor);
         gl.glUseProgram(0);
 
         {
@@ -153,13 +190,13 @@ public class FragmentPointLighting extends Framework {
             {
                 modelMatrix.push();
 
-                gl.glUseProgram(whiteProgram.theProgram);
-                gl.glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
+                Mat3 normMatrix = modelMatrix.top().toMat3();
+                normMatrix.inverse_().transpose_();
 
-                Mat4 invTransform = modelMatrix.top().inverse();
-                Vec4 lightPosModelSpace = invTransform.times(lightPosCameraSpace);
-                gl.glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.to(vecBuffer));
+                gl.glUseProgram(whiteProg.theProgram);
+                gl.glUniformMatrix4fv(whiteProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
 
+                gl.glUniformMatrix3fv(whiteProg.normalModelToCameraMatrixUnif, 1, false, normMatrix.to(matBuffer));
                 plane.render(gl);
                 gl.glUseProgram(0);
 
@@ -175,37 +212,31 @@ public class FragmentPointLighting extends Framework {
                 if (scaleCyl)
                     modelMatrix.scale(1.0f, 1.0f, 0.2f);
 
-                Mat4 invTransform = modelMatrix.top().inverse();
-                Vec4 lightPosModelSpace = invTransform.times(lightPosCameraSpace);
+                Mat3 normMatrix = modelMatrix.top().toMat3();
+                normMatrix.inverse_().transpose_();
 
-                if (drawColoredCyl) {
-                    gl.glUseProgram(vertColorProgram.theProgram);
-                    gl.glUniformMatrix4fv(vertColorProgram.modelToCameraMatrixUnif, 1, false,
-                            modelMatrix.top().to(matBuffer));
+                ProgramData prog = drawColoredCyl ? colorProg : whiteProg;
+                gl.glUseProgram(prog.theProgram);
+                gl.glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
 
-                    gl.glUniform3fv(vertColorProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.to(vecBuffer));
+                gl.glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix.to(matBuffer));
 
+                if (drawColoredCyl)
                     cylinder.render(gl, "lit-color");
-                } else {
-                    gl.glUseProgram(whiteProgram.theProgram);
-                    gl.glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false,
-                            modelMatrix.top().to(matBuffer));
-
-                    gl.glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace.to(vecBuffer));
-
+                else
                     cylinder.render(gl, "lit");
-                }
-                gl.glUseProgram(0);
 
+                gl.glUseProgram(0);
                 modelMatrix.pop();
             }
 
-            if (drawLight) {
+            //Render the light
+            if (drawLightSource) {
 
                 modelMatrix
                         .push()
                         .translate(worldLightPos)
-                        .scale(0.1f, 0.1f, 0.1f);
+                        .scale(0.1f);
 
                 gl.glUseProgram(unlit.theProgram);
                 gl.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
@@ -236,10 +267,10 @@ public class FragmentPointLighting extends Framework {
         float zNear = 1.0f, zFar = 1_000f;
         MatrixStack perspMatrix = new MatrixStack();
 
-        perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar);
+        Mat4 proj = perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar).top();
 
         gl.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
-        gl.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, perspMatrix.top().to(matBuffer));
+        gl.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, proj.to(matBuffer));
         gl.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         gl.glViewport(0, 0, w, h);
@@ -271,6 +302,8 @@ public class FragmentPointLighting extends Framework {
     @Override
     public void keyPressed(KeyEvent e) {
 
+        boolean changedShininess = false;
+
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_ESCAPE:
@@ -294,30 +327,55 @@ public class FragmentPointLighting extends Framework {
                 lightRadius -= e.isShiftDown() ? 0.05f : 0.2f;
                 break;
 
+            case KeyEvent.VK_O:
+                shininessFactor += e.isShiftDown() ? 0.1f : 0.5f;
+                changedShininess = true;
+                break;
+            case KeyEvent.VK_U:
+                shininessFactor -= e.isShiftDown() ? 0.1f : 0.5f;
+                changedShininess = true;
+                break;
+
             case KeyEvent.VK_Y:
-                drawLight = !drawLight;
+                drawLightSource = !drawLightSource;
                 break;
             case KeyEvent.VK_T:
                 scaleCyl = !scaleCyl;
                 break;
-            case KeyEvent.VK_H:
-                useFragmentLighting = !useFragmentLighting;
-                break;
             case KeyEvent.VK_B:
                 lightTimer.togglePause();
                 break;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
+
+            case KeyEvent.VK_H:
+                int model = lightModel.ordinal() + (e.isShiftDown() ? -1 : +1);
+                model = (model + LightingModel.values().length) % LightingModel.values().length;
+                lightModel = LightingModel.values()[model];
+                System.out.println(lightModel);
+                break;
         }
+
         if (lightRadius < 0.2f)
             lightRadius = 0.2f;
+
+        if (shininessFactor < 0.0f)
+            shininessFactor = 0.0001f;
+
+        if (changedShininess)
+            System.out.println("Shiny: " + shininessFactor);
     }
 
     @Override
     public void end(GL3 gl) {
 
-        gl.glDeleteProgram(vertexDiffuseColor.theProgram);
-        gl.glDeleteProgram(whiteDiffuseColor.theProgram);
-        gl.glDeleteProgram(fragVertexDiffuseColor.theProgram);
-        gl.glDeleteProgram(fragWhiteDiffuseColor.theProgram);
+        gl.glDeleteProgram(whiteNoPhong.theProgram);
+        gl.glDeleteProgram(colorNoPhong.theProgram);
+        gl.glDeleteProgram(whitePhong.theProgram);
+        gl.glDeleteProgram(colorPhong.theProgram);
+        gl.glDeleteProgram(whitePhongOnly.theProgram);
+        gl.glDeleteProgram(colorPhongOnly.theProgram);
         gl.glDeleteProgram(unlit.theProgram);
 
         gl.glDeleteBuffers(1, projectionUniformBuffer);
@@ -329,25 +387,43 @@ public class FragmentPointLighting extends Framework {
         destroyBuffer(projectionUniformBuffer);
     }
 
+    private enum LightingModel {
+
+        PureDiffuse,
+        DiffuseAndSpecular,
+        SpecularOnly;
+    }
+
     private class ProgramData {
 
         public int theProgram;
 
-        public int modelSpaceLightPosUnif;
+        public int modelToCameraMatrixUnif;
+
         public int lightIntensityUnif;
         public int ambientIntensityUnif;
 
-        public int modelToCameraMatrixUnif;
+        public int normalModelToCameraMatrixUnif;
+        public int cameraSpaceLightPosUnif;
+
+        public int lightAttenuationUnif;
+        public int shininessFactorUnif;
+        public int baseDiffuseColorUnif;
 
         public ProgramData(GL3 gl, String vertex, String fragment) {
 
-            theProgram = programOf(gl, getClass(), "tut10", vertex, fragment);
+            theProgram = programOf(gl, getClass(), "tut11", vertex, fragment);
 
             modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
-
-            modelSpaceLightPosUnif = gl.glGetUniformLocation(theProgram, "modelSpaceLightPos");
             lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity");
             ambientIntensityUnif = gl.glGetUniformLocation(theProgram, "ambientIntensity");
+
+            normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix");
+            cameraSpaceLightPosUnif = gl.glGetUniformLocation(theProgram, "cameraSpaceLightPos");
+
+            lightAttenuationUnif = gl.glGetUniformLocation(theProgram, "lightAttenuation");
+            shininessFactorUnif = gl.glGetUniformLocation(theProgram, "shininessFactor");
+            baseDiffuseColorUnif = gl.glGetUniformLocation(theProgram, "baseDiffuseColor");
 
             gl.glUniformBlockBinding(
                     theProgram,
@@ -361,16 +437,14 @@ public class FragmentPointLighting extends Framework {
         public int theProgram;
 
         public int objectColorUnif;
-
         public int modelToCameraMatrixUnif;
 
         public UnlitProgData(GL3 gl, String vertex, String fragment) {
 
-            theProgram = programOf(gl, getClass(), "tut10", vertex, fragment);
-
-            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
+            theProgram = programOf(gl, getClass(), "tut11", vertex, fragment);
 
             objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor");
+            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
 
             gl.glUniformBlockBinding(
                     theProgram,

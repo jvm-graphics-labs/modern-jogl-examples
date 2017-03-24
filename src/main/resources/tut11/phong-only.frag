@@ -1,7 +1,8 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
+
 
 in vec4 diffuseColor_;
 in vec3 vertexNormal;
@@ -36,17 +37,15 @@ void main()
     vec3 lightDir = vec3(0.0);
     float atten = calcAttenuation(cameraSpacePosition, lightDir);
     vec4 attenIntensity = atten * lightIntensity;
-	
+
     vec3 surfaceNormal = normalize(vertexNormal);
 	
     vec3 viewDirection = normalize(-cameraSpacePosition);
+    vec3 reflectDir = normalize(reflect(-lightDir, surfaceNormal));
+    float phongTerm = dot(viewDirection, reflectDir);
+    phongTerm = clamp(phongTerm, 0, 1);
+    phongTerm = dot(surfaceNormal, lightDir) > 0.0 ? phongTerm : 0.0;
+    phongTerm = pow(phongTerm, shininessFactor);
 	
-    vec3 halfAngle = normalize(lightDir + viewDirection);
-    float blinnTerm = dot(surfaceNormal, halfAngle);
-    blinnTerm = clamp(blinnTerm, 0, 1);
-    blinnTerm = dot(surfaceNormal, lightDir) >= 0.0 ? blinnTerm : 0.0;
-    blinnTerm = pow(blinnTerm, shininessFactor);
-
-    outputColor = (specularColor * attenIntensity * blinnTerm) +
-            (diffuseColor_ * ambientIntensity);
+    outputColor = (specularColor * attenIntensity * phongTerm) + (diffuseColor_ * ambientIntensity);
 }

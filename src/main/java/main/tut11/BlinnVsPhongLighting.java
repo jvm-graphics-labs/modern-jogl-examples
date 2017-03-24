@@ -1,5 +1,5 @@
 
-package main.tut10;
+package main.tut11;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
@@ -9,7 +9,6 @@ import glm.Glm;
 import glm.mat.Mat3;
 import glm.mat.Mat4;
 import glm.quat.Quat;
-import glm.vec._2.Vec2i;
 import glm.vec._3.Vec3;
 import glm.vec._4.Vec4;
 import main.framework.Framework;
@@ -23,7 +22,6 @@ import uno.time.Timer;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,20 +34,21 @@ import static com.jogamp.opengl.GL.GL_DYNAMIC_DRAW;
 import static com.jogamp.opengl.GL.GL_LEQUAL;
 import static com.jogamp.opengl.GL2ES3.*;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
-import static uno.buffer.UtilKt.destroyBuffers;
-import static uno.glsl.UtilKt.programOf;
 import static glm.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffer;
+import static uno.glsl.UtilKt.programOf;
 
 /**
  * @author gbarbieri
  */
-public class FragmentAttenuation extends Framework {
+public class BlinnVsPhongLighting extends Framework {
 
     public static void main(String[] args) {
-        new FragmentAttenuation("Tutorial 10 - Fragment Attenuation");
+        new BlinnVsPhongLighting("Tutorial 11 - Blinn vs Phong Lighting");
     }
 
-    private ProgramData fragWhiteDiffuseColor, fragVertexDiffuseColor;
+    private ProgramPairs[] programs = new ProgramPairs[LightingModel.MAX];
+
     private UnlitProgData unlit;
 
     private ViewData initialViewData = new ViewData(
@@ -71,38 +70,20 @@ public class FragmentAttenuation extends Framework {
 
     private Mesh cylinder, plane, cube;
 
-    private boolean drawColoredCyl = false, drawLight = false, scaleCyl = false, useRSquare = false;
+    private int lightModel = LightingModel.BlinnSpecular;
 
-    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.0f;
+    private boolean drawColoredCyl = false, drawLightSource = false, scaleCyl = false, drawDark = false;
+    private float lightHeight = 1.5f, lightRadius = 1.0f, lightAttenuation = 1.2f;
+
+    private Vec4 darkColor = new Vec4(0.2f, 0.2f, 0.2f, 1.0f), lightColor = new Vec4(1.0f);
 
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
-    private interface Buffer {
+    private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-        int PROJECTION = 0;
-        int UNPROJECTION = 1;
-        int MAX = 2;
-    }
+    private final String[] FRAGMENTS_SHADERS_SRC = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
 
-    private static class UnProjectionBlock {
-
-        public final static int SIZE = Mat4.SIZE + Vec2i.SIZE;
-
-        public static Mat4 clipToCameraMatrix;
-        public static Vec2i windowSize;
-
-        public static ByteBuffer to(ByteBuffer buffer) {
-            clipToCameraMatrix.to(buffer);
-            windowSize.to(buffer, Mat4.SIZE);
-            return buffer;
-        }
-    }
-
-    private IntBuffer bufferName = GLBuffers.newDirectIntBuffer(Buffer.MAX);
-
-    private ByteBuffer unprojectBuffer = GLBuffers.newDirectByteBuffer(UnProjectionBlock.SIZE);
-
-    public FragmentAttenuation(String title) {
+    public BlinnVsPhongLighting(String title) {
         super(title);
     }
 
@@ -112,12 +93,14 @@ public class FragmentAttenuation extends Framework {
         initializePrograms(gl);
 
         try {
-            cylinder = new Mesh(gl, getClass(), "tut10/UnitCylinder.xml");
-            plane = new Mesh(gl, getClass(), "tut10/LargePlane.xml");
-            cube = new Mesh(gl, getClass(), "tut10/UnitCube.xml");
+            cylinder = new Mesh(gl, getClass(), "tut11/UnitCylinder.xml");
+            plane = new Mesh(gl, getClass(), "tut11/LargePlane.xml");
+            cube = new Mesh(gl, getClass(), "tut11/UnitCube.xml");
         } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
-            Logger.getLogger(FragmentAttenuation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BlinnVsPhongLighting.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        float depthZNear = 0.0f, depthZFar = 1.0f;
 
         gl.glEnable(GL_CULL_FACE);
         gl.glCullFace(GL_BACK);
@@ -126,28 +109,27 @@ public class FragmentAttenuation extends Framework {
         gl.glEnable(GL_DEPTH_TEST);
         gl.glDepthMask(true);
         gl.glDepthFunc(GL_LEQUAL);
-        gl.glDepthRangef(0.0f, 1.0f);
+        gl.glDepthRangef(depthZNear, depthZFar);
         gl.glEnable(GL_DEPTH_CLAMP);
 
-        gl.glGenBuffers(Buffer.MAX, bufferName);
+        gl.glGenBuffers(1, projectionUniformBuffer);
 
-        gl.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
+        gl.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
         gl.glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, null, GL_DYNAMIC_DRAW);
 
-        gl.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.UNPROJECTION));
-        gl.glBufferData(GL_UNIFORM_BUFFER, UnProjectionBlock.SIZE, null, GL_DYNAMIC_DRAW);
-
         //Bind the static buffers.
-        gl.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName.get(Buffer.PROJECTION), 0, Mat4.SIZE);
-        gl.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.UNPROJECTION, bufferName.get(Buffer.UNPROJECTION),
-                0, UnProjectionBlock.SIZE);
+        gl.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer.get(0), 0, Mat4.SIZE);
 
         gl.glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
     private void initializePrograms(GL3 gl) {
-        fragWhiteDiffuseColor = new ProgramData(gl, "frag-light-atten-PN.vert", "frag-light-atten.frag");
-        fragVertexDiffuseColor = new ProgramData(gl, "frag-light-atten-PCN.vert", "frag-light-atten.frag");
+
+        for (int i = 0; i < LightingModel.MAX; i++) {
+            programs[i] = new ProgramPairs();
+            programs[i].whiteProgram = new ProgramData(gl, "pn.vert", FRAGMENTS_SHADERS_SRC[i] + ".frag");
+            programs[i].colorProgram = new ProgramData(gl, "pcn.vert", FRAGMENTS_SHADERS_SRC[i] + ".frag");
+        }
         unlit = new UnlitProgData(gl, "pos-transform.vert", "uniform-color.frag");
     }
 
@@ -165,19 +147,23 @@ public class FragmentAttenuation extends Framework {
         Vec4 worldLightPos = calcLightPosition();
         Vec4 lightPosCameraSpace = modelMatrix.top().times(worldLightPos);
 
-        gl.glUseProgram(fragWhiteDiffuseColor.theProgram);
-        gl.glUniform4f(fragWhiteDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl.glUniform4f(fragWhiteDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl.glUniform3fv(fragWhiteDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
-        gl.glUniform1f(fragWhiteDiffuseColor.lightAttenuationUnif, lightAttenuation);
-        gl.glUniform1i(fragWhiteDiffuseColor.bUseRSquareUnif, useRSquare ? 1 : 0);
+        ProgramData whiteProg = programs[lightModel].whiteProgram;
+        ProgramData colorProg = programs[lightModel].colorProgram;
 
-        gl.glUseProgram(fragVertexDiffuseColor.theProgram);
-        gl.glUniform4f(fragVertexDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
-        gl.glUniform4f(fragVertexDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
-        gl.glUniform3fv(fragVertexDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
-        gl.glUniform1f(fragVertexDiffuseColor.lightAttenuationUnif, lightAttenuation);
-        gl.glUniform1i(fragVertexDiffuseColor.bUseRSquareUnif, useRSquare ? 1 : 0);
+        gl.glUseProgram(whiteProg.theProgram);
+        gl.glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl.glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl.glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
+        gl.glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation);
+        gl.glUniform1f(whiteProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel));
+        gl.glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, (drawDark ? darkColor : lightColor).to(vecBuffer));
+
+        gl.glUseProgram(colorProg.theProgram);
+        gl.glUniform4f(colorProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f);
+        gl.glUniform4f(colorProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f);
+        gl.glUniform3fv(colorProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace.to(vecBuffer));
+        gl.glUniform1f(colorProg.lightAttenuationUnif, lightAttenuation);
+        gl.glUniform1f(colorProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel));
         gl.glUseProgram(0);
 
         {
@@ -190,12 +176,10 @@ public class FragmentAttenuation extends Framework {
                 Mat3 normMatrix = modelMatrix.top().toMat3();
                 normMatrix.inverse_().transpose_();
 
-                gl.glUseProgram(fragWhiteDiffuseColor.theProgram);
-                gl.glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false,
-                        modelMatrix.top().to(matBuffer));
+                gl.glUseProgram(whiteProg.theProgram);
+                gl.glUniformMatrix4fv(whiteProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
 
-                gl.glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                        normMatrix.to(matBuffer));
+                gl.glUniformMatrix3fv(whiteProg.normalModelToCameraMatrixUnif, 1, false, normMatrix.to(matBuffer));
                 plane.render(gl);
                 gl.glUseProgram(0);
 
@@ -214,30 +198,23 @@ public class FragmentAttenuation extends Framework {
                 Mat3 normMatrix = modelMatrix.top().toMat3();
                 normMatrix.inverse_().transpose_();
 
-                if (drawColoredCyl) {
-                    gl.glUseProgram(fragVertexDiffuseColor.theProgram);
-                    gl.glUniformMatrix4fv(fragVertexDiffuseColor.modelToCameraMatrixUnif, 1, false,
-                            modelMatrix.top().to(matBuffer));
+                ProgramData prog = drawColoredCyl ? colorProg : whiteProg;
+                gl.glUseProgram(prog.theProgram);
+                gl.glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
 
-                    gl.glUniformMatrix3fv(fragVertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normMatrix.to(matBuffer));
+                gl.glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix.to(matBuffer));
+
+                if (drawColoredCyl)
                     cylinder.render(gl, "lit-color");
-                } else {
-                    gl.glUseProgram(fragWhiteDiffuseColor.theProgram);
-                    gl.glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false,
-                            modelMatrix.top().to(matBuffer));
-
-                    gl.glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false,
-                            normMatrix.to(matBuffer));
+                else
                     cylinder.render(gl, "lit");
-                }
-                gl.glUseProgram(0);
 
+                gl.glUseProgram(0);
                 modelMatrix.pop();
             }
 
             //Render the light
-            if (drawLight) {
+            if (drawLightSource) {
 
                 modelMatrix
                         .push()
@@ -248,8 +225,6 @@ public class FragmentAttenuation extends Framework {
                 gl.glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, modelMatrix.top().to(matBuffer));
                 gl.glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f);
                 cube.render(gl, "flat");
-
-                modelMatrix.pop();
             }
             modelMatrix.pop();
         }
@@ -275,13 +250,8 @@ public class FragmentAttenuation extends Framework {
 
         Mat4 proj = perspMatrix.perspective(45.0f, (float) w / h, zNear, zFar).top();
 
-        UnProjectionBlock.clipToCameraMatrix = perspMatrix.top().inverse();
-        UnProjectionBlock.windowSize = new Vec2i(w, h);
-
-        gl.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION));
+        gl.glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0));
         gl.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, proj.to(matBuffer));
-        gl.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.UNPROJECTION));
-        gl.glBufferSubData(GL_UNIFORM_BUFFER, 0, unprojectBuffer.capacity(), UnProjectionBlock.to(unprojectBuffer));
         gl.glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         gl.glViewport(0, 0, w, h);
@@ -313,7 +283,7 @@ public class FragmentAttenuation extends Framework {
     @Override
     public void keyPressed(KeyEvent e) {
 
-        boolean changedAtten = false;
+        boolean changedShininess = false;
 
         switch (e.getKeyCode()) {
 
@@ -339,16 +309,16 @@ public class FragmentAttenuation extends Framework {
                 break;
 
             case KeyEvent.VK_O:
-                lightAttenuation *= e.isShiftDown()? 1.1f : 1.5f;
-                changedAtten = true;
+                MaterialParameters.increment(lightModel, !e.isShiftDown());
+                changedShininess = true;
                 break;
             case KeyEvent.VK_U:
-                lightAttenuation /= e.isShiftDown()? 1.1f : 1.5f;
-                changedAtten = true;
+                MaterialParameters.decrement(lightModel, !e.isShiftDown());
+                changedShininess = true;
                 break;
 
             case KeyEvent.VK_Y:
-                drawLight = !drawLight;
+                drawLightSource = !drawLightSource;
                 break;
             case KeyEvent.VK_T:
                 scaleCyl = !scaleCyl;
@@ -356,37 +326,60 @@ public class FragmentAttenuation extends Framework {
             case KeyEvent.VK_B:
                 lightTimer.togglePause();
                 break;
+            case KeyEvent.VK_G:
+                drawDark = !drawDark;
+                break;
 
             case KeyEvent.VK_H:
-                useRSquare = !useRSquare;
-                System.out.println((useRSquare ? "Inverse Squared" : "Plain Inverse") + " Attenuation");
+                if (e.isShiftDown())
+                    if ((lightModel % 2) != 0)
+                        lightModel -= 1;
+                    else
+                        lightModel += 1;
+                else
+                    lightModel = (lightModel + 2) % LightingModel.MAX;
+                System.out.println(lightModel);
                 break;
         }
 
         if (lightRadius < 0.2f)
             lightRadius = 0.2f;
 
-        if (lightAttenuation < 0.1f)
-            lightAttenuation = 0.1f;
-
-        if (changedAtten)
-            System.out.println("Atten: " + lightAttenuation);
+        if (changedShininess)
+            System.out.println("Shiny: " + MaterialParameters.getSpecularValue(lightModel));
     }
 
     @Override
     public void end(GL3 gl) {
 
-        gl.glDeleteProgram(fragVertexDiffuseColor.theProgram);
-        gl.glDeleteProgram(fragWhiteDiffuseColor.theProgram);
+        for (ProgramPairs programPair : programs) {
+            gl.glDeleteProgram(programPair.whiteProgram.theProgram);
+            gl.glDeleteProgram(programPair.colorProgram.theProgram);
+        }
         gl.glDeleteProgram(unlit.theProgram);
 
-        gl.glDeleteBuffers(Buffer.MAX, bufferName);
+        gl.glDeleteBuffers(1, projectionUniformBuffer);
 
         cylinder.dispose(gl);
         plane.dispose(gl);
         cube.dispose(gl);
 
-        destroyBuffers(bufferName, unprojectBuffer);
+        destroyBuffer(projectionUniformBuffer);
+    }
+
+    interface LightingModel {
+
+        int PhongSpecular = 0;
+        int PhongOnly = 1;
+        int BlinnSpecular = 2;
+        int BlinnOnly = 3;
+        int MAX = 4;
+    }
+
+    private class ProgramPairs {
+
+        public ProgramData whiteProgram;
+        public ProgramData colorProgram;
     }
 
     private class ProgramData {
@@ -402,11 +395,12 @@ public class FragmentAttenuation extends Framework {
         public int cameraSpaceLightPosUnif;
 
         public int lightAttenuationUnif;
-        public int bUseRSquareUnif;
+        public int shininessFactorUnif;
+        public int baseDiffuseColorUnif;
 
         public ProgramData(GL3 gl, String vertex, String fragment) {
 
-            theProgram = programOf(gl, getClass(), "tut10", vertex, fragment);
+            theProgram = programOf(gl, getClass(), "tut11", vertex, fragment);
 
             modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
             lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity");
@@ -416,17 +410,13 @@ public class FragmentAttenuation extends Framework {
             cameraSpaceLightPosUnif = gl.glGetUniformLocation(theProgram, "cameraSpaceLightPos");
 
             lightAttenuationUnif = gl.glGetUniformLocation(theProgram, "lightAttenuation");
-            bUseRSquareUnif = gl.glGetUniformLocation(theProgram, "bUseRSquare");
+            shininessFactorUnif = gl.glGetUniformLocation(theProgram, "shininessFactor");
+            baseDiffuseColorUnif = gl.glGetUniformLocation(theProgram, "baseDiffuseColor");
 
             gl.glUniformBlockBinding(
                     theProgram,
                     gl.glGetUniformBlockIndex(theProgram, "Projection"),
                     Semantic.Uniform.PROJECTION);
-
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "UnProjection"),
-                    Semantic.Uniform.UNPROJECTION);
         }
     }
 
@@ -435,21 +425,89 @@ public class FragmentAttenuation extends Framework {
         public int theProgram;
 
         public int objectColorUnif;
-
         public int modelToCameraMatrixUnif;
 
         public UnlitProgData(GL3 gl, String vertex, String fragment) {
 
-            theProgram = programOf(gl, getClass(), "tut10", vertex, fragment);
-
-            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
+            theProgram = programOf(gl, getClass(), "tut11", vertex, fragment);
 
             objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor");
+            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix");
 
             gl.glUniformBlockBinding(
                     theProgram,
                     gl.glGetUniformBlockIndex(theProgram, "Projection"),
                     Semantic.Uniform.PROJECTION);
+        }
+    }
+
+    private static class MaterialParameters {
+
+        private static float phongExponent = 4.0f;
+        private static float blinnExponent = 4.0f;
+
+        static float getSpecularValue(int model) {
+
+            switch (model) {
+
+                case LightingModel.PhongSpecular:
+                case LightingModel.PhongOnly:
+                    return phongExponent;
+
+                default:
+                    return blinnExponent;
+            }
+        }
+
+        static void increment(int model, boolean isLarge) {
+
+            switch (model) {
+
+                case LightingModel.PhongSpecular:
+                case LightingModel.PhongOnly:
+                    phongExponent += isLarge ? 0.5f : 0.1f;
+                    break;
+
+                default:
+                    blinnExponent += isLarge ? 0.5f : 0.1f;
+                    break;
+            }
+
+            clampParam(model);
+        }
+
+        static void decrement(int model, boolean isLarge) {
+
+            switch (model) {
+
+                case LightingModel.PhongSpecular:
+                case LightingModel.PhongOnly:
+                    phongExponent -= isLarge ? 0.5f : 0.1f;
+                    break;
+
+                default:
+                    blinnExponent -= isLarge ? 0.5f : 0.1f;
+                    break;
+            }
+
+            clampParam(model);
+        }
+
+        private static void clampParam(int model) {
+
+            switch (model) {
+
+                case LightingModel.PhongSpecular:
+                case LightingModel.PhongOnly:
+                    if (phongExponent <= 0.0f)
+                        phongExponent = 0.0001f;
+                    break;
+
+                default:
+                    if (blinnExponent <= 0.0f)
+                        blinnExponent = 0.0001f;
+                    break;
+            }
         }
     }
 }

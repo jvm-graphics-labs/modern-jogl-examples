@@ -1,7 +1,8 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
+
 
 in vec4 diffuseColor_;
 in vec3 vertexNormal;
