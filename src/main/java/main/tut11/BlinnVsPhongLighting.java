@@ -81,7 +81,7 @@ public class BlinnVsPhongLighting extends Framework {
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    private final String[] FRAGMENTS_SHADERS_SRC = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
+    private final String[] FRAGMENTS = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
 
     public BlinnVsPhongLighting(String title) {
         super(title);
@@ -124,11 +124,10 @@ public class BlinnVsPhongLighting extends Framework {
     }
 
     private void initializePrograms(GL3 gl) {
-
         for (int i = 0; i < LightingModel.MAX; i++) {
             programs[i] = new ProgramPairs();
-            programs[i].whiteProgram = new ProgramData(gl, "pn.vert", FRAGMENTS_SHADERS_SRC[i] + ".frag");
-            programs[i].colorProgram = new ProgramData(gl, "pcn.vert", FRAGMENTS_SHADERS_SRC[i] + ".frag");
+            programs[i].whiteProgram = new ProgramData(gl, "pn.vert", FRAGMENTS[i] + ".frag");
+            programs[i].colorProgram = new ProgramData(gl, "pcn.vert", FRAGMENTS[i] + ".frag");
         }
         unlit = new UnlitProgData(gl, "pos-transform.vert", "uniform-color.frag");
     }

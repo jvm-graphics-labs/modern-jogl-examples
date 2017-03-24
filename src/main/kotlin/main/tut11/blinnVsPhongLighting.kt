@@ -77,7 +77,7 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
 
     val projectionUniformBuffer = intBufferBig(1)
 
-    val FRAGMENTS_SHADERS_SRC = arrayOf("phong-lighting", "phong-only", "blinn-lighting", "blinn-only")
+    val FRAGMENTS = arrayOf("phong-lighting", "phong-only", "blinn-lighting", "blinn-only")
 
     override fun init(gl: GL3) = with(gl) {
 
@@ -115,8 +115,8 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
 
         programs = Array(LightingModel.MAX, {
             ProgramPairs(
-                    ProgramData(gl, "pn.vert", FRAGMENTS_SHADERS_SRC[it] + ".frag"),
-                    ProgramData(gl, "pcn.vert", FRAGMENTS_SHADERS_SRC[it] + ".frag"))
+                    ProgramData(gl, "pn.vert", FRAGMENTS[it] + ".frag"),
+                    ProgramData(gl, "pcn.vert", FRAGMENTS[it] + ".frag"))
         })
         unlit = UnlitProgData(gl, "pos-transform.vert", "uniform-color.frag")
     }
