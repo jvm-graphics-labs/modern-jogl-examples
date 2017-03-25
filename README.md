@@ -1,9 +1,9 @@
-Note: at the moment there is ~~a gradle,~~ a general refreshing and kotlin implementation in progress, it'll be back to normal asap
+Note: at the moment there is ~~a gradle,~~ a general refreshing and kotlin implementation in progress, it'll be back to normal asap (the most tedious work is to complete chapter 12, it's quite long actually)
 
 modern-jogl-examples
 ====================
 
-![image](http://imgur.com/HIU1qHD.png)
+<img src="./src/main/resources/screenshots/jogl.png"> 
 
 Examples ported in JOGL from the tutorials "Learning Modern 3D Graphic Programming" by J.L.McKesson, (original bitbucket [repository](https://bitbucket.org/alfonse/gltut/overview)).
 
