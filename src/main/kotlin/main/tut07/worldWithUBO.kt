@@ -12,12 +12,10 @@ import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
 import glm.mat.Mat4
-import one.util.streamex.StreamEx
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import uno.buffer.intBufferBig
 import uno.buffer.put
-import kotlin.properties.Delegates
 
 /**
  * Created by elect on 02/03/17.
@@ -373,7 +371,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         glDeleteProgram(objectColor.theProgram)
         glDeleteProgram(uniformColorTint.theProgram)
 
-        StreamEx.of<Mesh>(*meshes).forEach { mesh -> mesh.dispose(gl) }
+        meshes.forEach { it.dispose(gl) }
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -417,9 +415,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val baseColorUnif = gl.glGetUniformLocation(theProgram, "baseColor")
 
         init {
-
             val globalUniformBlockIndex = gl.glGetUniformBlockIndex(theProgram, "GlobalMatrices")
-
             gl.glUniformBlockBinding(theProgram, globalUniformBlockIndex, Semantic.Uniform.GLOBAL_MATRICES)
         }
     }

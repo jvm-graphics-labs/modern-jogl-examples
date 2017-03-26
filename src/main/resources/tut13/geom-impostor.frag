@@ -1,22 +1,32 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
 
-in vec2 mapping;
+
+in FragData
+{
+    flat vec3 cameraSpherePos;
+    flat float sphereRadius;
+    smooth vec2 mapping;
+};
 
 layout (location = FRAG_COLOR) out vec4 outputColor;
 
-uniform float sphereRadius;
-uniform vec3 cameraSpherePos;
-
 layout(std140) uniform;
 
-uniform Material
+struct MaterialEntry
 {
     vec4 diffuseColor;
     vec4 specularColor;
-    float specularShininess;
+    vec4 specularShininess;		//ATI Array Bug fix. Dummy vec4 for a real float.
+};
+
+const int NUMBER_OF_SPHERES = 4;
+
+uniform Material
+{
+    MaterialEntry material[NUMBER_OF_SPHERES];
 } mtl;
 
 struct PerLight
@@ -49,7 +59,8 @@ uniform Projection
     mat4 cameraToClipMatrix;
 };
 
-vec4 computeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3 cameraSpaceNormal)
+vec4 computeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3 cameraSpaceNormal, 
+        in MaterialEntry material)
 {
     vec3 lightDir;
     vec4 lightIntensity;
@@ -72,14 +83,14 @@ vec4 computeLighting(in PerLight lightData, in vec3 cameraSpacePosition, in vec3
 
     vec3 halfAngle = normalize(lightDir + viewDirection);
     float angleNormalHalf = acos(dot(halfAngle, surfaceNormal));
-    float exponent = angleNormalHalf / mtl.specularShininess;
+    float exponent = angleNormalHalf / material.specularShininess.x;
     exponent = -(exponent * exponent);
     float gaussianTerm = exp(exponent);
 
     gaussianTerm = cosAngIncidence != 0.0 ? gaussianTerm : 0.0;
 
-    vec4 lighting = mtl.diffuseColor * lightIntensity * cosAngIncidence;
-    lighting += mtl.specularColor * lightIntensity * gaussianTerm;
+    vec4 lighting = material.diffuseColor * lightIntensity * cosAngIncidence;
+    lighting += material.specularColor * lightIntensity * gaussianTerm;
 
     return lighting;
 }
@@ -117,10 +128,10 @@ void main()
     float ndcDepth = clipPos.z / clipPos.w;
     gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
 
-    vec4 accumLighting = mtl.diffuseColor * lgt.ambientIntensity;
+    vec4 accumLighting = mtl.material[gl_PrimitiveID].diffuseColor * lgt.ambientIntensity;
     for(int light = 0; light < NUMBER_OF_LIGHTS; light++)
     {
-        accumLighting += computeLighting(lgt.lights[light], cameraPos, cameraNormal);
+        accumLighting += computeLighting(lgt.lights[light], cameraPos, cameraNormal, mtl.material[gl_PrimitiveID]);
     }
 
     outputColor = sqrt(accumLighting); //2.0 gamma correction

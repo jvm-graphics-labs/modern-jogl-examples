@@ -6,7 +6,6 @@ package main.framework.component;
 
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
-import one.util.streamex.IntStreamEx;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -178,8 +177,8 @@ public class Mesh {
             gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, null, GL_STATIC_DRAW);
 
             //Fill with data.
-            IntStreamEx.range(indexData.size()).forEach(i
-                    -> indexData.get(i).fillBoundBufferObject(gl, indexStartLocs[i]));
+            for (int i = 0; i < indexData.size(); i++)
+                    indexData.get(i).fillBoundBufferObject(gl, indexStartLocs[i]);
 
             //Fill in indexed rendering commands.
             for (int loop = 0; loop < indexData.size(); loop++) {

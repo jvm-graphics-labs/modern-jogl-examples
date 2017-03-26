@@ -7,7 +7,6 @@ import glm.mat.Mat4;
 import glm.vec._3.Vec3;
 import main.framework.Framework;
 import main.framework.component.Mesh;
-import one.util.streamex.StreamEx;
 import org.xml.sax.SAXException;
 import uno.glm.MatrixStack;
 import uno.glsl.Program;
@@ -455,7 +454,8 @@ public class WorldScene extends Framework {
         gl.glDeleteProgram(objectColor.theProgram);
         gl.glDeleteProgram(uniformColorTint.theProgram);
 
-        StreamEx.of(meshes).forEach(mesh -> mesh.dispose(gl));
+        for (int i = 0; i < meshes.length; i++)
+            meshes[i].dispose(gl);
     }
 
     @Override

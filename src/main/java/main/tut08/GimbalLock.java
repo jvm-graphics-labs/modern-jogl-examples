@@ -2,38 +2,33 @@
 package main.tut08;
 
 import com.jogamp.newt.event.KeyEvent;
-import static com.jogamp.opengl.GL.GL_BACK;
-import static com.jogamp.opengl.GL.GL_CULL_FACE;
-import static com.jogamp.opengl.GL.GL_CW;
-import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
-import static com.jogamp.opengl.GL.GL_LEQUAL;
+import com.jogamp.opengl.GL3;
+import glm.mat.Mat4;
+import glm.vec._3.Vec3;
+import glm.vec._4.Vec4;
+import main.framework.Framework;
+import main.framework.component.Mesh;
+import org.xml.sax.SAXException;
+import uno.glm.MatrixStack;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES3.GL_COLOR;
 import static com.jogamp.opengl.GL2ES3.GL_DEPTH;
 import static glm.GlmKt.glm;
 import static uno.glsl.UtilKt.programOf;
 
-import com.jogamp.opengl.GL3;
-import main.framework.Framework;
-import main.framework.component.Mesh;
-import glm.mat.Mat4;
-import glm.vec._3.Vec3;
-import glm.vec._4.Vec4;
-import uno.glm.MatrixStack;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
-import one.util.streamex.IntStreamEx;
-import org.xml.sax.SAXException;
-
 /**
- *
  * @author gbarbieri
  */
 public class GimbalLock extends Framework {
 
-   private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
+    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
 
     public static void main(String[] args) {
         new GimbalLock("Tutorial 08 - Gimbal Lock");
@@ -218,7 +213,8 @@ public class GimbalLock extends Framework {
         gl.glDeleteProgram(theProgram);
 
         object.dispose(gl);
-        IntStreamEx.range(Gimbal.MAX).forEach(i -> gimbals[i].dispose(gl));
+        for (int i = 0; i < Gimbal.MAX; i++)
+            gimbals[i].dispose(gl);
     }
 
     @Override

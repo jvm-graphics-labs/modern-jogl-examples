@@ -5,7 +5,6 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import com.jogamp.opengl.util.GLBuffers
 import glm.L
 import glm.f
 import glm.glm
@@ -21,6 +20,7 @@ import uno.buffer.byteBufferBig
 import uno.buffer.destroyBuffers
 import uno.buffer.intBufferBig
 import uno.buffer.put
+import uno.gl.UniformBlockArray
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.ViewData
@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
     BasicImpostor_()
 }
 
-val NUMBER_OF_LIGHTS = 2
+private val NUMBER_OF_LIGHTS = 2
 
 class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
@@ -138,7 +138,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
         litMeshProg = ProgramMeshData(gl, "pn.vert", "lighting.frag")
 
-        repeat(Impostors.MAX) { litImpProgs[it] = ProgramImposData(gl, impShaderNames[it]) }
+        litImpProgs = Array(Impostors.MAX, { ProgramImposData(gl, impShaderNames[it]) })
 
         unlit = UnlitProgData(gl, "unlit")
     }
@@ -149,7 +149,6 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         var specularColor = Vec4()
         var specularShininess: Float = 0.toFloat()
         var padding = FloatArray(3)
-        val buffer = byteBufferBig(SIZE)
 
         fun toBuffer(): ByteBuffer {
             diffuseColor to buffer
@@ -159,6 +158,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
         companion object {
             var SIZE = 3 * Vec4.SIZE
+            val buffer = byteBufferBig(SIZE)
         }
     }
 
@@ -206,17 +206,18 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
         val worldToCamMat = modelMatrix.top()
 
-        LightBlock.ambientIntensity.put(0.2f, 0.2f, 0.2f, 1.0f)
-        LightBlock.lightAttenuation = lightAttenuation
+        val lightData = LightBlock()
+        lightData.ambientIntensity = Vec4(0.2f, 0.2f, 0.2f, 1.0f)
+        lightData.lightAttenuation = lightAttenuation
 
-        LightBlock.lights[0].cameraSpaceLightPos.put(worldToCamMat * Vec4(0.707f, 0.707f, 0.0f, 0.0f))
-        LightBlock.lights[0].lightIntensity.put(0.6f, 0.6f, 0.6f, 1.0f)
+        lightData.lights[0].cameraSpaceLightPos = worldToCamMat * Vec4(0.707f, 0.707f, 0.0f, 0.0f)
+        lightData.lights[0].lightIntensity = Vec4(0.6f, 0.6f, 0.6f, 1.0f)
 
-        LightBlock.lights[1].cameraSpaceLightPos.put(worldToCamMat * calcLightPosition())
-        LightBlock.lights[1].lightIntensity.put(0.4f, 0.4f, 0.4f, 1.0f)
+        lightData.lights[1].cameraSpaceLightPos = worldToCamMat * calcLightPosition()
+        lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE.L, LightBlock.toBuffer())
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE.L, lightData.toBuffer())
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         run {
@@ -344,9 +345,9 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
             translate(orbitCenter)
             rotate(orbitAxis, 360.0f * orbitAlpha)
 
-            val offsetDir = orbitAxis cross Vec3(0.0f, 1.0f, 0.0f)
+            var offsetDir = orbitAxis cross Vec3(0.0f, 1.0f, 0.0f)
             if (offsetDir.length() < 0.001f)
-                orbitAxis cross_ Vec3(1.0f, 0.0f, 0.0f)
+                offsetDir = orbitAxis cross_ Vec3(1.0f, 0.0f, 0.0f)
 
             offsetDir.normalize_()
 
@@ -414,7 +415,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     override fun end(gl: GL3) = with(gl) {
 
-        repeat(NUMBER_OF_LIGHTS - 1) { glDeleteProgram(litImpProgs[it].theProgram) }
+        repeat(NUMBER_OF_LIGHTS) { glDeleteProgram(litImpProgs[it].theProgram) }
         glDeleteProgram(litMeshProg.theProgram)
         glDeleteProgram(unlit.theProgram)
 
@@ -425,7 +426,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         plane.dispose(gl)
         cube.dispose(gl)
 
-        destroyBuffers(bufferName, imposterVAO, lightBuffer)
+        destroyBuffers(bufferName, imposterVAO, lightBuffer, LightBlock.buffer, MaterialBlock.buffer)
     }
 
     object Materials {
@@ -446,8 +447,8 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     class PerLight {
 
-        var cameraSpaceLightPos = Vec4()
-        var lightIntensity = Vec4()
+        lateinit var cameraSpaceLightPos: Vec4
+        lateinit var lightIntensity: Vec4
 
         fun to(buffer: ByteBuffer, offset: Int) {
             cameraSpaceLightPos.to(buffer, offset)
@@ -459,26 +460,27 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         }
     }
 
-    object LightBlock {
+    class LightBlock {
 
-        val SIZE = Vec4.SIZE * 2 + NUMBER_OF_LIGHTS * PerLight.SIZE
+        companion object {
+            val SIZE = Vec4.SIZE * 2 + NUMBER_OF_LIGHTS * PerLight.SIZE
+            var buffer = byteBufferBig(SIZE)
+        }
 
-        var ambientIntensity = Vec4()
-        var lightAttenuation: Float = 0.toFloat()
+        lateinit var ambientIntensity: Vec4
+        var lightAttenuation = 0.f
         var padding = FloatArray(3)
         var lights = Array(NUMBER_OF_LIGHTS, { PerLight() })
 
-        var buffer = GLBuffers.newDirectByteBuffer(SIZE)
-
         fun toBuffer(): ByteBuffer {
-            ambientIntensity.to(buffer)
+            ambientIntensity to buffer
             buffer.putFloat(Vec4.SIZE, lightAttenuation)
             lights.forEach { it.to(buffer, Vec4.SIZE * 2) }
             return buffer
         }
     }
 
-    inner class ProgramImposData(gl: GL3, shader: String) {
+    class ProgramImposData(gl: GL3, shader: String) {
 
         var theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
 
@@ -503,49 +505,39 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         }
     }
 
-    inner class ProgramMeshData(gl: GL3, vertex: String, fragment: String) {
+    class ProgramMeshData(gl: GL3, vertex: String, fragment: String) {
 
-        var theProgram: Int = 0
+        var theProgram = programOf(gl, this::class.java, "tut13", vertex, fragment)
 
-        var modelToCameraMatrixUnif: Int = 0
-        var normalModelToCameraMatrixUnif: Int = 0
+        var modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
+        var normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
 
         init {
-
-            theProgram = programOf(gl, javaClass, "tut13", vertex, fragment)
-
-            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
-            normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
-
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Projection"),
-                    Semantic.Uniform.PROJECTION)
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Light"),
-                    Semantic.Uniform.LIGHT)
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Material"),
-                    Semantic.Uniform.MATERIAL)
+            with(gl) {
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Projection"),
+                        Semantic.Uniform.PROJECTION)
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Light"),
+                        Semantic.Uniform.LIGHT)
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Material"),
+                        Semantic.Uniform.MATERIAL)
+            }
         }
     }
 
-    inner class UnlitProgData(gl: GL3, shader: String) {
+    class UnlitProgData(gl: GL3, shader: String) {
 
-        var theProgram: Int = 0
+        var theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
 
-        var objectColorUnif: Int = 0
-        var modelToCameraMatrixUnif: Int = 0
+        var objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
+        var modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
 
         init {
-
-            theProgram = programOf(gl, javaClass, "tut13", shader + ".vert", shader + ".frag")
-
-            objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
-            modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
-
             gl.glUniformBlockBinding(
                     theProgram,
                     gl.glGetUniformBlockIndex(theProgram, "Projection"),
