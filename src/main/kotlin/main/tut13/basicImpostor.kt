@@ -480,30 +480,26 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     inner class ProgramImposData(gl: GL3, shader: String) {
 
-        var theProgram: Int = 0
+        var theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
 
-        var sphereRadiusUnif: Int = 0
-        var cameraSpherePosUnif: Int = 0
+        var sphereRadiusUnif = gl.glGetUniformLocation(theProgram, "sphereRadius")
+        var cameraSpherePosUnif = gl.glGetUniformLocation(theProgram, "cameraSpherePos")
 
         init {
-
-            theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
-
-            sphereRadiusUnif = gl.glGetUniformLocation(theProgram, "sphereRadius")
-            cameraSpherePosUnif = gl.glGetUniformLocation(theProgram, "cameraSpherePos")
-
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Projection"),
-                    Semantic.Uniform.PROJECTION)
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Light"),
-                    Semantic.Uniform.LIGHT)
-            gl.glUniformBlockBinding(
-                    theProgram,
-                    gl.glGetUniformBlockIndex(theProgram, "Material"),
-                    Semantic.Uniform.MATERIAL)
+            with(gl) {
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Projection"),
+                        Semantic.Uniform.PROJECTION)
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Light"),
+                        Semantic.Uniform.LIGHT)
+                glUniformBlockBinding(
+                        theProgram,
+                        glGetUniformBlockIndex(theProgram, "Material"),
+                        Semantic.Uniform.MATERIAL)
+            }
         }
     }
 
