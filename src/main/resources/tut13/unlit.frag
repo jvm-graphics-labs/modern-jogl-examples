@@ -1,7 +1,8 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
+
 
 uniform vec4 objectColor;
 
