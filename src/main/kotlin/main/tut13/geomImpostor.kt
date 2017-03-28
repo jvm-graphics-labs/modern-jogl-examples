@@ -7,8 +7,10 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.GL3.GL_PROGRAM_POINT_SIZE
-import com.jogamp.opengl.util.GLBuffers
-import glm.*
+import glm.BYTES
+import glm.L
+import glm.f
+import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._3.Vec3
@@ -35,9 +37,6 @@ import java.nio.ByteBuffer
 fun main(args: Array<String>) {
     GeomImpostor_()
 }
-
-private val NUMBER_OF_LIGHTS = 2
-private val NUMBER_OF_SPHERES = 4
 
 class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
 
@@ -83,6 +82,11 @@ class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
     val lightAttenuation = 1.0f / (halfLightDistance * halfLightDistance)
 
     val impostorBuffer = byteBufferBig(NUMBER_OF_SPHERES * VertexData.SIZE)
+
+    companion object {
+        val NUMBER_OF_LIGHTS = 2
+        val NUMBER_OF_SPHERES = 4
+    }
 
     override fun init(gl: GL3) = with(gl) {
 

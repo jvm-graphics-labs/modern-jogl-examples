@@ -545,5 +545,4 @@ public class BasicTexture extends Framework {
                     Semantic.Uniform.PROJECTION);
         }
     }
-
 }

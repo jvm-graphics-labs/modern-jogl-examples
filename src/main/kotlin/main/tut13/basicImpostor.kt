@@ -37,8 +37,6 @@ fun main(args: Array<String>) {
     BasicImpostor_()
 }
 
-private val NUMBER_OF_LIGHTS = 2
-
 class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     lateinit var litMeshProg: ProgramMeshData
@@ -85,6 +83,10 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
     val sphereTimer = Timer(Timer.Type.Loop, 6.0f)
 
     var materialBlockOffset = 0
+
+    companion object {
+        val NUMBER_OF_LIGHTS = 2
+    }
 
     override fun init(gl: GL3) = with(gl) {
 
