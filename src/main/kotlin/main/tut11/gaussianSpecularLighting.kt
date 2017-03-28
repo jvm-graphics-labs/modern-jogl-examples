@@ -203,7 +203,6 @@ class GaussianSpecularLighting_() : Framework("Tutorial 11 - Gaussian Specular L
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {

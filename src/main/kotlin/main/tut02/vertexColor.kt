@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import uno.glsl.programOf
-import uno.glsl.shaderCodeOf
 import glm.L
 import glm.SIZE
 import main.framework.Framework

@@ -61,20 +61,15 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
     lateinit var plane: Mesh
     lateinit var cube: Mesh
 
-    interface Buffer {
-        companion object {
-
-            val PROJECTION = 0
-            val LIGHT = 1
-            val MATERIAL = 2
-            val MAX = 3
-        }
+    object Buffer {
+        val PROJECTION = 0
+        val LIGHT = 1
+        val MATERIAL = 2
+        val MAX = 3
     }
 
     val bufferName = intBufferBig(Buffer.MAX)
     val imposterVAO = intBufferBig(1)
-
-    val lightBuffer = byteBufferBig(LightBlock.SIZE)
 
     var currImpostor = Impostors.Basic
 
@@ -143,31 +138,12 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         unlit = UnlitProgData(gl, "unlit")
     }
 
-    class MaterialBlock {
-
-        var diffuseColor = Vec4()
-        var specularColor = Vec4()
-        var specularShininess: Float = 0.toFloat()
-        var padding = FloatArray(3)
-
-        fun toBuffer(): ByteBuffer {
-            diffuseColor to buffer
-            specularColor.to(buffer, Vec4.SIZE)
-            return buffer.putFloat(Vec4.SIZE * 2, specularShininess)
-        }
-
-        companion object {
-            var SIZE = 3 * Vec4.SIZE
-            val buffer = byteBufferBig(SIZE)
-        }
-    }
-
     fun createMaterials(gl: GL3) {
 
         val ubArray = UniformBlockArray(gl, MaterialBlock.SIZE, Materials.MAX)
         materialBlockOffset = ubArray.arrayOffset
 
-        val mtl = MaterialBlock()
+        val mtl = MaterialBlock
         mtl.diffuseColor.put(0.5f, 0.5f, 0.5f, 1.0f)
         mtl.specularColor.put(0.5f, 0.5f, 0.5f, 1.0f)
         mtl.specularShininess = 0.6f
@@ -179,7 +155,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         ubArray[Materials.BlueShiny] = mtl.toBuffer()
 
         mtl.diffuseColor.put(0.803f, 0.709f, 0.15f, 1.0f)
-        mtl.specularColor.put(Vec4(0.803f, 0.709f, 0.15f, 1.0f).times(0.75))
+        mtl.specularColor = Vec4(0.803f, 0.709f, 0.15f, 1.0f) * 0.75
         mtl.specularShininess = 0.18f
         ubArray[Materials.GoldMetal] = mtl.toBuffer()
 
@@ -196,6 +172,23 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         bufferName[Buffer.MATERIAL] = ubArray.createBufferObject(gl)
     }
 
+    object MaterialBlock {
+
+        var diffuseColor = Vec4()
+        var specularColor = Vec4()
+        var specularShininess = 0.f
+        var padding = FloatArray(3)
+
+        fun toBuffer(): ByteBuffer {
+            diffuseColor to buffer
+            specularColor.to(buffer, Vec4.SIZE)
+            return buffer.putFloat(Vec4.SIZE * 2, specularShininess)
+        }
+
+        var SIZE = 3 * Vec4.SIZE
+        val buffer = byteBufferBig(SIZE)
+    }
+
     override fun display(gl: GL3) = with(gl) {
 
         sphereTimer.update()
@@ -206,7 +199,8 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
         val worldToCamMat = modelMatrix.top()
 
-        val lightData = LightBlock()
+        val lightData = LightBlock
+
         lightData.ambientIntensity = Vec4(0.2f, 0.2f, 0.2f, 1.0f)
         lightData.lightAttenuation = lightAttenuation
 
@@ -297,7 +291,8 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         return ret
     }
 
-    fun drawSphere(gl: GL3, modelMatrix: MatrixStack, position: Vec3, radius: Float, material: Int, drawImposter: Boolean) = with(gl) {
+    fun drawSphere(gl: GL3, modelMatrix: MatrixStack, position: Vec3, radius: Float, material: Int,
+                   drawImposter: Boolean = false) = with(gl) {
 
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL],
                 material * materialBlockOffset.L, MaterialBlock.SIZE.L)
@@ -338,7 +333,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
     }
 
     fun drawSphereOrbit(gl: GL3, modelMatrix: MatrixStack, orbitCenter: Vec3, orbitAxis: Vec3, orbitRadius: Float,
-                        orbitAlpha: Float, sphereRadius: Float, material: Int, drawImposter: Boolean) {
+                        orbitAlpha: Float, sphereRadius: Float, material: Int, drawImposter: Boolean = false) {
 
         modelMatrix run {
 
@@ -354,7 +349,6 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
             translate(offsetDir * orbitRadius)
 
             drawSphere(gl, this, Vec3(0.0f), sphereRadius, material, drawImposter)
-
         }
     }
 
@@ -426,7 +420,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         plane.dispose(gl)
         cube.dispose(gl)
 
-        destroyBuffers(bufferName, imposterVAO, lightBuffer, LightBlock.buffer, MaterialBlock.buffer)
+        destroyBuffers(bufferName, imposterVAO, LightBlock.buffer, MaterialBlock.buffer)
     }
 
     object Materials {
@@ -460,12 +454,10 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         }
     }
 
-    class LightBlock {
+    object LightBlock {
 
-        companion object {
-            val SIZE = Vec4.SIZE * 2 + NUMBER_OF_LIGHTS * PerLight.SIZE
-            var buffer = byteBufferBig(SIZE)
-        }
+        val SIZE = Vec4.SIZE * 2 + NUMBER_OF_LIGHTS * PerLight.SIZE
+        var buffer = byteBufferBig(SIZE)
 
         lateinit var ambientIntensity: Vec4
         var lightAttenuation = 0.f
@@ -475,7 +467,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         fun toBuffer(): ByteBuffer {
             ambientIntensity to buffer
             buffer.putFloat(Vec4.SIZE, lightAttenuation)
-            lights.forEach { it.to(buffer, Vec4.SIZE * 2) }
+            lights.forEachIndexed { i, it -> it.to(buffer, Vec4.SIZE * 2 + PerLight.SIZE * i) }
             return buffer
         }
     }

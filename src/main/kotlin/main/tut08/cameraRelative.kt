@@ -107,7 +107,7 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
         glUseProgram(theProgram)
 
-        currMatrix.run {
+        currMatrix.apply {
 
             scale(100.0f, 1.0f, 100.0f)
 
@@ -115,9 +115,8 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
             glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, top() to matBuffer)
 
             plane.render(gl)
-        }
 
-        currMatrix.run {
+        } run {
 
             translate(camTarget)
             applyMatrix(orientation.toMat4())

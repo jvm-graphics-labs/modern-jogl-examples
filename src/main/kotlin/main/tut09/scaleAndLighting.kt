@@ -159,7 +159,6 @@ class ScaleAndLighting_() : Framework("Tutorial 09 - Scale and Lighting") {
                 glUseProgram(0)
             }
         }
-        return@with
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {

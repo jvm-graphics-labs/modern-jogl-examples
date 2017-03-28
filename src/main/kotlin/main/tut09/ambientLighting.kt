@@ -179,8 +179,6 @@ class AmbientLighting_() : Framework("Tutorial 09 - Ambient Lighting") {
                 glUseProgram(0)
             }
         }
-
-        return@with
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {

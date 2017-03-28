@@ -173,6 +173,10 @@ public class GeomImpostor extends Framework {
         public float specularShininess;
         public float[] padding = new float[3];
 
+        public ByteBuffer to(ByteBuffer buffer) {
+            return to(buffer, 0);
+        }
+
         public ByteBuffer to(ByteBuffer buffer, int offset) {
             diffuseColor.to(buffer, offset);
             specularColor.to(buffer, offset + Vec4.SIZE);
@@ -216,7 +220,7 @@ public class GeomImpostor extends Framework {
         mtl.specularColor = new Vec4(0.5f, 0.5f, 0.5f, 1.0f);
         mtl.specularShininess = 0.6f;
         ByteBuffer terrainBuffer = GLBuffers.newDirectByteBuffer(MaterialEntry.SIZE);
-        mtl.to(terrainBuffer, 0);
+        mtl.to(terrainBuffer);
 
         gl.glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.MATERIAL_TERRAIN));
         gl.glBufferData(GL_UNIFORM_BUFFER, MaterialEntry.SIZE, terrainBuffer, GL_STATIC_DRAW);
@@ -503,7 +507,7 @@ public class GeomImpostor extends Framework {
             ambientIntensity.to(buffer);
             buffer.putFloat(Vec4.SIZE, lightAttenuation);
             for (int i = 0; i < NUMBER_OF_LIGHTS; i++)
-                lights[i].to(buffer, Vec4.SIZE * 2 + i * PerLight.SIZE);
+                lights[i].to(buffer, Vec4.SIZE * 2 + PerLight.SIZE * i);
             return buffer;
         }
     }

@@ -98,7 +98,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val modelMatrix = MatrixStack()
 
         //  Render the ground plane
-        modelMatrix run {
+        modelMatrix apply {
 
             scale(100.0f, 1.0f, 100.0f)
 
@@ -113,7 +113,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         drawForest(gl, modelMatrix)
 
         //  Draw the building
-        modelMatrix run {
+        modelMatrix apply {
 
             translate(20.0f, 0.0f, -10.0f)
 
@@ -122,9 +122,9 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
         if (drawLookAtPoint) {
 
-            glDisable(GL3.GL_DEPTH_TEST)
+            glDisable(GL_DEPTH_TEST)
 
-            modelMatrix run {
+            modelMatrix apply {
 
                 translate(camTarget)
                 scale(1.0f)
@@ -135,7 +135,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
                 glUseProgram(0)
 
             }
-            glEnable(GL3.GL_DEPTH_TEST)
+            glEnable(GL_DEPTH_TEST)
         }
     }
 
@@ -172,7 +172,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
     fun drawForest(gl: GL3, modelMatrix: MatrixStack) = forest.forEach {
 
-        modelMatrix run {
+        modelMatrix apply {
             translate(it.xPos, 1.0f, it.zPos)
             drawTree(gl, modelMatrix, it.trunkHeight, it.coneHeight)
         }
@@ -181,7 +181,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
     fun drawTree(gl: GL3, modelStack: MatrixStack, trunkHeight: Float, coneHeight: Float) = with(gl) {
 
         //  Draw trunk
-        modelStack run {
+        modelStack apply {
 
             scale(1.0f, trunkHeight, 1.0f)
             translate(0.0f, 0.5f, 0.0f)
@@ -215,7 +215,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val parthenonTopHeight = 2.0f
 
         //  Draw base
-        modelMatrix run {
+        modelMatrix apply {
 
             scale(Vec3(parthenonWidth, parthenonBaseHeight, parthenonLength))
             translate(Vec3(0.0f, 0.5f, 0.0f))
@@ -246,7 +246,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
         repeat((parthenonWidth / 2.0f).i) {
 
-            modelMatrix run {
+            modelMatrix apply {
 
                 translate(2.0f * it - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval)
 
@@ -263,7 +263,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         //Don't draw the first or last columns, since they've been drawn already.
         for (iColumnNum in 1 until ((parthenonLength - 2.0f) / 2.0f).i - 1) {
 
-            modelMatrix run {
+            modelMatrix apply {
 
                 translate(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f)
 
@@ -278,7 +278,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         }
 
         //  Draw interior
-        modelMatrix run {
+        modelMatrix apply {
 
             translate(0.0f, 1.0f, 0.0f)
             scale(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f)
@@ -312,7 +312,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
         val columnBaseHeight = 0.25f
 
         //Draw the bottom of the column.
-        modelMatrix run {
+        modelMatrix apply {
 
             scale(1.0f, columnBaseHeight, 1.0f)
             translate(0.0f, 0.5f, 0.0f)
@@ -323,7 +323,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram(0)
 
-        } run {
+        } apply {
             //Draw the top of the column.
 
             translate(0.0f, parthenonColumnHeight - columnBaseHeight, 0.0f)

@@ -191,7 +191,6 @@ class FragmentPointLighting_() : Framework("Tutorial 10 - Fragment Point Lightin
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {

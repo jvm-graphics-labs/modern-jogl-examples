@@ -142,8 +142,10 @@ class VertexPointLighting_() : Framework("Tutorial 10 - Vertex Point Lighting") 
                 plane.render(gl)
                 glUseProgram(0)
 
-            } run {
-                //Render the Cylinder
+            }
+
+            //Render the Cylinder
+            run {
 
                 applyMatrix(objectPole.calcMatrix())
                 top() to matBuffer
@@ -177,7 +179,6 @@ class VertexPointLighting_() : Framework("Tutorial 10 - Vertex Point Lighting") 
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {

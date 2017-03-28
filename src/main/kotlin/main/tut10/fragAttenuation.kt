@@ -219,7 +219,6 @@ class FragmentAttenuation_() : Framework("Tutorial 10 - Fragment Attenuation") {
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {

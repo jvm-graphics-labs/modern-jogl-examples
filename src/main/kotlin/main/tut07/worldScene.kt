@@ -117,7 +117,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
         if (drawLookAtPoint) {
 
-            glDisable(GL3.GL_DEPTH_TEST)
+            glDisable(GL_DEPTH_TEST)
 
             modelMatrix run {
 
@@ -132,7 +132,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
                 meshes[MESH.CUBE_COLOR].render(gl)
                 glUseProgram(0)
             }
-            glEnable(GL3.GL_DEPTH_TEST)
+            glEnable(GL_DEPTH_TEST)
         }
     }
 
@@ -177,7 +177,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
     fun drawTree(gl: GL3, modelStack: MatrixStack, trunkHeight: Float, coneHeight: Float) = with(gl) {
 
         //  Draw trunk
-        modelStack run {
+        modelStack apply {
 
             scale(1.0f, trunkHeight, 1.0f)
             translate(0.0f, 0.5f, 0.0f)
@@ -211,7 +211,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val parthenonTopHeight = 2.0f
 
         //  Draw base
-        modelMatrix run {
+        modelMatrix apply {
 
             scale(parthenonWidth, parthenonBaseHeight, parthenonLength)
             translate(0.0f, 0.5f, 0.0f)
@@ -242,7 +242,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
 
         repeat((parthenonWidth / 2.0f).i) {
 
-            modelMatrix run {
+            modelMatrix apply {
 
                 translate(2.0f * it - parthenonWidth / 2 + 1.0f, parthenonBaseHeight, frontZval)
 
@@ -259,21 +259,23 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         //Don't draw the first or last columns, since they've been drawn already.
         for (iColumnNum in 1 until ((parthenonLength - 2.0f) / 2.0f).i - 1)
 
-            modelMatrix run {
+            modelMatrix apply {
 
                 translate(rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f)
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight)
 
-            } run {
+            } apply {
 
                 translate(-rightXval, parthenonBaseHeight, 2.0f * iColumnNum - parthenonLength / 2.0f + 1.0f)
 
                 drawColumn(gl, modelMatrix, parthenonColumnHeight)
+
             }
 
         //  Draw interior
-        modelMatrix run {
+        modelMatrix apply {
+
 
             translate(0.0f, 1.0f, 0.0f)
             scale(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f)
@@ -283,10 +285,9 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
             glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram(0)
-        }
 
-        //  Draw headpiece
-        modelMatrix run {
+        } run {
+            //  Draw headpiece
 
             translate(
                     0.0f,
@@ -308,7 +309,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
         val columnBaseHeight = 0.25f
 
         //Draw the bottom of the column.
-        modelMatrix run {
+        modelMatrix apply {
 
             scale(1.0f, columnBaseHeight, 1.0f)
             translate(0.0f, 0.5f, 0.0f)
@@ -319,7 +320,7 @@ class WorldScene_ : Framework("Tutorial 07 - World Scene") {
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram(0)
 
-        } run {
+        } apply {
 
             //Draw the top of the column.
 

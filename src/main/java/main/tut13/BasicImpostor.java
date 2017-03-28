@@ -83,8 +83,6 @@ public class BasicImpostor extends Framework {
 
     private static final int NUMBER_OF_LIGHTS = 2;
 
-    private ByteBuffer lightBuffer = GLBuffers.newDirectByteBuffer(LightBlock.SIZE);
-
     private int currImpostor = Impostors.Basic;
 
     private boolean drawCameraPos = false, drawLights = true;
@@ -221,6 +219,7 @@ public class BasicImpostor extends Framework {
         Mat4 worldToCamMat = modelMatrix.top();
 
         LightBlock lightData = new LightBlock();
+
         lightData.ambientIntensity.put(0.2f, 0.2f, 0.2f, 1.0f);
         lightData.lightAttenuation = lightAttenuation;
 
@@ -315,6 +314,10 @@ public class BasicImpostor extends Framework {
         return ret;
     }
 
+    private void drawSphere(GL3 gl, MatrixStack modelMatrix, Vec3 position, float radius, int material) {
+        drawSphere(gl, modelMatrix, position, radius, material, false);
+    }
+
     private void drawSphere(GL3 gl, MatrixStack modelMatrix, Vec3 position, float radius, int material, boolean drawImposter) {
 
         gl.glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName.get(Buffer.MATERIAL),
@@ -355,6 +358,11 @@ public class BasicImpostor extends Framework {
             modelMatrix.pop();
         }
         gl.glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0);
+    }
+
+    private void drawSphereOrbit(GL3 gl, MatrixStack modelMatrix, Vec3 orbitCenter, Vec3 orbitAxis, float orbitRadius,
+                                 float orbitAlpha, float sphereRadius, int material) {
+        drawSphereOrbit(gl, modelMatrix, orbitCenter, orbitAxis, orbitRadius, orbitAlpha, sphereRadius, material, false);
     }
 
     private void drawSphereOrbit(GL3 gl, MatrixStack modelMatrix, Vec3 orbitCenter, Vec3 orbitAxis, float orbitRadius,
@@ -480,7 +488,7 @@ public class BasicImpostor extends Framework {
         plane.dispose(gl);
         cube.dispose(gl);
 
-        destroyBuffers(bufferName, imposterVAO, lightBuffer, LightBlock.buffer);
+        destroyBuffers(bufferName, imposterVAO, LightBlock.buffer, MaterialBlock.buffer);
     }
 
     interface Materials {
@@ -527,7 +535,7 @@ public class BasicImpostor extends Framework {
             ambientIntensity.to(buffer);
             buffer.putFloat(Vec4.SIZE, lightAttenuation);
             for (int i = 0; i < NUMBER_OF_LIGHTS; i++)
-                lights[i].to(buffer, Vec4.SIZE * 2);
+                lights[i].to(buffer, Vec4.SIZE * 2 + PerLight.SIZE * i);
             return buffer;
         }
     }

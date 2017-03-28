@@ -22,7 +22,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     compile 'com.github.kotlin-graphics:glm:51f9ee28a3dd327b2a2e63fedf58210950fc61ff'
-    compile 'com.github.kotlin-graphics:uno-sdk:0aecbc4f56c88ad5cda37a6802af2e4450768276'
+    compile 'com.github.kotlin-graphics:uno-sdk:31a6576199ca267bfbbd61d1847ce68ad7527a97'
 
     def jogl = '2.3.2'
 

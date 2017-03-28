@@ -137,7 +137,7 @@ public class WorldScene extends Framework {
 
         if (drawLookAtPoint) {
 
-            gl.glDisable(GL3.GL_DEPTH_TEST);
+            gl.glDisable(GL_DEPTH_TEST);
 
             Vec3 camAimVec = camTarget.minus(camPos);
 
@@ -154,7 +154,7 @@ public class WorldScene extends Framework {
             gl.glUseProgram(0);
 
             modelMatrix.pop();
-            gl.glEnable(GL3.GL_DEPTH_TEST);
+            gl.glEnable(GL_DEPTH_TEST);
         }
     }
 

@@ -214,7 +214,6 @@ class PhongLighting_() : Framework("Tutorial 11 - Fragment Attenuation") {
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {

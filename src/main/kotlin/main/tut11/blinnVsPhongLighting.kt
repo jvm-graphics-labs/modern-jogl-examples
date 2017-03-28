@@ -205,7 +205,6 @@ class BlinnVsPhongLighting_() : Framework("Tutorial 11 - Blinn vs Phong Lighting
                     cube.render(gl, "flat")
                 }
         }
-        return@with
     }
 
     fun calcLightPosition(): Vec4 {
