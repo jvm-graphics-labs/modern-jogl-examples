@@ -171,7 +171,8 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
         mtl.specularShininess = 0.3f
         ubArray[Materials.BlackShiny] = mtl.toBuffer()
 
-        bufferName[Buffer.MATERIAL] = ubArray.createBufferObject(gl)
+        ubArray.uploadBufferObject(gl, bufferName[Buffer.MATERIAL])
+        ubArray.dispose()
     }
 
     object MaterialBlock {

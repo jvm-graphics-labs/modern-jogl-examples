@@ -57,7 +57,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
 
         val shaderProgram = ShaderProgram()
 
-        val shaderCodes = shaders.map { shaderCodeOf(it, gl, context) }
+        val shaderCodes = shaders.map { shaderCodeOf(gl, context, it) }
 
         shaderCodes.forEach { shaderProgram.add(gl, it, System.err) }
 

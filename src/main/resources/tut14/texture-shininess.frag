@@ -1,7 +1,8 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
+
 
 in vec3 vertexNormal;
 in vec3 cameraSpacePosition;

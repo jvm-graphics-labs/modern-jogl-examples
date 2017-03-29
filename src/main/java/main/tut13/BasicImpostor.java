@@ -26,7 +26,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -204,7 +203,8 @@ public class BasicImpostor extends Framework {
         mtl.specularShininess = 0.3f;
         ubArray.set(Materials.BlackShiny, mtl.toBuffer());
 
-        bufferName.put(Buffer.MATERIAL, ubArray.createBufferObject(gl));
+        ubArray.uploadBufferObject(gl, bufferName.get(Buffer.MATERIAL));
+        ubArray.dispose();
     }
 
     @Override

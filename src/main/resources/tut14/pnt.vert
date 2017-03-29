@@ -1,15 +1,15 @@
+
 #version 330
 
-// Attribute
-#define POSITION    0
-#define COLOR       1
-#define NORMAL      2
+#include semantic.glsl
 
 layout(location = POSITION) in vec3 position;
 layout(location = NORMAL) in vec3 normal;
+layout(location = TEX_COORD) in vec2 texCoord;
 
 out vec3 vertexNormal;
 out vec3 cameraSpacePosition;
+out vec2 shinTexCoord;
 
 uniform Projection
 {
@@ -26,4 +26,6 @@ void main()
 
     vertexNormal = normalize(normalModelToCameraMatrix * normal);
     cameraSpacePosition = vec3(tempCamPosition);
+
+    shinTexCoord = texCoord;
 }
