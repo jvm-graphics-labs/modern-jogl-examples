@@ -27,7 +27,7 @@ Status:
 - [x] Chapter 10, Plane Lights
 - [x] Chapter 11, Shinies
 - [ ] Chapter 12, Dynamic Lights
-- [ ] Chapter 13, Lies and Impostors
+- [x] Chapter 13, Lies and Impostors
 - [ ] Chapter 14, Textures are not Pictures
 - [ ] Chapter 15, Many Images
 - [ ] Chapter 16, Gamma and Textures
