@@ -28,7 +28,7 @@ Status:
 - [x] Chapter 11, Shinies
 - [ ] Chapter 12, Dynamic Lights
 - [x] Chapter 13, Lies and Impostors
-- [ ] Chapter 14, Textures are not Pictures
+- [x] Chapter 14, Textures are not Pictures
 - [ ] Chapter 15, Many Images
 - [ ] Chapter 16, Gamma and Textures
 - [ ] Chapter 17, Spotlight on Textures
