@@ -24,11 +24,7 @@ import static uno.glsl.UtilKt.programOf;
 public class OrthoCube extends Framework {
 
     public static void main(String[] args) {
-        new OrthoCube("Tutorial 04 - Ortho Cube");
-    }
-
-    public OrthoCube(String title) {
-        super(title);
+        new OrthoCube().setup("Tutorial 04 - Ortho Cube");
     }
 
     private int theProgram, offsetUniform;

@@ -29,10 +29,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    VertexPointLighting_()
+    VertexPointLighting_().setup("Tutorial 10 - Vertex Point Lighting")
 }
 
-class VertexPointLighting_() : Framework("Tutorial 10 - Vertex Point Lighting") {
+class VertexPointLighting_() : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
@@ -71,9 +71,9 @@ class VertexPointLighting_() : Framework("Tutorial 10 - Vertex Point Lighting") 
 
         initializePrograms(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut10/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut10/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut10/UnitCube.xml")
+        cylinder = Mesh(gl, javaClass, "tut10/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut10/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut10/UnitCube.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -265,7 +265,7 @@ class VertexPointLighting_() : Framework("Tutorial 10 - Vertex Point Lighting") 
 
     inner class ProgramData(gl: GL3, root: String, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, root, vertex, fragment)
+        val theProgram = programOf(gl, javaClass, root, vertex, fragment)
 
         val lightPosUnif = gl.glGetUniformLocation(theProgram, "lightPos")
         val lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity")

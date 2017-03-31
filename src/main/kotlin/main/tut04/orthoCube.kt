@@ -5,7 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glm.L
-import glm.SIZE
+import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -17,10 +17,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    OrthoCube_()
+    OrthoCube_().setup("Tutorial 04 - Ortho Cube")
 }
 
-class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
+class OrthoCube_ : Framework() {
 
     var theProgram = 0
     var offsetUniform = 0
@@ -42,7 +42,7 @@ class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
 
     fun initializeProgram(gl: GL3) {
 
-        theProgram = programOf(gl, this::class.java, "tut04", "ortho-with-offset.vert", "standard-colors.frag")
+        theProgram = programOf(gl, javaClass, "tut04", "ortho-with-offset.vert", "standard-colors.frag")
 
         offsetUniform = gl.glGetUniformLocation(theProgram, "offset")
     }
@@ -54,7 +54,7 @@ class OrthoCube_ : Framework("Tutorial 04 - Ortho Cube") {
         glGenBuffers(1, vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

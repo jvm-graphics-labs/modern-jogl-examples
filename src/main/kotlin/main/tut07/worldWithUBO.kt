@@ -22,10 +22,10 @@ import uno.buffer.put
  */
 
 fun main(args: Array<String>) {
-    WorldWithUBO_()
+    WorldWithUBO_().setup("Tutorial 07 - World Scene")
 }
 
-class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
+class WorldWithUBO_ : Framework() {
 
     val MESHES_SOURCE = arrayOf("UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml")
 
@@ -54,7 +54,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
         initializeProgram(gl)
 
-        meshes = Array<Mesh>(MESH.MAX, { Mesh(gl, this::class.java, "tut07/${MESHES_SOURCE[it]}") })
+        meshes = Array<Mesh>(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -409,7 +409,7 @@ class WorldWithUBO_ : Framework("Tutorial 07 - World Scene") {
 
     class ProgramData(gl: GL3, vert: String, frag: String) {
 
-        val theProgram = Program(gl, this::class.java, "tut07", vert, frag).name
+        val theProgram = Program(gl, javaClass, "tut07", vert, frag).name
 
         val modelToWorldMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToWorldMatrix")
         val baseColorUnif = gl.glGetUniformLocation(theProgram, "baseColor")

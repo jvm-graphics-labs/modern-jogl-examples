@@ -53,7 +53,7 @@ import static uno.glsl.UtilKt.programOf;
 public class GeomImpostor extends Framework {
 
     public static void main(String[] args) {
-        new GeomImpostor("Tutorial 13 - Geometry Impostor");
+        new GeomImpostor().setup("Tutorial 13 - Geometry Impostor");
     }
 
     private ProgramMeshData litMeshProg;
@@ -97,10 +97,6 @@ public class GeomImpostor extends Framework {
             lightAttenuation = 1.0f / (halfLightDistance * halfLightDistance);
 
     private ByteBuffer impostorBuffer = GLBuffers.newDirectByteBuffer(NUMBER_OF_SPHERES * VertexData.SIZE);
-
-    public GeomImpostor(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

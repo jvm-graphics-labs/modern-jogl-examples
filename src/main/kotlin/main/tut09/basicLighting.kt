@@ -26,10 +26,10 @@ import uno.mousePole.*
  */
 
 fun main(args: Array<String>) {
-    BasicLighting_()
+    BasicLighting_().setup("Tutorial 09 - Basic Lighting")
 }
 
-class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
+class BasicLighting_() : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
@@ -71,8 +71,8 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
         initializeProgram(gl)
 
-        cylinderMesh = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
-        planeMesh = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
+        cylinderMesh = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
+        planeMesh = Mesh(gl, javaClass, "tut09/LargePlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -223,7 +223,7 @@ class BasicLighting_() : Framework("Tutorial 09 - Basic Lighting") {
 
     class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut09", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut09", vertex, fragment)
 
         val dirToLightUnif = gl.glGetUniformLocation(theProgram, "dirToLight")
         val lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity")

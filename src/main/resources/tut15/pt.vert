@@ -1,9 +1,13 @@
+
 #version 330
+
+#include semantic.glsl
+
 
 layout(std140) uniform;
 
-layout(location = 0) in vec3 position;
-layout(location = 5) in vec2 texCoord;
+layout(location = POSITION) in vec3 position;
+layout(location = TEX_COORD) in vec2 texCoord;
 
 out vec2 colorCoord;
 

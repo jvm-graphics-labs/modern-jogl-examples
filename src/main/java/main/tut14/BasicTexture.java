@@ -57,7 +57,7 @@ import static glm.GlmKt.glm;
 public class BasicTexture extends Framework {
 
     public static void main(String[] args) {
-        new BasicTexture("Tutorial 14 - Basic Texture");
+        new BasicTexture().setup("Tutorial 14 - Basic Texture");
     }
 
     private ProgramData litShaderProg, litTextureProg;
@@ -104,10 +104,6 @@ public class BasicTexture extends Framework {
     private ByteBuffer lightBuffer = GLBuffers.newDirectByteBuffer(LightBlock.SIZE);
 
     private int currTexture = 0;
-
-    public BasicTexture(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {
@@ -408,7 +404,7 @@ public class BasicTexture extends Framework {
         }
 
         if (KeyEvent.VK_1 <= e.getKeyCode() && KeyEvent.VK_9 >= e.getKeyCode()) {
-            int number = e.getKeyCode() - KeyEvent.VK_0 - 1;
+            int number = e.getKeyCode() - KeyEvent.VK_1;
             if (number < NUM_GAUSSIAN_TEXTURES) {
                 System.out.println("Angle Resolution: " + calcCosAngleResolution(number));
                 currTexture = number;

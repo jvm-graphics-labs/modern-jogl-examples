@@ -41,11 +41,7 @@ import static uno.glsl.UtilKt.programOf;
 public class BasicLighting extends Framework {
 
     public static void main(String[] args) {
-        new BasicLighting("Tutorial 09 - Basic Lighting");
-    }
-
-    public BasicLighting(String title) {
-        super(title);
+        new BasicLighting().setup("Tutorial 09 - Basic Lighting");
     }
 
     private ProgramData whiteDiffuseColor, vertexDiffuseColor;

@@ -1,26 +1,26 @@
 package main.tut02
 
-import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import uno.glsl.programOf
 import glm.L
-import glm.SIZE
+import glm.size
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import glm.vec._4.Vec4
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 21.02.2017.
  */
 
 fun main(args: Array<String>) {
-    VertexColor_()
+    VertexColor_().setup("Tutorial 02 - Vertex Colors")
 }
 
-class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
+class VertexColor_ : Framework() {
 
     val VERTEX_SHADER = "tut02/vertex-colors.vert"
     val FRAGMENT_SHADER = "tut02/vertex-colors.frag"
@@ -46,7 +46,7 @@ class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
     }
 
     fun initializeProgram(gl: GL3) {
-        theProgram = programOf(gl, this::class.java, "tut02", "vertex-colors.vert", "vertex-colors.frag")
+        theProgram = programOf(gl, javaClass, "tut02", "vertex-colors.vert", "vertex-colors.frag")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
@@ -56,7 +56,7 @@ class VertexColor_ : Framework("Tutorial 02 - Vertex Colors") {
         glGenBuffers(1, vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

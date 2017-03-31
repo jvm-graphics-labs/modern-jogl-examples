@@ -29,10 +29,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    PhongLighting_()
+    PhongLighting_().setup("Tutorial 11 - Fragment Attenuation")
 }
 
-class PhongLighting_() : Framework("Tutorial 11 - Fragment Attenuation") {
+class PhongLighting_() : Framework() {
 
     lateinit var whiteNoPhong: ProgramData
     lateinit var colorNoPhong: ProgramData
@@ -86,9 +86,9 @@ class PhongLighting_() : Framework("Tutorial 11 - Fragment Attenuation") {
 
         initializePrograms(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut11/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut11/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut11/UnitCube.xml")
+        cylinder = Mesh(gl, javaClass, "tut11/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut11/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut11/UnitCube.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -337,7 +337,7 @@ class PhongLighting_() : Framework("Tutorial 11 - Fragment Attenuation") {
 
     inner class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut11", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut11", vertex, fragment)
 
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
 
@@ -361,7 +361,7 @@ class PhongLighting_() : Framework("Tutorial 11 - Fragment Attenuation") {
 
     inner class UnlitProgData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut11", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut11", vertex, fragment)
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")

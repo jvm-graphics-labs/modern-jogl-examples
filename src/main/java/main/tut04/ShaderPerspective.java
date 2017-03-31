@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class ShaderPerspective extends Framework {
 
     public static void main(String[] args) {
-        new ShaderPerspective("Tutorial 04 - Shader Perspective");
-    }
-
-    public ShaderPerspective(String title) {
-        super(title);
+        new ShaderPerspective().setup("Tutorial 04 - Shader Perspective");
     }
 
     private int theProgram, offsetUniform;

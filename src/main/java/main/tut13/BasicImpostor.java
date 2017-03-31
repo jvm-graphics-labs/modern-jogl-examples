@@ -49,7 +49,7 @@ import static uno.glsl.UtilKt.programOf;
 public class BasicImpostor extends Framework {
 
     public static void main(String[] args) {
-        new BasicImpostor("Tutorial 13 - Basic Impostor");
+        new BasicImpostor().setup("Tutorial 13 - Basic Impostor");
     }
 
     private ProgramMeshData litMeshProg;
@@ -93,10 +93,6 @@ public class BasicImpostor extends Framework {
     private Timer sphereTimer = new Timer(Timer.Type.Loop, 6.0f);
 
     private int materialBlockOffset = 0;
-
-    public BasicImpostor(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

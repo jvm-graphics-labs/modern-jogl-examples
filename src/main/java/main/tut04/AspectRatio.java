@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class AspectRatio extends Framework {
 
     public static void main(String[] args) {
-        new AspectRatio("Tutorial 04 - Aspect Ratio");
-    }
-
-    public AspectRatio(String title) {
-        super(title);
+        new AspectRatio().setup("Tutorial 04 - Aspect Ratio");
     }
 
     private int theProgram, offsetUniform, perspectiveMatrixUnif;

@@ -1,29 +1,29 @@
 package main.tut06
 
-import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
-import uno.glsl.programOf
 import glm.*
-import main.framework.Framework
-import main.framework.Semantic
 import glm.mat.Mat3
 import glm.mat.Mat4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
+import main.framework.Framework
+import main.framework.Semantic
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by elect on 23/02/17.
  */
 
 fun main(args: Array<String>) {
-    Rotations_()
+    Rotations_().setup("Tutorial 06 - Rotations")
 }
 
-class Rotations_ : Framework("Tutorial 06 - Rotations") {
+class Rotations_ : Framework() {
 
     object Buffer {
         val VERTEX = 0
@@ -126,7 +126,7 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut06", "pos-color-local-transform.vert", "color-passthrough.frag")
+        theProgram = programOf(gl, javaClass, "tut06", "pos-color-local-transform.vert", "color-passthrough.frag")
 
         modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
         cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")
@@ -155,11 +155,11 @@ class Rotations_ : Framework("Tutorial 06 - Rotations") {
         glGenBuffers(Buffer.MAX, bufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexBuffer.SIZE.L, indexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, indexBuffer.size.L, indexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         destroyBuffers(vertexBuffer, indexBuffer)

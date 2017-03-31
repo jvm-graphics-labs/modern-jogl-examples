@@ -26,11 +26,7 @@ import static uno.glsl.UtilKt.programOf;
 public class VertPositionOffset extends Framework {
 
     public static void main(String[] args) {
-        new VertPositionOffset("Tutorial 03 - Shader Position Offset");
-    }
-
-    public VertPositionOffset(String title) {
-        super(title);
+        new VertPositionOffset().setup("Tutorial 03 - Shader Position Offset");
     }
 
     private int theProgram, offsetLocation;

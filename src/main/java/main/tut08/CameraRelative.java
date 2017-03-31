@@ -30,11 +30,7 @@ import static uno.glsl.UtilKt.programOf;
 public class CameraRelative extends Framework {
 
     public static void main(String[] args) {
-        new CameraRelative("Tutorial 08 - Camera Relative");
-    }
-
-    public CameraRelative(String title) {
-        super(title);
+        new CameraRelative().setup("Tutorial 08 - Camera Relative");
     }
 
     private interface OffsetRelative {

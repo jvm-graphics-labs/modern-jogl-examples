@@ -26,11 +26,7 @@ import static uno.glsl.UtilKt.programOf;
 public class CpuPositionOffset extends Framework {
 
     public static void main(String[] args) {
-        new CpuPositionOffset("Tutorial 03 - CPU Position Offset");
-    }
-
-    public CpuPositionOffset(String title) {
-        super(title);
+        new CpuPositionOffset().setup("Tutorial 03 - CPU Position Offset");
     }
 
     private int theProgram;

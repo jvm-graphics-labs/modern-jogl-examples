@@ -34,10 +34,10 @@ import java.nio.ByteBuffer
  */
 
 fun main(args: Array<String>) {
-    BasicImpostor_()
+    BasicImpostor_().setup("Tutorial 13 - Basic Impostor")
 }
 
-class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
+class BasicImpostor_() : Framework() {
 
     lateinit var litMeshProg: ProgramMeshData
     lateinit var litImpProgs: Array<ProgramImposData>
@@ -92,9 +92,9 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
         initializePrograms(gl)
 
-        sphere = Mesh(gl, this::class.java, "tut13/UnitSphere.xml")
-        plane = Mesh(gl, this::class.java, "tut13/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut13/UnitCube.xml")
+        sphere = Mesh(gl, javaClass, "tut13/UnitSphere.xml")
+        plane = Mesh(gl, javaClass, "tut13/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut13/UnitCube.xml")
 
         val depthZNear = 0.0f
         val depthZFar = 1.0f
@@ -477,7 +477,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     class ProgramImposData(gl: GL3, shader: String) {
 
-        var theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
+        var theProgram = programOf(gl, javaClass, "tut13", shader + ".vert", shader + ".frag")
 
         var sphereRadiusUnif = gl.glGetUniformLocation(theProgram, "sphereRadius")
         var cameraSpherePosUnif = gl.glGetUniformLocation(theProgram, "cameraSpherePos")
@@ -502,7 +502,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     class ProgramMeshData(gl: GL3, vertex: String, fragment: String) {
 
-        var theProgram = programOf(gl, this::class.java, "tut13", vertex, fragment)
+        var theProgram = programOf(gl, javaClass, "tut13", vertex, fragment)
 
         var modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
         var normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
@@ -527,7 +527,7 @@ class BasicImpostor_() : Framework("Tutorial 13 - Basic Impostor") {
 
     class UnlitProgData(gl: GL3, shader: String) {
 
-        var theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
+        var theProgram = programOf(gl, javaClass, "tut13", shader + ".vert", shader + ".frag")
 
         var objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
         var modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")

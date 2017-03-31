@@ -34,10 +34,10 @@ import javax.xml.parsers.ParserConfigurationException
  */
 
 fun main(args: Array<String>) {
-    ScaleAndLighting_()
+    ScaleAndLighting_().setup("Tutorial 09 - Scale and Lighting")
 }
 
-class ScaleAndLighting_() : Framework("Tutorial 09 - Scale and Lighting") {
+class ScaleAndLighting_() : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
@@ -75,8 +75,8 @@ class ScaleAndLighting_() : Framework("Tutorial 09 - Scale and Lighting") {
 
         initializeProgram(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
+        cylinder = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut09/LargePlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)

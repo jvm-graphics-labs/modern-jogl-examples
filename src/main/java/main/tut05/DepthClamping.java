@@ -28,11 +28,7 @@ import static uno.glsl.UtilKt.programOf;
 public class DepthClamping extends Framework {
 
     public static void main(String[] args) {
-        new DepthClamping("Tutorial 05 - Depth Clamping");
-    }
-
-    public DepthClamping(String title) {
-        super(title);
+        new DepthClamping().setup("Tutorial 05 - Depth Clamping");
     }
 
     private interface Buffer {

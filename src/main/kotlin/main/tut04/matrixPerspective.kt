@@ -1,25 +1,27 @@
 package main.tut04
 
-import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import uno.glsl.programOf
-import glm.*
+import glm.L
+import glm.set
+import glm.size
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import glm.vec._4.Vec4
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 22.02.2017.
  */
 
 fun main(args: Array<String>) {
-    MatrixPerspective_()
+    MatrixPerspective_().setup("Tutorial 04 - Matrix Perspective")
 }
 
-class MatrixPerspective_ : Framework("Tutorial 04 - Matrix Perspective") {
+class MatrixPerspective_ : Framework() {
 
     var theProgram = 0
     var offsetUniform = 0
@@ -43,7 +45,7 @@ class MatrixPerspective_ : Framework("Tutorial 04 - Matrix Perspective") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut04", "matrix-perspective.vert", "standard-colors.frag")
+        theProgram = programOf(gl, javaClass, "tut04", "matrix-perspective.vert", "standard-colors.frag")
 
         offsetUniform = glGetUniformLocation(theProgram, "offset")
 
@@ -71,7 +73,7 @@ class MatrixPerspective_ : Framework("Tutorial 04 - Matrix Perspective") {
         glGenBuffers(1, vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

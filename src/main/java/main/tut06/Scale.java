@@ -27,11 +27,7 @@ import static uno.glsl.UtilKt.programOf;
 public class Scale extends Framework {
 
     public static void main(String[] args) {
-        new Scale("Tutorial 06 - Scale");
-    }
-
-    public Scale(String title) {
-        super(title);
+        new Scale().setup("Tutorial 06 - Scale");
     }
 
     private interface Buffer {

@@ -1,9 +1,10 @@
+
 #version 330
 
-// Outputs
-#define FRAG_COLOR  0
+#include semantic.glsl
 
-smooth in vec4 theColor;
+
+noperspective in vec4 theColor;
 
 layout (location = FRAG_COLOR) out vec4 outputColor;
 

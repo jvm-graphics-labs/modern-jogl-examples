@@ -29,11 +29,7 @@ import static uno.glsl.UtilKt.programOf;
 public class Hierarchy extends Framework {
 
     public static void main(String[] args) {
-        new Hierarchy("Tutorial 06 - Hierarchy");
-    }
-
-    public Hierarchy(String title) {
-        super(title);
+        new Hierarchy().setup("Tutorial 06 - Hierarchy");
     }
 
     private interface Buffer {

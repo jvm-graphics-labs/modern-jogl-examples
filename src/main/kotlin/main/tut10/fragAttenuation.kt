@@ -32,10 +32,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    FragmentAttenuation_()
+    FragmentAttenuation_().setup("Tutorial 10 - Fragment Attenuation")
 }
 
-class FragmentAttenuation_() : Framework("Tutorial 10 - Fragment Attenuation") {
+class FragmentAttenuation_() : Framework() {
 
     lateinit var fragWhiteDiffuseColor: ProgramData
     lateinit var fragVertexDiffuseColor: ProgramData
@@ -101,9 +101,9 @@ class FragmentAttenuation_() : Framework("Tutorial 10 - Fragment Attenuation") {
 
         initializePrograms(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut10/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut10/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut10/UnitCube.xml")
+        cylinder = Mesh(gl, javaClass, "tut10/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut10/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut10/UnitCube.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -333,7 +333,7 @@ class FragmentAttenuation_() : Framework("Tutorial 10 - Fragment Attenuation") {
 
     inner class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut10", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut10", vertex, fragment)
 
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
 
@@ -363,7 +363,7 @@ class FragmentAttenuation_() : Framework("Tutorial 10 - Fragment Attenuation") {
 
     inner class UnlitProgData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut10", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut10", vertex, fragment)
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
 

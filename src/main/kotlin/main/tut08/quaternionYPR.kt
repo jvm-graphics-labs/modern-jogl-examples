@@ -20,10 +20,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    QuaternionYPR_()
+    QuaternionYPR_().setup("Tutorial 08 - Quaternion YPR")
 }
 
-class QuaternionYPR_() : Framework("Tutorial 08 - Quaternion YPR") {
+class QuaternionYPR_() : Framework() {
 
     class GimbalAngles(
             var angleX: Float = 0f,
@@ -53,7 +53,7 @@ class QuaternionYPR_() : Framework("Tutorial 08 - Quaternion YPR") {
 
         initializeProgram(gl)
 
-        ship = Mesh(gl, this::class.java, "tut08/Ship.xml")
+        ship = Mesh(gl, javaClass, "tut08/Ship.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -67,7 +67,7 @@ class QuaternionYPR_() : Framework("Tutorial 08 - Quaternion YPR") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
+        theProgram = programOf(gl, javaClass, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
 
         modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
         cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")

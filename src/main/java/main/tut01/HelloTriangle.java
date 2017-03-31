@@ -32,11 +32,7 @@ import static uno.buffer.UtilKt.destroyBuffers;
 public class HelloTriangle extends Framework {
 
     public static void main(String[] args) {
-        new HelloTriangle("Tutorial 01 - Hello Triangle");
-    }
-
-    private HelloTriangle(String title) {
-        super(title);
+        new HelloTriangle().setup("Tutorial 01 - Hello Triangle");;
     }
 
     private final String strVertexShader =

@@ -5,14 +5,12 @@
  */
 package main.framework;
 
-import com.jogamp.newt.Display;
-import com.jogamp.newt.NewtFactory;
-import com.jogamp.newt.Screen;
 import com.jogamp.newt.event.*;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
+import uno.caps.Caps;
 import uno.debug.GlDebugOutput;
 import glm.vec._2.Vec2i;
 
@@ -34,11 +32,16 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
     public static FloatBuffer matBuffer = GLBuffers.newDirectFloatBuffer(16),
             vecBuffer = GLBuffers.newDirectFloatBuffer(4);
 
+    public Caps caps;
+
     public Framework(String title) {
-        initGL(title);
+        setup(title);
     }
 
-    private void initGL(String title) {
+    public Framework() {
+    }
+
+    public void setup(String title) {
 
 //        Display display = NewtFactory.createDisplay(null);
 //        Screen screen = NewtFactory.createScreen(display, 0);
@@ -93,7 +96,12 @@ public class Framework implements GLEventListener, KeyListener, MouseListener {
 
     @Override
     public final void init(GLAutoDrawable drawable) {
-        init(drawable.getGL().getGL3());
+
+        GL3 gl = drawable.getGL().getGL3();
+
+        caps = new Caps(gl, Caps.Profile.CORE);
+
+        init(gl);
     }
 
     protected void init(GL3 gl) {

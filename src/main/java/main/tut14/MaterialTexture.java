@@ -61,7 +61,7 @@ import static uno.glsl.UtilKt.programOf;
 public class MaterialTexture extends Framework {
 
     public static void main(String[] args) {
-        new MaterialTexture("Tutorial 14 - Material Texture");
+        new MaterialTexture().setup("Tutorial 14 - Material Texture");
     }
 
     private ProgramData[] programs = new ProgramData[ShaderMode.MAX];
@@ -121,10 +121,6 @@ public class MaterialTexture extends Framework {
     boolean drawLights = true;
     boolean drawCameraPos = false;
     boolean useInfinity = true;
-
-    public MaterialTexture(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {
@@ -480,7 +476,7 @@ public class MaterialTexture extends Framework {
         }
 
         if (KeyEvent.VK_1 <= e.getKeyCode() && KeyEvent.VK_9 >= e.getKeyCode()) {
-            int number = e.getKeyCode() - KeyEvent.VK_0 - 1;
+            int number = e.getKeyCode() - KeyEvent.VK_1;
             if (number < NUM_GAUSSIAN_TEXTURES) {
                 System.out.println("Angle Resolution: " + calcCosAngleResolution(number));
                 currTexture = number;

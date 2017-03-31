@@ -17,10 +17,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    BaseVertexOverlap_()
+    BaseVertexOverlap_().setup("Tutorial 05 - Base Vertex With Overlap")
 }
 
-class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
+class BaseVertexOverlap_ : Framework() {
 
     object Buffer {
         val VERTEX = 0
@@ -63,7 +63,7 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut05", "standard.vert", "standard.frag")
+        theProgram = programOf(gl, javaClass, "tut05", "standard.vert", "standard.frag")
 
         offsetUniform = glGetUniformLocation(theProgram, "offset")
 
@@ -91,11 +91,11 @@ class BaseVertexOverlap_ : Framework("Tutorial 05 - Base Vertex With Overlap") {
         glGenBuffers(Buffer.MAX, bufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexBuffer.SIZE.L, indexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, indexBuffer.size.L, indexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         destroyBuffers(vertexBuffer, indexBuffer)

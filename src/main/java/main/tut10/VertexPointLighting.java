@@ -45,7 +45,7 @@ import static glm.GlmKt.glm;
 public class VertexPointLighting extends Framework {
 
     public static void main(String[] args) {
-        new VertexPointLighting("Tutorial 10 - Vertex Point Lighting");
+        new VertexPointLighting().setup("Tutorial 10 - Vertex Point Lighting");
     }
 
     private ProgramData whiteDiffuseColor, vertexDiffuseColor;
@@ -75,10 +75,6 @@ public class VertexPointLighting extends Framework {
     private boolean drawColoredCyl = false, drawLight = false;
     private float lightHeight = 1.5f, lightRadius = 1.0f;
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
-
-    public VertexPointLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

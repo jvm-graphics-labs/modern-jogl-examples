@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class VertCalcOffset extends Framework {
 
     public static void main(String[] args) {
-        new VertCalcOffset("Tutorial 03 - Shader Calc Offset");
-    }
-
-    public VertCalcOffset(String title) {
-        super(title);
+        new VertCalcOffset().setup("Tutorial 03 - Shader Calc Offset");
     }
 
     private int theProgram, elapsedTimeUniform;

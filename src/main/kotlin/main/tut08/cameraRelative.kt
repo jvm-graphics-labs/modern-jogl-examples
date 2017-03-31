@@ -21,10 +21,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    CameraRelative_()
+    CameraRelative_().setup("Tutorial 08 - Camera Relative")
 }
 
-class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
+class CameraRelative_ : Framework() {
 
     object OffsetRelative {
         val MODEL = 0
@@ -59,8 +59,8 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
         initializeProgram(gl)
 
-        ship = Mesh(gl, this::class.java, "tut08/Ship.xml")
-        plane = Mesh(gl, this::class.java, "tut08/UnitPlane.xml")
+        ship = Mesh(gl, javaClass, "tut08/Ship.xml")
+        plane = Mesh(gl, javaClass, "tut08/UnitPlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -74,7 +74,7 @@ class CameraRelative_ : Framework("Tutorial 08 - Camera Relative") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
+        theProgram = programOf(gl, javaClass, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
 
         modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
         cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")

@@ -25,11 +25,7 @@ import static uno.glsl.UtilKt.programOf;
 public class OverlapNoDepth extends Framework {
 
     public static void main(String[] args) {
-        new OverlapNoDepth("Tutorial 05 - Overlap No Depth");
-    }
-
-    public OverlapNoDepth(String title) {
-        super(title);
+        new OverlapNoDepth().setup("Tutorial 05 - Overlap No Depth");
     }
 
     private interface Buffer {

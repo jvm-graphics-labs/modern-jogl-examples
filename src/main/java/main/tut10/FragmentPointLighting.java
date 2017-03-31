@@ -43,7 +43,7 @@ import static glm.GlmKt.glm;
 public class FragmentPointLighting extends Framework {
 
     public static void main(String[] args) {
-        new FragmentPointLighting("Tutorial 10 - Fragment Point Lighting");
+        new FragmentPointLighting().setup("Tutorial 10 - Fragment Point Lighting");
     }
 
     private ProgramData whiteDiffuseColor, vertexDiffuseColor, fragWhiteDiffuseColor, fragVertexDiffuseColor;
@@ -74,10 +74,6 @@ public class FragmentPointLighting extends Framework {
     private float lightHeight = 1.5f, lightRadius = 1.0f;
 
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
-
-    private FragmentPointLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

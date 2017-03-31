@@ -46,7 +46,7 @@ import static glm.GlmKt.glm;
 public class FragmentAttenuation extends Framework {
 
     public static void main(String[] args) {
-        new FragmentAttenuation("Tutorial 10 - Fragment Attenuation");
+        new FragmentAttenuation().setup("Tutorial 10 - Fragment Attenuation");
     }
 
     private ProgramData fragWhiteDiffuseColor, fragVertexDiffuseColor;
@@ -101,10 +101,6 @@ public class FragmentAttenuation extends Framework {
     private IntBuffer bufferName = GLBuffers.newDirectIntBuffer(Buffer.MAX);
 
     private ByteBuffer unprojectBuffer = GLBuffers.newDirectByteBuffer(UnProjectionBlock.SIZE);
-
-    public FragmentAttenuation(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

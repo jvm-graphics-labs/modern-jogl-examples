@@ -31,11 +31,7 @@ import static uno.glsl.UtilKt.programOf;
 public class Interpolation extends Framework {
 
     public static void main(String[] args) {
-        new Interpolation("Tutorial 08 - Interpolation");
-    }
-
-    public Interpolation(String title) {
-        super(title);
+        new Interpolation().setup("Tutorial 08 - Interpolation");
     }
 
     private Mesh ship;

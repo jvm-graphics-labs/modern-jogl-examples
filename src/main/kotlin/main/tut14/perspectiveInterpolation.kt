@@ -16,10 +16,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    PerspectiveInterpolation_()
+    PerspectiveInterpolation_().setup("Tutorial 14 - Perspective Interpolation")
 }
 
-class PerspectiveInterpolation_() : Framework("Tutorial 14 - Perspective Interpolation") {
+class PerspectiveInterpolation_() : Framework() {
 
     lateinit var smoothInterp: ProgramData
     lateinit var linearInterp: ProgramData
@@ -34,8 +34,8 @@ class PerspectiveInterpolation_() : Framework("Tutorial 14 - Perspective Interpo
 
         initializePrograms(gl)
 
-        realHallway = Mesh(gl, this::class.java, "tut14/RealHallway.xml")
-        fauxHallway = Mesh(gl, this::class.java, "tut14/FauxHallway.xml")
+        realHallway = Mesh(gl, javaClass, "tut14/RealHallway.xml")
+        fauxHallway = Mesh(gl, javaClass, "tut14/FauxHallway.xml")
     }
 
     fun initializePrograms(gl: GL3) = with(gl) {
@@ -96,8 +96,8 @@ class PerspectiveInterpolation_() : Framework("Tutorial 14 - Perspective Interpo
                 realHallway.dispose(this)
                 fauxHallway.dispose(this)
 
-                realHallway = Mesh(this, this::class.java, "tut14/RealHallway.xml")
-                fauxHallway = Mesh(this, this::class.java, "tut14/FauxHallway.xml")
+                realHallway = Mesh(this, javaClass, "tut14/RealHallway.xml")
+                fauxHallway = Mesh(this, javaClass, "tut14/FauxHallway.xml")
             }
         }
     }

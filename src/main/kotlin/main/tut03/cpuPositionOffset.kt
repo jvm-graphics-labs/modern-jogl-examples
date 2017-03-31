@@ -4,7 +4,10 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glm.*
+import glm.BYTES
+import glm.L
+import glm.glm
+import glm.size
 import glm.vec._2.Vec2
 import glm.vec._4.Vec4
 import main.framework.Framework
@@ -17,10 +20,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    CpuPositionOffset_()
+    CpuPositionOffset_().setup("Tutorial 03 - CPU Position Offset")
 }
 
-class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
+class CpuPositionOffset_ : Framework() {
 
     var theProgram = 0
     val positionBufferObject = intBufferBig(1)
@@ -43,7 +46,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
     }
 
     fun initializeProgram(gl: GL3) {
-        theProgram = programOf(gl, this::class.java, "tut03", "standard.vert", "standard.frag")
+        theProgram = programOf(gl, javaClass, "tut03", "standard.vert", "standard.frag")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
@@ -106,7 +109,7 @@ class CpuPositionOffset_ : Framework("Tutorial 03 - CPU Position Offset") {
         val buffer = newData.toFloatBuffer()
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.SIZE.L, buffer)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.size.L, buffer)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         buffer.destroy()

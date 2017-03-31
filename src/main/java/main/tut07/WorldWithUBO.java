@@ -35,15 +35,11 @@ import static glm.GlmKt.glm;
  */
 public class WorldWithUBO extends Framework {
 
-    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml"};
-
     public static void main(String[] args) {
-        new WorldWithUBO("Tutorial 07 - World Scene");
+        new WorldWithUBO().setup("Tutorial 07 - World Scene");
     }
 
-    public WorldWithUBO(String title) {
-        super(title);
-    }
+    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml"};
 
     private interface MESH {
 

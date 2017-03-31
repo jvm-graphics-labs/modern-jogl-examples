@@ -25,11 +25,7 @@ import static uno.glsl.UtilKt.programOf;
 public class DepthBuffer extends Framework {
 
     public static void main(String[] args) {
-        new DepthBuffer("Tutorial 05 - Depth Buffering");
-    }
-
-    public DepthBuffer(String title) {
-        super(title);
+        new DepthBuffer().setup("Tutorial 05 - Depth Buffering");
     }
 
     private interface Buffer {

@@ -27,11 +27,7 @@ import static uno.glsl.UtilKt.programOf;
 public class VertexClipping extends Framework {
 
     public static void main(String[] args) {
-        new VertexClipping("Tutorial 05 - Vertex Clipping");
-    }
-
-    public VertexClipping(String title) {
-        super(title);
+        new VertexClipping().setup("Tutorial 05 - Vertex Clipping");
     }
 
     private interface Buffer {

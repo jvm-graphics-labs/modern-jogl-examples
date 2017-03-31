@@ -41,7 +41,7 @@ import static uno.glsl.UtilKt.programOf;
 public class ScaleAndLighting extends Framework {
 
     public static void main(String[] args) {
-        new ScaleAndLighting("Tutorial 09 - Scale and Lighting");
+        new ScaleAndLighting().setup("Tutorial 09 - Scale and Lighting");
     }
 
     private ProgramData whiteDiffuseColor;
@@ -75,10 +75,6 @@ public class ScaleAndLighting extends Framework {
             new Quat(1.0f, 0.0f, 0.0f, 0.0f));
 
     private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
-
-    public ScaleAndLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

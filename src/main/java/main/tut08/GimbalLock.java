@@ -28,15 +28,11 @@ import static uno.glsl.UtilKt.programOf;
  */
 public class GimbalLock extends Framework {
 
-    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
-
     public static void main(String[] args) {
-        new GimbalLock("Tutorial 08 - Gimbal Lock");
+        new GimbalLock().setup("Tutorial 08 - Gimbal Lock");
     }
 
-    public GimbalLock(String title) {
-        super(title);
-    }
+    private final String[] GIMBALS_SCR = {"LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml"};
 
     private interface Gimbal {
 

@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class VertexColor extends Framework {
 
     public static void main(String[] args) {
-        new VertexColor("Tutorial 02 - Vertex Colors");
-    }
-
-    public VertexColor(String title) {
-        super(title);
+        new VertexColor().setup("Tutorial 02 - Vertex Colors");
     }
 
     private int theProgram;

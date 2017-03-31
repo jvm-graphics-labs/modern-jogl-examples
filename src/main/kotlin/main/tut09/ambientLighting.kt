@@ -35,10 +35,10 @@ import javax.xml.parsers.ParserConfigurationException
  */
 
 fun main(args: Array<String>) {
-    AmbientLighting_()
+    AmbientLighting_().setup("Tutorial 09 - Ambient Lighting")
 }
 
-class AmbientLighting_() : Framework("Tutorial 09 - Ambient Lighting") {
+class AmbientLighting_() : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
@@ -79,8 +79,8 @@ class AmbientLighting_() : Framework("Tutorial 09 - Ambient Lighting") {
 
         initializeProgram(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut09/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut09/LargePlane.xml")
+        cylinder = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut09/LargePlane.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -248,7 +248,7 @@ class AmbientLighting_() : Framework("Tutorial 09 - Ambient Lighting") {
 
     inner class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut09", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut09", vertex, fragment)
 
         val dirToLightUnif = gl.glGetUniformLocation(theProgram, "dirToLight")
         val lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity")

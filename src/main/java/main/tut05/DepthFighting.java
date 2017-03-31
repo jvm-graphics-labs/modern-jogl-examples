@@ -29,11 +29,7 @@ import static uno.glsl.UtilKt.programOf;
 public class DepthFighting extends Framework {
 
     public static void main(String[] args) {
-        new DepthFighting("Tutorial 05 - Depth Clamping");
-    }
-
-    public DepthFighting(String title) {
-        super(title);
+        new DepthFighting().setup("Tutorial 05 - Depth Clamping");
     }
 
     private interface Buffer {

@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class FragPosition extends Framework {
 
     public static void main(String[] args) {
-        new FragPosition("Tutorial 02 - Fragment Position");
-    }
-
-    public FragPosition(String title) {
-        super(title);
+        new FragPosition().setup("Tutorial 02 - Fragment Position");
     }
 
     private int theProgram;

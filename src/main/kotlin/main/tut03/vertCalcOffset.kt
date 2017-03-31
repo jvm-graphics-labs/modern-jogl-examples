@@ -1,26 +1,26 @@
 package main.tut03
 
-import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import uno.glsl.programOf
-import uno.glsl.shaderCodeOf
-import glm.*
+import glm.L
+import glm.size
+import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import glm.vec._4.Vec4
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by elect on 21/02/17.
  */
 
 fun main(args: Array<String>) {
-    VertCalcOffset_()
+    VertCalcOffset_().setup("Tutorial 03 - Shader Calc Offset")
 }
 
-class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
+class VertCalcOffset_ : Framework() {
 
     var theProgram = 0
     var elapsedTimeUniform = 0
@@ -45,7 +45,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut03", "calc-offset.vert", "standard.frag")
+        theProgram = programOf(gl, javaClass, "tut03", "calc-offset.vert", "standard.frag")
 
         elapsedTimeUniform = glGetUniformLocation(theProgram, "time")
 
@@ -63,7 +63,7 @@ class VertCalcOffset_ : Framework("Tutorial 03 - Shader Calc Offset") {
         glGenBuffers(1, positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

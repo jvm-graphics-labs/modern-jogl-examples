@@ -23,10 +23,10 @@ import kotlin.properties.Delegates
  */
 
 fun main(args: Array<String>) {
-    GimbalLock_()
+    GimbalLock_().setup("Tutorial 08 - Gimbal Lock")
 }
 
-class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
+class GimbalLock_ : Framework() {
 
     val GIMBALS_SCR = arrayOf("LargeGimbal.xml", "MediumGimbal.xml", "SmallGimbal.xml")
 
@@ -67,8 +67,8 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
 
         initializeProgram(gl)
 
-        gimbals = Array(Gimbal.MAX, { Mesh(gl, this::class.java, "tut08/${GIMBALS_SCR[it]}") })
-        `object` = Mesh(gl, this::class.java, "tut08/Ship.xml")
+        gimbals = Array(Gimbal.MAX, { Mesh(gl, javaClass, "tut08/${GIMBALS_SCR[it]}") })
+        `object` = Mesh(gl, javaClass, "tut08/Ship.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -82,7 +82,7 @@ class GimbalLock_ : Framework("Tutorial 08 - Gimbal Lock") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
+        theProgram = programOf(gl, javaClass, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
 
         modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
         cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")

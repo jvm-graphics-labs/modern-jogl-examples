@@ -1,27 +1,28 @@
 package main.tut03
 
-import uno.buffer.*
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import uno.glsl.programOf
-import uno.glsl.shaderCodeOf
-import glm.*
-import main.framework.Framework
-import main.framework.Semantic
+import glm.L
+import glm.glm
+import glm.size
 import glm.vec._2.Vec2
 import glm.vec._4.Vec4
+import main.framework.Framework
+import main.framework.Semantic
+import uno.buffer.*
+import uno.glsl.programOf
 
 /**
  * Created by elect on 21/02/17.
  */
 
 fun main(args: Array<String>) {
-    VertPositionOffset_()
+    VertPositionOffset_().setup("Tutorial 03 - Shader Position Offset")
 }
 
-class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
+class VertPositionOffset_ : Framework() {
 
     var theProgram = 0
     var offsetLocation = 0
@@ -46,7 +47,7 @@ class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
 
     fun initializeProgram(gl: GL3) {
 
-        theProgram = programOf(gl, this::class.java, "tut03", "position-offset.vert", "standard.frag")
+        theProgram = programOf(gl, javaClass, "tut03", "position-offset.vert", "standard.frag")
 
         offsetLocation = gl.glGetUniformLocation(theProgram, "offset")
     }
@@ -58,7 +59,7 @@ class VertPositionOffset_ : Framework("Tutorial 03 - Shader Position Offset") {
         glGenBuffers(1, positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

@@ -28,14 +28,8 @@ import static glm.GlmKt.glm;
  */
 public class WorldScene extends Framework {
 
-    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml"};
-
     public static void main(String[] args) {
-        new WorldScene("Tutorial 07 - World Scene");
-    }
-
-    public WorldScene(String title) {
-        super(title);
+        new WorldScene().setup("Tutorial 07 - World Scene");
     }
 
     private interface MESH {
@@ -47,6 +41,8 @@ public class WorldScene extends Framework {
         int PLANE = 4;
         int MAX = 5;
     }
+
+    private final String[] MESHES_SOURCE = {"UnitConeTint.xml", "UnitCylinderTint.xml", "UnitCubeTint.xml", "UnitCubeColor.xml", "UnitPlane.xml"};
 
     private ProgramData uniformColor, objectColor, uniformColorTint;
     private Mesh[] meshes = new Mesh[MESH.MAX];

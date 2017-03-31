@@ -44,7 +44,7 @@ import static glm.GlmKt.glm;
 public class PhongLighting extends Framework {
 
     public static void main(String[] args) {
-        new PhongLighting("Tutorial 11 - Fragment Attenuation");
+        new PhongLighting().setup("Tutorial 11 - Fragment Attenuation");
     }
 
     private ProgramData whiteNoPhong, colorNoPhong, whitePhong, colorPhong, whitePhongOnly, colorPhongOnly;
@@ -80,10 +80,6 @@ public class PhongLighting extends Framework {
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
-
-    public PhongLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

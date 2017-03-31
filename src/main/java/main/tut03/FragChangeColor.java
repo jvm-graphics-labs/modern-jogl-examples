@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class FragChangeColor extends Framework {
 
     public static void main(String[] args) {
-        new FragChangeColor("Tutorial 03 - Frag Change Color");
-    }
-
-    public FragChangeColor(String title) {
-        super(title);
+        new FragChangeColor().setup("Tutorial 03 - Frag Change Color");
     }
 
     private int theProgram, elapsedTimeUniform;

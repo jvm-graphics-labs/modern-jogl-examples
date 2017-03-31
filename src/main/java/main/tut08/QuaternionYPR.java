@@ -35,11 +35,7 @@ import org.xml.sax.SAXException;
 public class QuaternionYPR extends Framework {
 
     public static void main(String[] args) {
-        new QuaternionYPR("Tutorial 08 - Quaternion YPR");
-    }
-
-    public QuaternionYPR(String title) {
-        super(title);
+        new QuaternionYPR().setup("Tutorial 08 - Quaternion YPR");
     }
 
     private class GimbalAngles {

@@ -16,10 +16,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    AspectRatio_()
+    AspectRatio_().setup("Tutorial 04 - Aspect Ratio")
 }
 
-class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
+class AspectRatio_ : Framework() {
 
     var theProgram = 0
     var offsetUniform = 0
@@ -45,7 +45,7 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut04", "matrix-perspective.vert", "standard-colors.frag")
+        theProgram = programOf(gl, javaClass, "tut04", "matrix-perspective.vert", "standard-colors.frag")
 
         offsetUniform = glGetUniformLocation(theProgram, "offset")
 
@@ -72,7 +72,7 @@ class AspectRatio_ : Framework("Tutorial 04 - Aspect Ratio") {
         glGenBuffers(1, vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

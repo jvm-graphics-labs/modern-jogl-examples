@@ -7,7 +7,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import glm.L
-import glm.SIZE
+import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -19,10 +19,10 @@ import uno.glsl.shaderCodeOf
  */
 
 fun main(args: Array<String>) {
-    FragPosition_()
+    FragPosition_().setup("Tutorial 02 - Fragment Position")
 }
 
-class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
+class FragPosition_ : Framework() {
 
     var theProgram = 0
     val vertexBufferObject = intBufferBig(1)
@@ -42,7 +42,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
     }
 
     fun initializeProgram(gl: GL3) {
-        theProgram = shaderProgramOf(gl, this::class.java, "tut02", "frag-position.vert", "frag-position.frag")
+        theProgram = shaderProgramOf(gl, javaClass, "tut02", "frag-position.vert", "frag-position.frag")
     }
 
     fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int {
@@ -78,7 +78,7 @@ class FragPosition_ : Framework("Tutorial 02 - Fragment Position") {
         glGenBuffers(1, vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

@@ -26,7 +26,7 @@ import static uno.glsl.UtilKt.programOf;
 public class PerspectiveInterpolation extends Framework {
 
     public static void main(String[] args) {
-        new PerspectiveInterpolation("Tutorial 14 - Perspective Interpolation");
+        new PerspectiveInterpolation().setup("Tutorial 14 - Perspective Interpolation");
     }
 
     private ProgramData smoothInterp, linearInterp;
@@ -34,10 +34,6 @@ public class PerspectiveInterpolation extends Framework {
     private Mesh realHallway, fauxHallway;
 
     private boolean useFakeHallway = false, useSmoothInterpolation = true;
-
-    public PerspectiveInterpolation(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

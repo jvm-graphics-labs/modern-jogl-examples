@@ -29,11 +29,7 @@ import static glm.GlmKt.glm;
 public class Rotations extends Framework {
 
     public static void main(String[] args) {
-        new Rotations("Tutorial 06 - Rotations");
-    }
-
-    public Rotations(String title) {
-        super(title);
+        new Rotations().setup("Tutorial 06 - Rotations");
     }
 
     private interface Buffer {

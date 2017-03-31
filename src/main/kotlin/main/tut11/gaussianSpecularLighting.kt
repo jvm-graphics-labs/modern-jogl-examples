@@ -32,10 +32,10 @@ import uno.time.Timer
  */
 
 fun main(args: Array<String>) {
-    GaussianSpecularLighting_()
+    GaussianSpecularLighting_().setup("Tutorial 11 - Gaussian Specular Lighting")
 }
 
-class GaussianSpecularLighting_() : Framework("Tutorial 11 - Gaussian Specular Lighting") {
+class GaussianSpecularLighting_() : Framework() {
 
     lateinit var programs: Array<ProgramPairs>
     lateinit var unlit: UnlitProgData
@@ -83,9 +83,9 @@ class GaussianSpecularLighting_() : Framework("Tutorial 11 - Gaussian Specular L
 
         initializePrograms(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut11/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut11/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut11/UnitCube.xml")
+        cylinder = Mesh(gl, javaClass, "tut11/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut11/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut11/UnitCube.xml")
 
         val depthZNear = 0.0f
         val depthZFar = 1.0f
@@ -337,7 +337,7 @@ class GaussianSpecularLighting_() : Framework("Tutorial 11 - Gaussian Specular L
 
     class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut11", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut11", vertex, fragment)
 
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
 

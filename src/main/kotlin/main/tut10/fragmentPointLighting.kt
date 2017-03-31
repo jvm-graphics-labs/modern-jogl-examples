@@ -29,10 +29,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    FragmentPointLighting_()
+    FragmentPointLighting_().setup("Tutorial 10 - Fragment Point Lighting")
 }
 
-class FragmentPointLighting_() : Framework("Tutorial 10 - Fragment Point Lighting") {
+class FragmentPointLighting_() : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData
@@ -76,9 +76,9 @@ class FragmentPointLighting_() : Framework("Tutorial 10 - Fragment Point Lightin
 
         initializePrograms(gl)
 
-        cylinder = Mesh(gl, this::class.java, "tut10/UnitCylinder.xml")
-        plane = Mesh(gl, this::class.java, "tut10/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut10/UnitCube.xml")
+        cylinder = Mesh(gl, javaClass, "tut10/UnitCylinder.xml")
+        plane = Mesh(gl, javaClass, "tut10/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut10/UnitCube.xml")
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -280,7 +280,7 @@ class FragmentPointLighting_() : Framework("Tutorial 10 - Fragment Point Lightin
 
     inner class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut10", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut10", vertex, fragment)
 
         val modelSpaceLightPosUnif = gl.glGetUniformLocation(theProgram, "modelSpaceLightPos")
         val lightIntensityUnif = gl.glGetUniformLocation(theProgram, "lightIntensity")
@@ -298,7 +298,7 @@ class FragmentPointLighting_() : Framework("Tutorial 10 - Fragment Point Lightin
 
     inner class UnlitProgData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut10", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut10", vertex, fragment)
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
 

@@ -30,10 +30,10 @@ import java.nio.ByteBuffer
  */
 
 fun main(args: Array<String>) {
-    MaterialTexture_()
+    MaterialTexture_().setup("Tutorial 14 - Material Texture")
 }
 
-class MaterialTexture_() : Framework("Tutorial 14 - Material Texture") {
+class MaterialTexture_() : Framework() {
 
     lateinit var programs: Array<ProgramData>
     lateinit var unlit: UnlitProgData
@@ -97,9 +97,9 @@ class MaterialTexture_() : Framework("Tutorial 14 - Material Texture") {
 
         initializePrograms(gl)
 
-        objectMesh = Mesh(gl, this::class.java, "tut14/Infinity.xml")
-        cube = Mesh(gl, this::class.java, "tut14/UnitCube.xml")
-        plane = Mesh(gl, this::class.java, "tut14/UnitPlane.xml")
+        objectMesh = Mesh(gl, javaClass, "tut14/Infinity.xml")
+        cube = Mesh(gl, javaClass, "tut14/UnitCube.xml")
+        plane = Mesh(gl, javaClass, "tut14/UnitPlane.xml")
 
         val depthZNear = 0.0f
         val depthZFar = 1.0f
@@ -417,8 +417,8 @@ class MaterialTexture_() : Framework("Tutorial 14 - Material Texture") {
             }
         }
 
-        if (e.keyCode in KeyEvent.VK_1 until KeyEvent.VK_9) {
-            var number = e.keyCode - KeyEvent.VK_0 - 1
+        if (e.keyCode in KeyEvent.VK_1 .. KeyEvent.VK_9) {
+            var number = e.keyCode - KeyEvent.VK_1
             if (number < NUM_GAUSSIAN_TEXTURES) {
                 println("Angle Resolution: " + calcCosAngleResolution(number))
                 currTexture = number
@@ -509,7 +509,7 @@ class MaterialTexture_() : Framework("Tutorial 14 - Material Texture") {
 
     class ProgramData(gl: GL3, shaderPair: Pair<String, String>) {
 
-        val theProgram = programOf(gl, this::class.java, "tut14", shaderPair.first, shaderPair.second)
+        val theProgram = programOf(gl, javaClass, "tut14", shaderPair.first, shaderPair.second)
 
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
         val normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
@@ -543,7 +543,7 @@ class MaterialTexture_() : Framework("Tutorial 14 - Material Texture") {
 
     class UnlitProgData(gl: GL3, shader: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut14", shader + ".vert", shader + ".frag")
+        val theProgram = programOf(gl, javaClass, "tut14", shader + ".vert", shader + ".frag")
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")

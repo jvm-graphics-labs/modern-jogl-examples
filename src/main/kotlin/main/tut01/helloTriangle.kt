@@ -11,7 +11,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
 import glm.L
-import glm.SIZE
+import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -19,10 +19,10 @@ import uno.buffer.*
 
 
 fun main(args: Array<String>) {
-    HelloTriangle_()
+    HelloTriangle_().setup("Tutorial 01 - Hello Triangle")
 }
 
-class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
+class HelloTriangle_ : Framework() {
 
     val strVertexShader =
             "#version 330\n" +
@@ -110,7 +110,7 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
         return shader
     }
 
-    fun createProgram(gl: GL3, shaderList: List<Int>): Int = with(gl){
+    fun createProgram(gl: GL3, shaderList: List<Int>): Int = with(gl) {
 
         val program = glCreateProgram()
 
@@ -149,7 +149,7 @@ class HelloTriangle_ : Framework("Tutorial 01 - Hello Triangle") {
         glGenBuffers(1, positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

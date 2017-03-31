@@ -29,11 +29,7 @@ import static uno.glsl.UtilKt.programOf;
 public class Translation extends Framework {
 
     public static void main(String[] args) {
-        new Translation("Tutorial 06 - Translation");
-    }
-
-    public Translation(String title) {
-        super(title);
+        new Translation().setup("Tutorial 06 - Translation");
     }
 
     private interface Buffer {

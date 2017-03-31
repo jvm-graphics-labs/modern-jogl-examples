@@ -5,7 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glm.L
-import glm.SIZE
+import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -17,10 +17,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    FragChangeColor_()
+    FragChangeColor_().setup("Tutorial 03 - Frag Change Color")
 }
 
-class FragChangeColor_ : Framework("Tutorial 03 - Frag Change Color") {
+class FragChangeColor_ : Framework() {
 
     var theProgram = 0
     var elapsedTimeUniform = 0
@@ -45,7 +45,7 @@ class FragChangeColor_ : Framework("Tutorial 03 - Frag Change Color") {
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
-        theProgram = programOf(gl, this::class.java, "tut03", "calc-offset.vert", "calc-color.frag")
+        theProgram = programOf(gl, javaClass, "tut03", "calc-offset.vert", "calc-color.frag")
 
         elapsedTimeUniform = glGetUniformLocation(theProgram, "time")
 
@@ -65,7 +65,7 @@ class FragChangeColor_ : Framework("Tutorial 03 - Frag Change Color") {
         glGenBuffers(1, positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.SIZE.L, vertexBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         vertexBuffer.destroy()

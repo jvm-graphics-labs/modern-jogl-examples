@@ -44,7 +44,7 @@ import static uno.glsl.UtilKt.programOf;
 public class BlinnVsPhongLighting extends Framework {
 
     public static void main(String[] args) {
-        new BlinnVsPhongLighting("Tutorial 11 - Blinn vs Phong Lighting");
+        new BlinnVsPhongLighting().setup("Tutorial 11 - Blinn vs Phong Lighting");
     }
 
     private ProgramPairs[] programs = new ProgramPairs[LightingModel.MAX];
@@ -81,9 +81,7 @@ public class BlinnVsPhongLighting extends Framework {
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
 
-    public BlinnVsPhongLighting(String title) {
-        super(title);
-    }
+    private String[] FRAGMENTS = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
 
     @Override
     public void init(GL3 gl) {
@@ -122,8 +120,6 @@ public class BlinnVsPhongLighting extends Framework {
     }
 
     private void initializePrograms(GL3 gl) {
-
-        String[] FRAGMENTS = {"phong-lighting", "phong-only", "blinn-lighting", "blinn-only"};
 
         for (int i = 0; i < LightingModel.MAX; i++) {
             programs[i] = new ProgramPairs();

@@ -35,10 +35,10 @@ import java.nio.ByteBuffer
  */
 
 fun main(args: Array<String>) {
-    GeomImpostor_()
+    GeomImpostor_().setup("Tutorial 13 - Geometry Impostor")
 }
 
-class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
+class GeomImpostor_() : Framework() {
 
     lateinit var litMeshProg: ProgramMeshData
     lateinit var litImpProg: ProgramImposData
@@ -92,9 +92,9 @@ class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
 
         initializePrograms(gl)
 
-        sphere = Mesh(gl, this::class.java, "tut13/UnitSphere.xml")
-        plane = Mesh(gl, this::class.java, "tut13/LargePlane.xml")
-        cube = Mesh(gl, this::class.java, "tut13/UnitCube.xml")
+        sphere = Mesh(gl, javaClass, "tut13/UnitSphere.xml")
+        plane = Mesh(gl, javaClass, "tut13/LargePlane.xml")
+        cube = Mesh(gl, javaClass, "tut13/UnitCube.xml")
 
         val depthZNear = 0.0f
         val depthZFar = 1.0f
@@ -471,7 +471,7 @@ class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
 
     class ProgramImposData(gl: GL3, shader: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".geom", shader + ".frag")
+        val theProgram = programOf(gl, javaClass, "tut13", shader + ".vert", shader + ".geom", shader + ".frag")
 
         init {
             with(gl) {
@@ -493,7 +493,7 @@ class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
 
     class ProgramMeshData(gl: GL3, vertex: String, fragment: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut13", vertex, fragment)
+        val theProgram = programOf(gl, javaClass, "tut13", vertex, fragment)
 
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
         val normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
@@ -518,7 +518,7 @@ class GeomImpostor_() : Framework("Tutorial 13 - Geometry Impostor") {
 
     class UnlitProgData(gl: GL3, shader: String) {
 
-        val theProgram = programOf(gl, this::class.java, "tut13", shader + ".vert", shader + ".frag")
+        val theProgram = programOf(gl, javaClass, "tut13", shader + ".vert", shader + ".frag")
 
         val objectColorUnif = gl.glGetUniformLocation(theProgram, "objectColor")
         val modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")

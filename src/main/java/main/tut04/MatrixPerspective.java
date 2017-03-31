@@ -23,11 +23,7 @@ import static uno.glsl.UtilKt.programOf;
 public class MatrixPerspective extends Framework {
 
     public static void main(String[] args) {
-        new MatrixPerspective("Tutorial 04 - Matrix Perspective");
-    }
-
-    public MatrixPerspective(String title) {
-        super(title);
+        new MatrixPerspective().setup("Tutorial 04 - Matrix Perspective");
     }
 
     private int theProgram, offsetUniform;

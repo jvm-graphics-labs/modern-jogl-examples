@@ -45,7 +45,7 @@ import static uno.glsl.UtilKt.programOf;
 public class GaussianSpecularLighting extends Framework {
 
     public static void main(String[] args) {
-        new GaussianSpecularLighting("Tutorial 11 - Gaussian Specular Lighting");
+        new GaussianSpecularLighting().setup("Tutorial 11 - Gaussian Specular Lighting");
     }
 
     private ProgramPairs[] programs = new ProgramPairs[LightingModel.MAX];
@@ -81,10 +81,6 @@ public class GaussianSpecularLighting extends Framework {
     private Timer lightTimer = new Timer(Timer.Type.Loop, 5.0f);
 
     private IntBuffer projectionUniformBuffer = GLBuffers.newDirectIntBuffer(1);
-
-    public GaussianSpecularLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {

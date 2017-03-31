@@ -27,10 +27,10 @@ import java.nio.ByteBuffer
  */
 
 fun main(args: Array<String>) {
-    BasicTexture_()
+    BasicTexture_().setup("Tutorial 14 - Basic Texture")
 }
 
-class BasicTexture_() : Framework("Tutorial 14 - Basic Texture") {
+class BasicTexture_() : Framework() {
 
     lateinit var litShaderProg: ProgramData
     lateinit var litTextureProg: ProgramData
@@ -82,12 +82,17 @@ class BasicTexture_() : Framework("Tutorial 14 - Basic Texture") {
 
     var currTexture = 0
 
+    companion object {
+        val NUMBER_OF_LIGHTS = 2
+        val NUM_GAUSSIAN_TEXTURES = 4
+    }
+
     override fun init(gl: GL3) = with(gl) {
 
         initializePrograms(gl)
 
-        objectMesh = Mesh(gl, this::class.java, "tut14/Infinity.xml")
-        cube = Mesh(gl, this::class.java, "tut14/UnitCube.xml")
+        objectMesh = Mesh(gl, javaClass, "tut14/Infinity.xml")
+        cube = Mesh(gl, javaClass, "tut14/UnitCube.xml")
 
         val depthZNear = 0.0f
         val depthZFar = 1.0f
@@ -351,8 +356,8 @@ class BasicTexture_() : Framework("Tutorial 14 - Basic Texture") {
             KeyEvent.VK_SPACE -> useTexture = !useTexture
         }
 
-        if (e.keyCode in KeyEvent.VK_1 until KeyEvent.VK_9) {
-            val number = e.keyCode - KeyEvent.VK_0 - 1
+        if (e.keyCode in KeyEvent.VK_1 .. KeyEvent.VK_9) {
+            val number = e.keyCode - KeyEvent.VK_1
             if (number < NUM_GAUSSIAN_TEXTURES) {
                 println("Angle Resolution: " + calcCosAngleResolution(number))
                 currTexture = number
@@ -430,7 +435,7 @@ class BasicTexture_() : Framework("Tutorial 14 - Basic Texture") {
 
     class ProgramData(gl: GL3, vertex: String, fragment: String) {
 
-        var theProgram = programOf(gl, this::class.java, "tut14", vertex, fragment)
+        var theProgram = programOf(gl, javaClass, "tut14", vertex, fragment)
 
         var modelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "modelToCameraMatrix")
         var normalModelToCameraMatrixUnif = gl.glGetUniformLocation(theProgram, "normalModelToCameraMatrix")
@@ -472,10 +477,5 @@ class BasicTexture_() : Framework("Tutorial 14 - Basic Texture") {
                     gl.glGetUniformBlockIndex(theProgram, "Projection"),
                     Semantic.Uniform.PROJECTION)
         }
-    }
-
-    companion object {
-        val NUMBER_OF_LIGHTS = 2
-        val NUM_GAUSSIAN_TEXTURES = 4
     }
 }

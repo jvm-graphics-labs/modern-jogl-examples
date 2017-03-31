@@ -24,11 +24,7 @@ import static uno.glsl.UtilKt.programOf;
 public class BaseVertexOverlap extends Framework {
 
     public static void main(String[] args) {
-        new BaseVertexOverlap("Tutorial 05 - Base Vertex With Overlap");
-    }
-
-    public BaseVertexOverlap(String title) {
-        super(title);
+        new BaseVertexOverlap().setup("Tutorial 05 - Base Vertex With Overlap");
     }
 
     private interface Buffer {

@@ -41,7 +41,7 @@ import static uno.glsl.UtilKt.programOf;
 public class AmbientLighting extends Framework {
 
     public static void main(String[] args) {
-        new AmbientLighting("Tutorial 09 - Ambient Lighting");
+        new AmbientLighting().setup("Tutorial 09 - Ambient Lighting");
     }
 
     private ProgramData whiteDiffuseColor;
@@ -76,10 +76,6 @@ public class AmbientLighting extends Framework {
     private ObjectPole objectPole = new ObjectPole(initialObjectData, 90.0f / 250.0f, MouseEvent.BUTTON3, viewPole);
 
     private boolean drawColoredCyl = true, showAmbient = false;
-
-    public AmbientLighting(String title) {
-        super(title);
-    }
 
     @Override
     public void init(GL3 gl) {
