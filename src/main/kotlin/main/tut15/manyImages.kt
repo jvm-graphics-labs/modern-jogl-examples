@@ -199,13 +199,13 @@ class ManyImages_ : Framework() {
         glSamplerParameterf(samplerName[Sampler.LowAnysotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f)
 
 
-        val maxAniso = getFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
+        val maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT
 
         println("Maximum anisotropy: " + maxAniso)
 
         glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso.i)
+        glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso)
     }
 
     override fun display(gl: GL3) = with(gl) {

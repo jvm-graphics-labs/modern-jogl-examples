@@ -29,6 +29,7 @@ import static com.jogamp.opengl.GL2ES3.*;
 import static com.jogamp.opengl.GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV;
 import static com.jogamp.opengl.GL3.GL_DEPTH_CLAMP;
 import static glm.GlmKt.glm;
+import static uno.buffer.UtilKt.destroyBuffers;
 import static uno.glsl.UtilKt.programOf;
 
 /**
@@ -243,6 +244,8 @@ public class GammaCheckers extends Framework {
         gl.glDeleteBuffers(1, projBufferName);
         gl.glDeleteTextures(Texture.MAX, textureName);
         gl.glDeleteSamplers(Samplers.MAX, samplerName);
+
+        destroyBuffers(projBufferName, textureName, samplerName);
     }
 
     @Override

@@ -248,17 +248,13 @@ public class ManyImages extends Framework {
         gl.glSamplerParameterf(samplerName.get(Sampler.LowAnysotropic), GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
 
 
-        FloatBuffer maxAniso = GLBuffers.newDirectFloatBuffer(1);
-        gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+        int maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 
-        System.out.println("Maximum anisotropy: " + maxAniso.get(0));
+        System.out.println("Maximum anisotropy: " + maxAniso);
 
         gl.glSamplerParameteri(samplerName.get(Sampler.MaxAnysotropic), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         gl.glSamplerParameteri(samplerName.get(Sampler.MaxAnysotropic), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        gl.glSamplerParameteri(samplerName.get(Sampler.MaxAnysotropic), GL_TEXTURE_MAX_ANISOTROPY_EXT, (int) maxAniso.get(0));
-
-
-        destroyBuffer(maxAniso);
+        gl.glSamplerParameteri(samplerName.get(Sampler.MaxAnysotropic), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
     }
 
     @Override
