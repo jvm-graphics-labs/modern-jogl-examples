@@ -29,6 +29,9 @@ Status:
 - [ ] Chapter 12, Dynamic Lights
 - [x] Chapter 13, Lies and Impostors
 - [x] Chapter 14, Textures are not Pictures
-- [ ] Chapter 15, Many Images
-- [ ] Chapter 16, Gamma and Textures
+- [x] Chapter 15, Many Images
+- [ ] Chapter 16, Gamma and Textures:
+    - [x] Gamma Ramp
+    - [x] Gamma Checkers
+    - [ ] Gamma Landscape
 - [ ] Chapter 17, Spotlight on Textures
