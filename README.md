@@ -3,7 +3,7 @@ Note: at the moment there is ~~a gradle,~~ a general refreshing and kotlin imple
 modern-jogl-examples
 ====================
 
-<img src="./src/main/resources/screenshots/jogl.png"> 
+<img src="./src/main/resources/screenshots/jogl.png" height="250px"> 
 
 Examples ported in JOGL from the tutorials "Learning Modern 3D Graphic Programming" by J.L.McKesson, (original bitbucket [repository](https://bitbucket.org/alfonse/gltut/overview)).
 
