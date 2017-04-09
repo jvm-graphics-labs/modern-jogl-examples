@@ -4,12 +4,14 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glm.L
-import glm.size
+import glNext.*
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
+import uno.buffer.put
 import uno.glsl.programOf
 
 /**
@@ -26,7 +28,7 @@ class FragChangeColor_ : Framework() {
     var elapsedTimeUniform = 0
     val positionBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
-    val vertexPositions = floatArrayOf(
+    val vertexPositions = floatBufferOf(
             +0.25f, +0.25f, 0.0f, 1.0f,
             +0.25f, -0.25f, 0.0f, 1.0f,
             -0.25f, -0.25f, 0.0f, 1.0f)
@@ -55,52 +57,48 @@ class FragChangeColor_ : Framework() {
         glUseProgram(theProgram)
         glUniform1f(loopDurationUnf, 5f)
         glUniform1f(fragLoopDurUnf, 10f)
-        glUseProgram(0)
+        glUseProgram()
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexPositions.toFloatBuffer()
+        glGenBuffers(positionBufferObject)
 
-        glGenBuffers(1, positionBufferObject)
-
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        vertexBuffer.destroy()
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
+        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 0f))
+        glClearBuffer(GL_COLOR, 0)
 
         glUseProgram(theProgram)
 
         glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000f)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL_TRIANGLES, 0, 3)
+        glDrawArrays(GL_TRIANGLES, 3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+        glViewport(w, h)
     }
 
-    override fun end(gl: GL3) {
+    override fun end(gl: GL3) = with(gl){
 
-        gl.glDeleteProgram(theProgram)
-        gl.glDeleteBuffers(1, positionBufferObject)
-        gl.glDeleteVertexArrays(1, vao)
+        glDeleteProgram(theProgram)
+        glDeleteBuffers(positionBufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(positionBufferObject, vao)
+        destroyBuffers(positionBufferObject, vao, vertexPositions)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

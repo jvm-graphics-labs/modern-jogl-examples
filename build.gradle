@@ -5,10 +5,11 @@ apply plugin: 'kotlin'
 
 buildscript {
 
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.2-eap-44'
 
     repositories {
         mavenCentral()
+        maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
     }
 
     dependencies {
@@ -21,8 +22,8 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile 'com.github.kotlin-graphics:glm:c313090a7c9ec0b2078f9c38d9488877007630d3'
-    compile 'com.github.kotlin-graphics:uno-sdk:53205daa3422122c39f189736ed9bf11ed4e7918'
+    compile 'com.github.kotlin-graphics:glm:e4975b24b6d9eb1b8efb01aa561b8bd622fd4e7e'
+    compile 'com.github.kotlin-graphics:uno-sdk:c80ea0425a2913ecc2006d0fd475d7714028883c'
 
     def jogl = '2.3.2'
 
@@ -33,4 +34,5 @@ dependencies {
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
 }

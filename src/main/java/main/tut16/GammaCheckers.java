@@ -226,7 +226,7 @@ public class GammaCheckers extends Framework {
     @Override
     public void reshape(GL3 gl, int w, int h) {
 
-        Mat4 cameraToClipMatrix = glm.perspective(glm.toRad(90f), (w / (float) h), 1, 1000);
+        Mat4 cameraToClipMatrix = glm.perspective(glm.radians(90f), (w / (float) h), 1, 1000);
 
         gl.glBindBuffer(GL_UNIFORM_BUFFER, projBufferName.get(0));
         gl.glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE, cameraToClipMatrix.to(matBuffer));

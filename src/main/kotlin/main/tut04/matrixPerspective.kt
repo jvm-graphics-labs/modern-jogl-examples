@@ -4,13 +4,14 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glm.L
-import glm.set
+import glNext.*
 import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
 import uno.glsl.programOf
 
 /**
@@ -28,7 +29,7 @@ class MatrixPerspective_ : Framework() {
     val vertexBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
 
-    var perspectiveMatrix = floatBufferBig(16)
+    var perspectiveMatrix = FloatArray(16)
 
     override fun init(gl: GL3) = with(gl) {
 
@@ -62,57 +63,53 @@ class MatrixPerspective_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix)
-        glUseProgram(0)
+        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUseProgram()
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl){
+    fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexData.toFloatBuffer()
-
-        glGenBuffers(1, vertexBufferObject)
+        glGenBuffers(vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        vertexBuffer.destroy()
+        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 0f))
+        glClearBuffer(GL_COLOR, 0)
 
         glUseProgram(theProgram)
 
-        glUniform2f(offsetUniform, 0.5f, 0.5f)
+        glUniform2f(offsetUniform, 0.5f)
 
-        val colorData = vertexData.size * java.lang.Float.BYTES / 2
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
+        val colorData = vertexData.size / 2
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorData.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
 
-        glDrawArrays(GL_TRIANGLES, 0, 36)
+        glDrawArrays(GL_TRIANGLES, 36)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glDisableVertexAttribArray(Semantic.Attr.COLOR)
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
+        glViewport(w, h)
     }
 
-    override fun end(gl: GL3) = with(gl){
+    override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, vertexBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(vertexBufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(vao, vertexBufferObject, perspectiveMatrix)
+        destroyBuffers(vao, vertexBufferObject, vertexData)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -122,7 +119,7 @@ class MatrixPerspective_ : Framework() {
         }
     }
 
-    val vertexData = floatArrayOf(
+    val vertexData = floatBufferOf(
             +0.25f, +0.25f, -1.25f, 1.0f,
             +0.25f, -0.25f, -1.25f, 1.0f,
             -0.25f, +0.25f, -1.25f, 1.0f,

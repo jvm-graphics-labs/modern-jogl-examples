@@ -5,6 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import glm.*
 import glm.mat.Mat3
 import glm.mat.Mat4
@@ -49,8 +50,7 @@ class Rotations_ : Framework() {
     val RED_COLOR = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
     val BROWN_COLOR = floatArrayOf(0.5f, 0.5f, 0.0f, 1.0f)
 
-    val vertexData = floatArrayOf(
-
+    val vertexData = floatBufferOf(
 
             +1.0f, +1.0f, +1.0f,
             -1.0f, -1.0f, +1.0f,
@@ -73,7 +73,7 @@ class Rotations_ : Framework() {
             *RED_COLOR,
             *BROWN_COLOR)
 
-    val indexData = shortArrayOf(
+    val indexData = shortBufferOf(
 
             0, 1, 2,
             1, 0, 3,
@@ -99,18 +99,18 @@ class Rotations_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffers(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArrays(vao)
+        glBindVertexArray(vao)
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3::class)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorDataOffset)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
-        glBindVertexArray(0)
+        glBindVertexArray()
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -140,51 +140,44 @@ class Rotations_ : Framework() {
         cameraToClipMatrix[2].w = -1.0f
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
-        cameraToClipMatrix to matBuffer
-
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
     }
 
     fun initializeVertexBuffers(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexData.toFloatBuffer()
-        val indexBuffer = indexData.toShortBuffer()
-
-        glGenBuffers(Buffer.MAX, bufferObject)
+        glGenBuffers(bufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexBuffer.size.L, indexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        destroyBuffers(vertexBuffer, indexBuffer)
+        glBufferData(GL_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBuffer(GL_COLOR, 0)
+        glClearBuffer(GL_DEPTH, 1)
 
         glUseProgram(theProgram)
 
-        glBindVertexArray(vao[0])
+        glBindVertexArray(vao)
 
         val elapsedTime = (System.currentTimeMillis() - start) / 1_000f
         instanceList.forEach {
 
             val transformMatrix = it.constructMatrix(elapsedTime)
 
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, transformMatrix to matBuffer)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+            glUniformMatrix4(modelToCameraMatrixUnif, transformMatrix)
+            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
         }
 
-        glBindVertexArray(0)
-        glUseProgram(0)
+        glBindVertexArray()
+        glUseProgram()
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -193,19 +186,19 @@ class Rotations_ : Framework() {
         cameraToClipMatrix.b1 = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(Buffer.MAX, bufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(bufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(vao, bufferObject)
+        destroyBuffers(vao, bufferObject, vertexData, indexData)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

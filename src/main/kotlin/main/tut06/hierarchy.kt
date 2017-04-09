@@ -5,6 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import glm.*
 import glm.mat.Mat3x3
 import glm.mat.Mat4
@@ -81,45 +82,40 @@ class Hierarchy_ : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
     }
 
     fun initializeVAO(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexData.toFloatBuffer()
-        val indexBuffer = indexData.toShortBuffer()
-
-        glGenBuffers(Buffer.MAX, bufferObject)
+        glGenBuffers(bufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexBuffer.size.L, indexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBufferData(GL_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArrays(vao)
+        glBindVertexArray(vao)
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorDataOffset.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3::class)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorDataOffset)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
-        glBindVertexArray(0)
-
-        destroyBuffers(vertexBuffer, indexBuffer)
+        glBindVertexArray()
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBuffer(GL_COLOR, 0)
+        glClearBuffer(GL_DEPTH, 1)
 
         armature.draw(gl)
     }
@@ -130,19 +126,19 @@ class Hierarchy_ : Framework() {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(Buffer.MAX, bufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(bufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(vao, bufferObject)
+        destroyBuffers(vao, bufferObject, vertexData, indexData)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -215,8 +211,8 @@ class Hierarchy_ : Framework() {
                         .push()
                         .translate(posBaseLeft)
                         .scale(Vec3(1.0f, 1.0f, scaleBaseZ))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+                glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
                 modelToCameraStack.pop()
             }
 
@@ -226,16 +222,16 @@ class Hierarchy_ : Framework() {
                         .push()
                         .translate(posBaseRight)
                         .scale(Vec3(1.0f, 1.0f, scaleBaseZ))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+                glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
                 modelToCameraStack.pop()
             }
 
             //  Draw main arm.
             drawUpperArm(gl, modelToCameraStack)
 
-            glBindVertexArray(0)
-            glUseProgram(0)
+            glBindVertexArray()
+            glUseProgram()
         }
 
         private fun drawUpperArm(gl: GL3, modelToCameraStack: MatrixStack) = with(gl) {
@@ -249,8 +245,8 @@ class Hierarchy_ : Framework() {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, sizeUpperArm / 2.0f - 1.0f))
                         .scale(Vec3(1.0f, 1.0f, sizeUpperArm / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+                glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
                 modelToCameraStack.pop()
             }
 
@@ -270,8 +266,8 @@ class Hierarchy_ : Framework() {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthLowerArm / 2.0f))
                     .scale(Vec3(widthLowerArm / 2.0f, widthLowerArm / 2.0f, lengthLowerArm / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+            glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
             modelToCameraStack.pop()
 
             drawWrist(gl, modelToCameraStack)
@@ -290,8 +286,8 @@ class Hierarchy_ : Framework() {
             modelToCameraStack
                     .push()
                     .scale(Vec3(widthWrist / 2.0f, widthWrist / 2.0f, lenWrist / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+            glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
             modelToCameraStack.pop()
 
             drawFingers(gl, modelToCameraStack)
@@ -311,8 +307,8 @@ class Hierarchy_ : Framework() {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+            glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
             modelToCameraStack.pop()
 
             run {
@@ -326,8 +322,8 @@ class Hierarchy_ : Framework() {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+                glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
                 modelToCameraStack.pop()
 
                 modelToCameraStack.pop()
@@ -345,8 +341,8 @@ class Hierarchy_ : Framework() {
                     .push()
                     .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                     .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+            glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
             modelToCameraStack.pop()
 
             run {
@@ -360,8 +356,8 @@ class Hierarchy_ : Framework() {
                         .push()
                         .translate(Vec3(0.0f, 0.0f, lengthFinger / 2.0f))
                         .scale(Vec3(widthFinger / 2.0f, widthFinger / 2.0f, lengthFinger / 2.0f))
-                glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, modelToCameraStack to matBuffer)
-                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+                glUniformMatrix4(modelToCameraMatrixUnif, modelToCameraStack.top())
+                glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
                 modelToCameraStack.pop()
 
                 modelToCameraStack.pop()
@@ -417,17 +413,17 @@ class Hierarchy_ : Framework() {
         internal fun top() = currMat
 
         internal fun rotateX(angDeg: Float): MatrixStack {
-            currMat.times_(Mat4(this@Hierarchy_.rotateX(angDeg)))
+            currMat times_ Mat4(this@Hierarchy_.rotateX(angDeg))
             return this
         }
 
         internal fun rotateY(angDeg: Float): MatrixStack {
-            currMat.times_(Mat4(this@Hierarchy_.rotateY(angDeg)))
+            currMat times_ Mat4(this@Hierarchy_.rotateY(angDeg))
             return this
         }
 
         internal fun rotateZ(angDeg: Float): MatrixStack {
-            currMat.times_(Mat4(this@Hierarchy_.rotateZ(angDeg)))
+            currMat times_ Mat4(this@Hierarchy_.rotateZ(angDeg))
             return this
         }
 
@@ -435,7 +431,7 @@ class Hierarchy_ : Framework() {
 
             val scaleMat = Mat4(scaleVec)
 
-            currMat.times_(scaleMat)
+            currMat times_ scaleMat
 
             return this
         }
@@ -445,7 +441,7 @@ class Hierarchy_ : Framework() {
             val translateMat = Mat4(1f)
             translateMat[3] = Vec4(offsetVec)
 
-            currMat.times_(translateMat)
+            currMat times_ translateMat
 
             return this
         }
@@ -503,7 +499,7 @@ class Hierarchy_ : Framework() {
     val CYAN_COLOR = floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f)
     val MAGENTA_COLOR = floatArrayOf(1.0f, 0.0f, 1.0f, 1.0f)
 
-    val vertexData = floatArrayOf(
+    val vertexData = floatBufferOf(
 
             //Front
             +1.0f, +1.0f, +1.0f,
@@ -572,7 +568,7 @@ class Hierarchy_ : Framework() {
             *MAGENTA_COLOR,
             *MAGENTA_COLOR)
 
-    val indexData = shortArrayOf(
+    val indexData = shortBufferOf(
 
             0, 1, 2,
             2, 3, 0,

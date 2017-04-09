@@ -4,14 +4,16 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glm.L
+import glNext.*
 import glm.glm
-import glm.size
 import glm.vec._2.Vec2
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
+import uno.buffer.put
 import uno.glsl.programOf
 
 /**
@@ -28,7 +30,7 @@ class VertPositionOffset_ : Framework() {
     var offsetLocation = 0
     val positionBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
-    val vertexPositions = floatArrayOf(
+    val vertexPositions = floatBufferOf(
             +0.25f, +0.25f, 0.0f, 1.0f,
             +0.25f, -0.25f, 0.0f, 1.0f,
             -0.25f, -0.25f, 0.0f, 1.0f)
@@ -39,30 +41,26 @@ class VertPositionOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArrays(vao)
+        glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
     }
 
-    fun initializeProgram(gl: GL3) {
+    fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut03", "position-offset.vert", "standard.frag")
 
-        offsetLocation = gl.glGetUniformLocation(theProgram, "offset")
+        offsetLocation = glGetUniformLocation(theProgram, "offset")
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
 
-        val vertexBuffer = vertexPositions.toFloatBuffer()
+        glGenBuffers(positionBufferObject)
 
-        glGenBuffers(1, positionBufferObject)
-
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        vertexBuffer.destroy()
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
+        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl){
@@ -70,21 +68,21 @@ class VertPositionOffset_ : Framework() {
         val offset = Vec2(0f)
         computePositionOffsets(offset)
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 1f))
+        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
 
         glUseProgram(theProgram)
 
-        glUniform2f(offsetLocation, offset.x, offset.y)
+        glUniform2f(offsetLocation, offset)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL_TRIANGLES, 0, 3)
+        glDrawArrays(GL_TRIANGLES, 3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
     fun computePositionOffsets(offset: Vec2) {
@@ -100,17 +98,17 @@ class VertPositionOffset_ : Framework() {
         offset.y = glm.sin(currTimeThroughLoop * scale) * .5f
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, positionBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(positionBufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(positionBufferObject, vao)
+        destroyBuffers(positionBufferObject, vao, vertexPositions)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

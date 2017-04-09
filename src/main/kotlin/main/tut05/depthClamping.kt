@@ -6,6 +6,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import glm.*
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
@@ -36,7 +37,7 @@ class DepthClamping_ : Framework() {
     var perspectiveMatrixUnif = 0
     val numberOfVertices = 36
 
-    val perspectiveMatrix = floatBufferBig(16)
+    val perspectiveMatrix = FloatArray(16)
     val frustumScale = 1.0f
 
     val bufferObject = intBufferBig(Buffer.MAX)
@@ -49,18 +50,18 @@ class DepthClamping_ : Framework() {
         initializeProgram(gl)
         initializeBuffers(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArrays(vao)
+        glBindVertexArray(vao)
 
-        val colorData = Float.BYTES * 3 * numberOfVertices
+        val colorData = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3.length, GL_FLOAT, false, Vec3.SIZE, 0)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, colorData.L)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3::class)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
-        glBindVertexArray(0)
+        glBindVertexArray()
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -90,45 +91,40 @@ class DepthClamping_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix)
-        glUseProgram(0)
+        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUseProgram()
     }
 
     fun initializeBuffers(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexData.toFloatBuffer()
-        val indexBuffer = indexData.toShortBuffer()
-
-        glGenBuffers(Buffer.MAX, bufferObject)
+        glGenBuffers(bufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexBuffer.size.L, indexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        destroyBuffers(vertexBuffer, indexBuffer)
+        glBufferData(GL_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBuffer(GL_COLOR, 0)
+        glClearBuffer(GL_DEPTH, 1)
 
         glUseProgram(theProgram)
 
-        glBindVertexArray(vao[0])
+        glBindVertexArray(vao)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f)
-        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0)
+        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
         glDrawElementsBaseVertex(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
 
-        glBindVertexArray(0)
-        glUseProgram(0)
+        glBindVertexArray()
+        glUseProgram()
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -137,19 +133,19 @@ class DepthClamping_ : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(perspectiveMatrixUnif, 1, false, perspectiveMatrix)
-        glUseProgram(0)
+        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(Buffer.MAX, bufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(bufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(vao, bufferObject, perspectiveMatrix)
+        destroyBuffers(vao, bufferObject, vertexData, indexData)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {
@@ -180,7 +176,7 @@ class DepthClamping_ : Framework() {
     val GREY_COLOR = floatArrayOf(0.8f, 0.8f, 0.8f, 1.0f)
     val BROWN_COLOR = floatArrayOf(0.5f, 0.5f, 0.0f, 1.0f)
 
-    val vertexData = floatArrayOf(
+    val vertexData = floatBufferOf(
             //Object 1 positions
             LEFT_EXTENT, TOP_EXTENT, REAR_EXTENT,
             LEFT_EXTENT, MIDDLE_EXTENT, FRONT_EXTENT,
@@ -280,7 +276,7 @@ class DepthClamping_ : Framework() {
             *GREY_COLOR,
             *GREY_COLOR)
 
-    val indexData = shortArrayOf(
+    val indexData = shortBufferOf(
 
             0, 2, 1,
             3, 2, 0,

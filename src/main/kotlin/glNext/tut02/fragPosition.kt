@@ -1,9 +1,8 @@
-package main.tut02
+package glNext.tut02
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import glNext.*
@@ -20,10 +19,10 @@ import uno.glsl.shaderCodeOf
  */
 
 fun main(args: Array<String>) {
-    FragPosition_().setup("Tutorial 02 - Fragment Position")
+    FragPosition_Next().setup("Tutorial 02 - Fragment Position")
 }
 
-class FragPosition_ : Framework() {
+class FragPosition_Next : Framework() {
 
     var theProgram = 0
     val vertexBufferObject = intBufferBig(1)
@@ -39,14 +38,14 @@ class FragPosition_ : Framework() {
         initializeVertexBuffer(gl)
 
         glGenVertexArrays(vao)
-        glBindVertexArray(vao)
+        glBindVertexArray(vao[0])
     }
 
     fun initializeProgram(gl: GL3) {
         theProgram = shaderProgramOf(gl, javaClass, "tut02", "frag-position.vert", "frag-position.frag")
     }
 
-    fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int = with(gl) {
+    fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int {
 
         val shaders =
                 if (strings[0].contains('.'))
@@ -65,8 +64,8 @@ class FragPosition_ : Framework() {
         shaderProgram.link(gl, System.err)
 
         shaderCodes.forEach {
-            glDetachShader(shaderProgram.program(), it.id())
-            glDeleteShader(it.id())
+            gl.glDetachShader(shaderProgram.program(), it.id())
+            gl.glDeleteShader(it.id())
         }
 
         return shaderProgram.program()
@@ -76,38 +75,43 @@ class FragPosition_ : Framework() {
 
         glGenBuffers(vertexBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        bindingBuffer(vertexBufferObject[0] to GL_ARRAY_BUFFER) {
+            data(vertexData, GL_STATIC_DRAW)
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        clear {
+            color(0, 0, 0, 1)
+        }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+//            withVertexLayout {
+//
+//            }
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
+            glEnableVertexAttribArray(Semantic.Attr.POSITION)
+            glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+            glDrawArrays(GL_TRIANGLES, 0, 3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        glUseProgram()
+            glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        }
     }
 
-    public override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
-        glViewport(w, h)
+    public override fun reshape(gl: GL3, w: Int, h: Int) {
+        gl.glViewport(0, 0, w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(vertexBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffers(1, vertexBufferObject)
+        glDeleteVertexArrays(1, vao)
 
-        destroyBuffers(vertexBufferObject, vao, vertexData)
+        destroyBuffers(vertexBufferObject, vao)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

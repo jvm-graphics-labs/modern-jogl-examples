@@ -45,7 +45,7 @@ public class Rotations extends Framework {
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = glm.toRad(fovDeg);
+        float fovRad = glm.radians(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 

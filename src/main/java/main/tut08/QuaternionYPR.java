@@ -58,7 +58,7 @@ public class QuaternionYPR extends Framework {
     private float frustumScale = calcFrustumScale(20);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = glm.toRad(fovDeg);
+        float fovRad = glm.radians(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -159,7 +159,7 @@ public class QuaternionYPR extends Framework {
 
     private void offsetOrientation(Vec3 axis, float angDeg) {
 
-        float angRad = glm.toRad(angDeg);
+        float angRad = glm.radians(angDeg);
 
         axis.normalize_();
 

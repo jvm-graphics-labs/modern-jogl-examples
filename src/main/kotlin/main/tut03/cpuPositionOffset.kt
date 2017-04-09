@@ -4,10 +4,9 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glm.BYTES
-import glm.L
+import glNext.*
 import glm.glm
-import glm.size
+import glm.set
 import glm.vec._2.Vec2
 import glm.vec._4.Vec4
 import main.framework.Framework
@@ -28,7 +27,7 @@ class CpuPositionOffset_ : Framework() {
     var theProgram = 0
     val positionBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
-    val vertexPositions = floatArrayOf(
+    val vertexPositions = floatBufferOf(
             +0.25f, +0.25f, 0.0f, 1.0f,
             +0.25f, -0.25f, 0.0f, 1.0f,
             -0.25f, -0.25f, 0.0f, 1.0f)
@@ -39,8 +38,8 @@ class CpuPositionOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArrays(vao)
+        glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
     }
@@ -51,15 +50,11 @@ class CpuPositionOffset_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        val vertexBuffer = vertexPositions.toFloatBuffer()
+        glGenBuffers(positionBufferObject)
 
-        glGenBuffers(1, positionBufferObject)
-
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferData(GL_ARRAY_BUFFER, vertexPositions.size * Float.BYTES.L, vertexBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        vertexBuffer.destroy()
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
+        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {
@@ -69,18 +64,18 @@ class CpuPositionOffset_ : Framework() {
         computePositionOffsets(offset)
         adjustVertexData(gl, offset)
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 1f))
+        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
 
         glUseProgram(theProgram)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL3.GL_TRIANGLES, 0, 3)
+        glDrawArrays(GL_TRIANGLES, 3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        glUseProgram(0)
+        glUseProgram()
     }
 
     fun computePositionOffsets(offset: Vec2) {
@@ -98,34 +93,33 @@ class CpuPositionOffset_ : Framework() {
 
     fun adjustVertexData(gl: GL3, offset: Vec2) = with(gl) {
 
-        val newData = vertexPositions.clone()
+        val newData = floatBufferBig(vertexPositions.capacity())
+        repeat(vertexPositions.capacity()) { newData[it] = vertexPositions[it] }
 
-        for (iVertex in vertexPositions.indices step 4) {
+        for (iVertex in 0 until vertexPositions.capacity() step 4) {
 
-            newData[iVertex + 0] += offset.x
-            newData[iVertex + 1] += offset.y
+            newData[iVertex + 0] = vertexPositions[iVertex + 0] + offset.x
+            newData[iVertex + 1] = vertexPositions[iVertex + 1] + offset.y
         }
 
-        val buffer = newData.toFloatBuffer()
+        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
+        glBufferSubData(GL_ARRAY_BUFFER, newData)
+        glBindBuffer(GL_ARRAY_BUFFER)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject[0])
-        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.size.L, buffer)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-        buffer.destroy()
+        newData.destroy()
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, positionBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffers(positionBufferObject)
+        glDeleteVertexArrays(vao)
 
-        destroyBuffers(positionBufferObject, vao)
+        destroyBuffers(positionBufferObject, vao, vertexPositions)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

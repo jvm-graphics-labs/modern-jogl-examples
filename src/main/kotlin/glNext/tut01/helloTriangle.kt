@@ -2,29 +2,27 @@
  * Created by elect on 21/02/17.
  */
 
-package main.tut01
+package glNext.tut01
 
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES2.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
 import glNext.*
-import glm.L
-import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import main.tut13.GeomImpostor_
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
 
 
 fun main(args: Array<String>) {
-    HelloTriangle_().setup("Tutorial 01 - Hello Triangle")
+    HelloTriangle_Next().setup("Tutorial 01 - Hello Triangle")
 }
 
-class HelloTriangle_ : Framework() {
+class HelloTriangle_Next : Framework() {
 
     val strVertexShader =
             "#version 330\n" +
@@ -125,9 +123,9 @@ class HelloTriangle_ : Framework() {
 
         glGenBuffers(positionBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        bindingBuffer(positionBufferObject[0] to GL_ARRAY_BUFFER) {
+            data(vertexPositions, GL_STATIC_DRAW)
+        }
     }
 
     /**
@@ -137,18 +135,18 @@ class HelloTriangle_ : Framework() {
      */
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        clear {
+            color(0, 0, 0, 1)
+            depth = 1f
+        }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+            withVertexLayout(positionBufferObject[0], Vec4::class, Semantic.Attr.POSITION) {
 
-        glDrawArrays(GL_TRIANGLES, 3)
-
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        glUseProgram()
+                glDrawArrays(GL_TRIANGLES, 0, 3)
+            }
+        }
     }
 
     /**
@@ -159,7 +157,7 @@ class HelloTriangle_ : Framework() {
      * @param h
      */
     override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(w, h)
+        gl.glViewport(0, 0, w, h)
     }
 
     /**
@@ -172,7 +170,7 @@ class HelloTriangle_ : Framework() {
         glDeleteBuffers(positionBufferObject)
         glDeleteVertexArrays(vao)
 
-        destroyBuffers(positionBufferObject, vao, vertexPositions)
+        destroyBuffers(positionBufferObject, vao)
     }
 
     /**

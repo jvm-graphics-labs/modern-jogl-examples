@@ -1,15 +1,15 @@
-package main.tut02
+package glNext.tut02
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
-import glNext.*
 import glm.L
 import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
+import main.tut02.VertexColor_
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
     VertexColor_().setup("Tutorial 02 - Vertex Colors")
 }
 
-class VertexColor_ : Framework() {
+class VertexColor_Next : Framework() {
 
     val VERTEX_SHADER = "tut02/vertex-colors.vert"
     val FRAGMENT_SHADER = "tut02/vertex-colors.frag"
@@ -29,7 +29,7 @@ class VertexColor_ : Framework() {
     var theProgram = 0
     val vertexBufferObject = intBufferBig(1)
     val vao = intBufferBig(1)
-    val vertexData = floatBufferOf(
+    val vertexData = floatArrayOf(
             +0.0f, +0.500f, 0.0f, 1.0f,
             +0.5f, -0.366f, 0.0f, 1.0f,
             -0.5f, -0.366f, 0.0f, 1.0f,
@@ -42,8 +42,8 @@ class VertexColor_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
-        glBindVertexArray(vao)
+        glGenVertexArrays(1, vao)
+        glBindVertexArray(vao[0])
     }
 
     fun initializeProgram(gl: GL3) {
@@ -52,34 +52,38 @@ class VertexColor_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
 
-        glGenBuffers(vertexBufferObject)
+        val vertexBuffer = vertexData.toFloatBuffer()
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        glGenBuffers(1, vertexBufferObject)
+
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size.L, vertexBuffer, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+        vertexBuffer.destroy()
     }
 
     override fun display(gl: GL3) = with(gl){
 
-        glClearBuffer(GL_COLOR, 0)
+        glClearBufferfv(GL_COLOR, 0, clearColor.put(0f, 0f, 0f, 0f))
 
         glUseProgram(theProgram)
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, Vec4.SIZE * 3)
+        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
+        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4.length, GL_FLOAT, false, Vec4.SIZE, Vec4.SIZE * 3.L)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+        glDrawArrays(GL_TRIANGLES, 0, 3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glDisableVertexAttribArray(Semantic.Attr.COLOR)
-        glUseProgram()
+        glUseProgram(0)
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
-        glViewport(w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) {
+        gl.glViewport(0, 0, w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
@@ -88,7 +92,7 @@ class VertexColor_ : Framework() {
         glDeleteBuffers(1, vertexBufferObject)
         glDeleteVertexArrays(1, vao)
 
-        destroyBuffers(vertexBufferObject, vao, vertexData)
+        destroyBuffers(vertexBufferObject, vao)
     }
 
     override fun keyPressed(keyEvent: KeyEvent) {

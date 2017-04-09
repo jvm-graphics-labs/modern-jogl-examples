@@ -45,7 +45,7 @@ public class Hierarchy extends Framework {
     private float frustumScale = calcFrustumScale(45.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = glm.toRad(fovDeg);
+        float fovRad = glm.radians(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -598,7 +598,7 @@ public class Hierarchy extends Framework {
 
     Mat3 rotateX(float angDeg) {
 
-        float andRad = glm.toRad(angDeg);
+        float andRad = glm.radians(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 
@@ -612,7 +612,7 @@ public class Hierarchy extends Framework {
 
     Mat3 rotateY(float angDeg) {
 
-        float andRad = glm.toRad(angDeg);
+        float andRad = glm.radians(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 
@@ -626,7 +626,7 @@ public class Hierarchy extends Framework {
 
     Mat3 rotateZ(float angDeg) {
 
-        float andRad = glm.toRad(angDeg);
+        float andRad = glm.radians(angDeg);
         float cos = glm.cos(andRad);
         float sin = glm.sin(andRad);
 

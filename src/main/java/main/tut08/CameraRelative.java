@@ -48,7 +48,7 @@ public class CameraRelative extends Framework {
     private float frustumScale = calcFrustumScale(20.0f);
 
     private float calcFrustumScale(float fovDeg) {
-        float fovRad = glm.toRad(fovDeg);
+        float fovRad = glm.radians(fovDeg);
         return 1.0f / glm.tan(fovRad / 2.0f);
     }
 
@@ -152,8 +152,8 @@ public class CameraRelative extends Framework {
 
     private Vec3 resolveCamPosition() {
 
-        float phi = glm.toRad(sphereCamRelPos.x);
-        float theta = glm.toRad(sphereCamRelPos.y + 90.0f);
+        float phi = glm.radians(sphereCamRelPos.x);
+        float theta = glm.radians(sphereCamRelPos.y + 90.0f);
 
         float sinTheta = glm.sin(theta);
         float cosTheta = glm.cos(theta);
@@ -283,7 +283,7 @@ public class CameraRelative extends Framework {
 
     private void offsetOrientation(Vec3 axis, float angDeg) {
 
-        float angRad = glm.toRad(angDeg);
+        float angRad = glm.radians(angDeg);
 
         axis.normalize();
 

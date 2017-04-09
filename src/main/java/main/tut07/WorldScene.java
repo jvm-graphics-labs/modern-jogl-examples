@@ -156,8 +156,8 @@ public class WorldScene extends Framework {
 
     private Vec3 resolveCamPosition() {
 
-        float phi = glm.toRad(sphereCamRelPos.x);
-        float theta = glm.toRad(sphereCamRelPos.y + 90.0f);
+        float phi = glm.radians(sphereCamRelPos.x);
+        float theta = glm.radians(sphereCamRelPos.y + 90.0f);
 
         float sinTheta = glm.sin(theta);
         float cosTheta = glm.cos(theta);
