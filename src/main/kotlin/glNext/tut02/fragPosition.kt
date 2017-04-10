@@ -26,7 +26,7 @@ class FragPosition_Next : Framework() {
 
     var theProgram = 0
     val vertexBufferObject = intBufferBig(1)
-    val vao = intBufferBig(1)
+    var vao = intBufferBig(1)
     val vertexData = floatBufferOf(
             +0.75f, +0.75f, 0.0f, 1.0f,
             +0.75f, -0.75f, 0.0f, 1.0f,
@@ -38,14 +38,14 @@ class FragPosition_Next : Framework() {
         initializeVertexBuffer(gl)
 
         glGenVertexArrays(vao)
-        glBindVertexArray(vao[0])
+        glBindVertexArray(vao)
     }
 
     fun initializeProgram(gl: GL3) {
         theProgram = shaderProgramOf(gl, javaClass, "tut02", "frag-position.vert", "frag-position.frag")
     }
 
-    fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int {
+    fun shaderProgramOf(gl: GL2ES2, context: Class<*>, vararg strings: String): Int = with(gl) {
 
         val shaders =
                 if (strings[0].contains('.'))
@@ -64,8 +64,8 @@ class FragPosition_Next : Framework() {
         shaderProgram.link(gl, System.err)
 
         shaderCodes.forEach {
-            gl.glDetachShader(shaderProgram.program(), it.id())
-            gl.glDeleteShader(it.id())
+            glDetachShader(shaderProgram.program(), it.id())
+            glDeleteShader(it.id())
         }
 
         return shaderProgram.program()
@@ -75,9 +75,7 @@ class FragPosition_Next : Framework() {
 
         glGenBuffers(vertexBufferObject)
 
-        bindingBuffer(vertexBufferObject[0] to GL_ARRAY_BUFFER) {
-            data(vertexData, GL_STATIC_DRAW)
-        }
+        withArrayBuffer(vertexBufferObject[0]) { data(vertexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {
@@ -88,16 +86,9 @@ class FragPosition_Next : Framework() {
 
         usingProgram(theProgram) {
 
-//            withVertexLayout {
-//
-//            }
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0])
-            glEnableVertexAttribArray(Semantic.Attr.POSITION)
-            glVertexAttribPointer(Semantic.Attr.POSITION, Vec4.length, GL_FLOAT, false, Vec4.SIZE, 0)
-
-            glDrawArrays(GL_TRIANGLES, 0, 3)
-
-            glDisableVertexAttribArray(Semantic.Attr.POSITION)
+            withVertexLayout(vertexBufferObject,Vec4::class, Semantic.Attr.POSITION) {
+                glDrawArrays(3)
+            }
         }
     }
 

@@ -1,29 +1,28 @@
-package main.tut03
+package glNext.tut03
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
 import glm.glm
 import glm.vec._2.Vec2
-import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
 import uno.glsl.programOf
+import glm.vec._4.Vec4
 
 /**
  * Created by elect on 21/02/17.
  */
 
 fun main(args: Array<String>) {
-    VertPositionOffset_().setup("Tutorial 03 - Shader Position Offset")
+    VertPositionOffset_Next().setup("Tutorial 03 - Shader Position Offset")
 }
 
-class VertPositionOffset_ : Framework() {
+class VertPositionOffset_Next : Framework() {
 
     var theProgram = 0
     var offsetLocation = 0
@@ -40,7 +39,7 @@ class VertPositionOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
@@ -53,35 +52,30 @@ class VertPositionOffset_ : Framework() {
         offsetLocation = glGetUniformLocation(theProgram, "offset")
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl){
+    fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
         glGenBuffers(positionBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(positionBufferObject) {
+            data(vertexPositions, GL_STATIC_DRAW)
+        }
     }
 
-    override fun display(gl: GL3) = with(gl){
+    override fun display(gl: GL3) = with(gl) {
 
         val offset = Vec2(0f)
         computePositionOffsets(offset)
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        clear { color(0, 0, 0, 1) }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glUniform2f(offsetLocation, offset)
+            offsetLocation.vec2 = offset
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-
-        glDrawArrays(GL_TRIANGLES, 3)
-
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-
-        glUseProgram()
+            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
+                glDrawArrays(3)
+            }
+        }
     }
 
     fun computePositionOffsets(offset: Vec2) {
@@ -97,15 +91,15 @@ class VertPositionOffset_ : Framework() {
         offset.y = glm.sin(currTimeThroughLoop * scale) * .5f
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
         glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao, vertexPositions)
     }

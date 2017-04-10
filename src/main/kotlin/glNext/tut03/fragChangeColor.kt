@@ -1,11 +1,9 @@
-package main.tut03
+package glNext.tut03
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
-import glNext.tut03.FragChangeColor_
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -39,8 +37,8 @@ class FragChangeColor_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArray(vao)
+        glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
     }
@@ -49,54 +47,47 @@ class FragChangeColor_ : Framework() {
 
         theProgram = programOf(gl, javaClass, "tut03", "calc-offset.vert", "calc-color.frag")
 
-        elapsedTimeUniform = glGetUniformLocation(theProgram, "time")
+        usingProgram(theProgram) {
 
-        val loopDurationUnf = glGetUniformLocation(theProgram, "loopDuration")
-        val fragLoopDurUnf = glGetUniformLocation(theProgram, "fragLoopDuration")
+            elapsedTimeUniform = "time".location
 
-        glUseProgram(theProgram)
-        glUniform1f(loopDurationUnf, 5f)
-        glUniform1f(fragLoopDurUnf, 10f)
-        glUseProgram()
+            "loopDuration".uniform1f = 5f
+            "fragLoopDuration".uniform1f = 5f
+        }
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
         glGenBuffers(positionBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(positionBufferObject) {
+            data(vertexPositions, GL_STATIC_DRAW)
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
+        clear { color(0) }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000f)
+            elapsedTimeUniform.float = (System.currentTimeMillis() - startingTime) / 1_000f
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-
-        glDrawArrays(GL_TRIANGLES, 3)
-
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-
-        glUseProgram()
+            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
+                glDrawArrays(3)
+            }
+        }
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
         glViewport(w, h)
     }
 
-    override fun end(gl: GL3) = with(gl){
+    override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao, vertexPositions)
     }

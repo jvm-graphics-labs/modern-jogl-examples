@@ -1,8 +1,7 @@
-package main.tut03
+package glNext.tut03
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
 import glm.vec._4.Vec4
@@ -18,10 +17,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    VertCalcOffset_().setup("Tutorial 03 - Shader Calc Offset")
+    VertCalcOffset_Next().setup("Tutorial 03 - Shader Calc Offset")
 }
 
-class VertCalcOffset_ : Framework() {
+class VertCalcOffset_Next : Framework() {
 
     var theProgram = 0
     var elapsedTimeUniform = 0
@@ -38,7 +37,7 @@ class VertCalcOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
@@ -48,41 +47,35 @@ class VertCalcOffset_ : Framework() {
 
         theProgram = programOf(gl, javaClass, "tut03", "calc-offset.vert", "standard.frag")
 
-        elapsedTimeUniform = glGetUniformLocation(theProgram, "time")
+        usingProgram(theProgram) {
 
-        val loopDurationUnf = glGetUniformLocation(theProgram, "loopDuration")
+            elapsedTimeUniform = "time".location
 
-        glUseProgram(theProgram)
-        glUniform1f(loopDurationUnf, 5f)
-        glUseProgram()
+            "loopDuration".uniform1f = 5f
+        }
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
         glGenBuffers(positionBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(positionBufferObject) {
+            data(vertexPositions, GL_STATIC_DRAW)
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
+        clear { color(0) }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000.0f)
+            elapsedTimeUniform.float = (System.currentTimeMillis() - startingTime) / 1_000.0f
 
-        glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-
-        glDrawArrays(GL_TRIANGLES, 3)
-
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-
-        glUseProgram()
+            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION){
+                glDrawArrays(3)
+            }
+        }
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -92,8 +85,8 @@ class VertCalcOffset_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, positionBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArrays(vao)
 
         destroyBuffers(positionBufferObject, vao)
     }

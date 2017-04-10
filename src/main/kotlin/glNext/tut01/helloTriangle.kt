@@ -6,6 +6,7 @@ package glNext.tut01
 
 
 import com.jogamp.newt.event.KeyEvent
+import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
@@ -13,6 +14,7 @@ import glNext.*
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
+import uno.buffer.destroy
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -61,7 +63,7 @@ class HelloTriangle_Next : Framework() {
 
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
     }
 
@@ -84,15 +86,15 @@ class HelloTriangle_Next : Framework() {
         val status = glGetShader(shader, GL_COMPILE_STATUS)
         if (status == GL_FALSE) {
 
-            val strInfoLog = glGetShaderInfoLog(shader)
+            val infoLog = glGetShaderInfoLog(shader)
 
-            var strShaderType = ""
+            var type = ""
             when (shaderType) {
-                GL_VERTEX_SHADER -> strShaderType = "vertex"
-                GL_GEOMETRY_SHADER -> strShaderType = "geometry"
-                GL_FRAGMENT_SHADER -> strShaderType = "fragment"
+                GL_VERTEX_SHADER -> type = "vertex"
+                GL_GEOMETRY_SHADER -> type = "geometry"
+                GL_FRAGMENT_SHADER -> type = "fragment"
             }
-            System.err.println("Compiler failure in $strShaderType shader: $strInfoLog")
+            System.err.println("Compiler failure in $type shader: $infoLog")
         }
 
         return shader
@@ -121,9 +123,9 @@ class HelloTriangle_Next : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(positionBufferObject)
+        glGenBuffer(positionBufferObject)
 
-//        (positionBufferObject bindTo GL_ARRAY_BUFFER) { data(vertexPositions, GL_STATIC_DRAW) }
+        withArrayBuffer(positionBufferObject) { data(vertexPositions, GL_STATIC_DRAW) }
     }
 
     /**
@@ -135,14 +137,13 @@ class HelloTriangle_Next : Framework() {
 
         clear {
             color(0, 0, 0, 1)
-            depth = 1f
+            depth(1)
         }
 
         usingProgram(theProgram) {
 
-            withVertexLayout(positionBufferObject[0], Vec4::class, Semantic.Attr.POSITION) {
-
-                glDrawArrays(GL_TRIANGLES, 3)
+            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
+                glDrawArrays(3)
             }
         }
     }
@@ -154,8 +155,8 @@ class HelloTriangle_Next : Framework() {
      * @param w
      * @param h
      */
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
+        glViewport(w, h)
     }
 
     /**
@@ -165,10 +166,10 @@ class HelloTriangle_Next : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
-        destroyBuffers(positionBufferObject, vao)
+        destroyBuffers(vao, positionBufferObject, vertexPositions)
     }
 
     /**
