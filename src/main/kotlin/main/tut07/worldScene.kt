@@ -6,6 +6,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import uno.glm.MatrixStack
 import uno.glsl.Program
 import glm.*
@@ -14,8 +15,6 @@ import main.framework.component.Mesh
 import glm.mat.Mat4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
-import uno.buffer.put
-import kotlin.properties.Delegates
 
 /**
  * Created by elect on 26/02/17.
@@ -74,21 +73,20 @@ class WorldScene_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBuffer(GL_COLOR, 0)
+        glClearBuffer(GL_DEPTH, 1)
 
         val camPos = resolveCamPosition()
 
-        // camMat
-        calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f)) to matBuffer
+        val camMat = calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f))
 
         glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4fv(uniformColor.worldToCameraMatrixUnif, 1, false, matBuffer)
+        glUniformMatrix4(uniformColor.worldToCameraMatrixUnif, camMat)
         glUseProgram(objectColor.theProgram)
-        glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, matBuffer)
+        glUniformMatrix4(objectColor.worldToCameraMatrixUnif, camMat)
         glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4fv(uniformColorTint.worldToCameraMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(uniformColorTint.worldToCameraMatrixUnif, camMat)
+        glUseProgram()
 
         val modelMatrix = MatrixStack()
 
@@ -98,10 +96,10 @@ class WorldScene_ : Framework() {
             scale(100.0f, 1.0f, 100.0f)
 
             glUseProgram(uniformColor.theProgram)
-            glUniformMatrix4fv(uniformColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColor.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColor.baseColorUnif, 0.302f, 0.416f, 0.0589f, 1.0f)
             meshes[MESH.PLANE].render(gl)
-            glUseProgram(0)
+            glUseProgram()
         }
 
         //  Draw the trees
@@ -127,10 +125,10 @@ class WorldScene_ : Framework() {
                 scale(1.0f)
 
                 glUseProgram(objectColor.theProgram)
-                glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
-                glUniformMatrix4fv(objectColor.worldToCameraMatrixUnif, 1, false, Mat4(1.0f) to matBuffer)
+                glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
+                glUniformMatrix4(objectColor.worldToCameraMatrixUnif, top())
                 meshes[MESH.CUBE_COLOR].render(gl)
-                glUseProgram(0)
+                glUseProgram()
             }
             glEnable(GL_DEPTH_TEST)
         }
@@ -183,10 +181,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.694f, 0.4f, 0.106f, 1.0f)
             meshes[MESH.CYLINDER].render(gl)
-            glUseProgram(0)
+            glUseProgram()
 
         } run {
             //  Draw the treetop
@@ -195,10 +193,10 @@ class WorldScene_ : Framework() {
             scale(3.0f, coneHeight, 3.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f)
             meshes[MESH.CONE].render(gl)
-            glUseProgram(0)
+            glUseProgram()
         }
     }
 
@@ -217,10 +215,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
+            glUseProgram()
 
         } run {
             //  Draw top
@@ -230,10 +228,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
+            glUseProgram()
         }
 
         //  Draw columns
@@ -276,15 +274,14 @@ class WorldScene_ : Framework() {
         //  Draw interior
         modelMatrix apply {
 
-
             translate(0.0f, 1.0f, 0.0f)
             scale(parthenonWidth - 6.0f, parthenonColumnHeight, parthenonLength - 6.0f)
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(objectColor.theProgram)
-            glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
             meshes[MESH.CUBE_COLOR].render(gl)
-            glUseProgram(0)
+            glUseProgram()
 
         } run {
             //  Draw headpiece
@@ -297,9 +294,9 @@ class WorldScene_ : Framework() {
             rotateY(45.0f)
 
             glUseProgram(objectColor.theProgram)
-            glUniformMatrix4fv(objectColor.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
             meshes[MESH.CUBE_COLOR].render(gl)
-            glUseProgram(0)
+            glUseProgram()
         }
     }
 
@@ -315,10 +312,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
             meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
+            glUseProgram()
 
         } apply {
 
@@ -329,10 +326,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
-            glUseProgram(0)
+            glUseProgram()
 
         } run {
 
@@ -343,10 +340,10 @@ class WorldScene_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4fv(uniformColorTint.modelToWorldMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
             meshes[MESH.CYLINDER].render(gl)
-            glUseProgram(0)
+            glUseProgram()
         }
     }
 
@@ -355,17 +352,18 @@ class WorldScene_ : Framework() {
         val zNear = 1.0f
         val zFar = 1000.0f
 
-        glm.perspective(45.0f, w / h.f, zNear, zFar) to matBuffer
+        val persMatrix = MatrixStack()
+        persMatrix.perspective(45.0f, w / h.f, zNear, zFar)
 
         glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4fv(uniformColor.cameraToClipMatrixUnif, 1, false, matBuffer)
+        glUniformMatrix4(uniformColor.cameraToClipMatrixUnif, persMatrix.top())
         glUseProgram(objectColor.theProgram)
-        glUniformMatrix4fv(objectColor.cameraToClipMatrixUnif, 1, false, matBuffer)
+        glUniformMatrix4(objectColor.cameraToClipMatrixUnif, persMatrix.top())
         glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4fv(uniformColorTint.cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4(uniformColorTint.cameraToClipMatrixUnif, persMatrix.top())
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {

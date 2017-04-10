@@ -62,7 +62,7 @@ class HelloTriangle_Next : Framework() {
         initializeVertexBuffer(gl)
 
         glGenVertexArrays(vao)
-        glBindVertexArray(vao[0])
+        glBindVertexArray(vao)
     }
 
     fun initializeProgram(gl: GL3) {
@@ -123,9 +123,7 @@ class HelloTriangle_Next : Framework() {
 
         glGenBuffers(positionBufferObject)
 
-        bindingBuffer(positionBufferObject[0] to GL_ARRAY_BUFFER) {
-            data(vertexPositions, GL_STATIC_DRAW)
-        }
+        (positionBufferObject bindTo GL_ARRAY_BUFFER) { data(vertexPositions, GL_STATIC_DRAW) }
     }
 
     /**
@@ -144,7 +142,7 @@ class HelloTriangle_Next : Framework() {
 
             withVertexLayout(positionBufferObject[0], Vec4::class, Semantic.Attr.POSITION) {
 
-                glDrawArrays(GL_TRIANGLES, 0, 3)
+                glDrawArrays(GL_TRIANGLES, 3)
             }
         }
     }

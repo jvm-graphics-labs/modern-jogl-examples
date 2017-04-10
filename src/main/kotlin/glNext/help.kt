@@ -75,12 +75,14 @@ fun GL3.glBufferData(target: Int, data: IntBuffer, usage: Int) = glBufferData(ta
 fun GL3.glBufferData(target: Int, data: LongBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
 fun GL3.glBufferData(target: Int, data: FloatBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
 fun GL3.glBufferData(target: Int, data: DoubleBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
+fun GL3.glBufferData(target: Int, size: Int, usage: Int) = glBufferData(target, size.L, null, usage)
 fun GL3.glBufferSubData(target: Int, data: ByteBuffer) = glBufferSubData(target, 0, data.capacity().L, data)
 fun GL3.glBufferSubData(target: Int, data: ShortBuffer) = glBufferSubData(target, 0, data.capacity() * Short.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: IntBuffer) = glBufferSubData(target, 0, data.capacity() * Int.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: LongBuffer) = glBufferSubData(target, 0, data.capacity() * Long.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: FloatBuffer) = glBufferSubData(target, 0, data.capacity() * Float.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: DoubleBuffer) = glBufferSubData(target, 0, data.capacity() * Double.BYTES.L, data)
+fun GL3.glBufferSubData(target: Int, offset: Long, size: Long, mat4: Mat4) = glBufferSubData(target, offset, size, mat4 to matBuffer)
 fun GL3.glBindBuffer(target: Int) = glBindBuffer(target, 0)
 fun GL3.glBindBuffer(target: Int, buffer: IntBuffer) = glBindBuffer(target, buffer[0])
 fun GL3.glBindVertexArray(vao: IntBuffer) = glBindVertexArray(vao[0])
@@ -120,7 +122,9 @@ fun GL3.glUniformMatrix4(location: Int, value: FloatArray) {
         matBuffer[i] = value[i]
     glUniformMatrix4fv(location, 1, false, matBuffer)
 }
+
 fun GL3.glUniformMatrix4(location: Int, value: Mat4) = glUniformMatrix4fv(location, 1, false, value to matBuffer)
+fun GL3.glBindBufferRange(target: Int, index: Int, buffer: IntBuffer, offset: Long, size: Long) = glBindBufferRange(target, index, buffer[0], offset, size)
 
 fun GL3.glSetFaceCulling(enable: Boolean = false, frontFace: Int = GL.GL_BACK, cullFace: Int = GL.GL_CCW) {
     if (enable)
@@ -131,11 +135,20 @@ fun GL3.glSetFaceCulling(enable: Boolean = false, frontFace: Int = GL.GL_BACK, c
     glCullFace(cullFace)
 }
 
-inline fun GL3.bindingBuffer(pair: Pair<Int, Int>, block: Buffer.(gl: GL3) -> Unit) {
+//infix fun IntBuffer.bindTo(target: Int): Buffer {
+//
+//}
+//
+//operator fun Int.invoke(block: Buffer.(gl: GL3) -> Int) {
+//
+//}
+
+inline fun GL3.bindingBuffer(pair: Pair<Int, Int>, block: Buffer.(gl: GL3) -> Unit): Buffer {
     glBindBuffer(pair.second, pair.first)
     Buffer.target = pair.second
     Buffer.block(this)
     glBindBuffer(pair.second, 0)
+    return Buffer
 }
 
 object Buffer {
@@ -148,6 +161,10 @@ object Buffer {
     fun GL3.data(buffer: LongBuffer, usage: Int) = glBufferData(target, buffer.size.L, buffer, usage)
     fun GL3.data(buffer: FloatBuffer, usage: Int) = glBufferData(target, buffer.size.L, buffer, usage)
     fun GL3.data(buffer: DoubleBuffer, usage: Int) = glBufferData(target, buffer.size.L, buffer, usage)
+
+    operator fun invoke(block: Buffer.(gl: GL3) -> Unit) {
+
+    }
 }
 
 
