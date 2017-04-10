@@ -2,7 +2,6 @@ package glNext.tut04
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
 import glm.f
@@ -64,7 +63,7 @@ class AspectRatio_Next : Framework() {
             perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
             perspectiveMatrix[11] = -1.0f
 
-            perspectiveMatrixUnif.mat4 put perspectiveMatrix
+            glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         }
     }
 
@@ -86,16 +85,16 @@ class AspectRatio_Next : Framework() {
             glUniform2f(offsetUniform, 1.5f, 0.5f)
 
             val colorData = vertexData.size / 2
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-            glEnableVertexAttribArray(Semantic.Attr.POSITION)
-            glEnableVertexAttribArray(Semantic.Attr.COLOR)
-            glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-            glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
 
-            glDrawArrays(GL_TRIANGLES, 36)
+            withVertexLayout(vertexBufferObject, Vec4::class,
+                    Semantic.Attr.POSITION to 0,
+                    Semantic.Attr.COLOR to colorData){
 
-            glDisableVertexAttribArray(Semantic.Attr.POSITION)
-            glDisableVertexAttribArray(Semantic.Attr.COLOR)
+                glDrawArrays(36)
+
+                glDisableVertexAttribArray(Semantic.Attr.POSITION)
+                glDisableVertexAttribArray(Semantic.Attr.COLOR)
+            }
 
         }
     }
@@ -106,7 +105,7 @@ class AspectRatio_Next : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram(theProgram)
 
         glViewport(w, h)

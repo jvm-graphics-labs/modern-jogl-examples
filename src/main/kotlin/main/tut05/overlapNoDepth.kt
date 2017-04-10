@@ -6,8 +6,6 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.BYTES
-import glm.L
 import glm.f
 import glm.size
 import glm.vec._3.Vec3
@@ -80,7 +78,7 @@ class OverlapNoDepth_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
     }
 
@@ -129,8 +127,8 @@ class OverlapNoDepth_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
-        glClearBuffer(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         glUseProgram(theProgram)
 
@@ -152,7 +150,7 @@ class OverlapNoDepth_ : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
 
         glViewport(w, h)

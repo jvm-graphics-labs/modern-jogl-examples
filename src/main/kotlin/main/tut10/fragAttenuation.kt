@@ -5,9 +5,10 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import glm.Glm
+import glNext.*
 import glm.L
 import glm.f
+import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._2.Vec2i
@@ -17,15 +18,14 @@ import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
 import uno.buffer.byteBufferBig
+import uno.buffer.destroyBuffers
 import uno.buffer.intBufferBig
 import uno.buffer.put
 import uno.glm.MatrixStack
+import uno.glsl.programOf
 import uno.mousePole.*
 import uno.time.Timer
 import java.nio.ByteBuffer
-import glm.glm
-import uno.buffer.destroyBuffers
-import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 24.03.2017.
@@ -118,16 +118,16 @@ class FragmentAttenuation_() : Framework() {
         glGenBuffers(Buffer.MAX, bufferName)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.UNPROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, UnProjectionBlock.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, UnProjectionBlock.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.UNPROJECTION, bufferName[Buffer.UNPROJECTION], 0, UnProjectionBlock.SIZE.L)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializePrograms(gl: GL3) {
@@ -140,8 +140,8 @@ class FragmentAttenuation_() : Framework() {
 
         lightTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack()
         modelMatrix.setMatrix(viewPole.calcMatrix())
@@ -152,17 +152,17 @@ class FragmentAttenuation_() : Framework() {
         glUseProgram(fragWhiteDiffuseColor.theProgram)
         glUniform4f(fragWhiteDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(fragWhiteDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUniform3fv(fragWhiteDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to vecBuffer)
+        glUniform3f(fragWhiteDiffuseColor.cameraSpaceLightPosUnif, lightPosCameraSpace)
         glUniform1f(fragWhiteDiffuseColor.lightAttenuationUnif, lightAttenuation)
         glUniform1i(fragWhiteDiffuseColor.bUseRSquareUnif, if (useRSquare) 1 else 0)
 
         glUseProgram(fragVertexDiffuseColor.theProgram)
         glUniform4f(fragVertexDiffuseColor.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(fragVertexDiffuseColor.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUniform3fv(fragVertexDiffuseColor.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to vecBuffer)
+        glUniform3f(fragVertexDiffuseColor.cameraSpaceLightPosUnif, lightPosCameraSpace )
         glUniform1f(fragVertexDiffuseColor.lightAttenuationUnif, lightAttenuation)
         glUniform1i(fragVertexDiffuseColor.bUseRSquareUnif, if (useRSquare) 1 else 0)
-        glUseProgram(0)
+        glUseProgram()
 
         modelMatrix run {
 
@@ -173,11 +173,11 @@ class FragmentAttenuation_() : Framework() {
                 normMatrix.inverse_().transpose_()
 
                 glUseProgram(fragWhiteDiffuseColor.theProgram)
-                glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(fragWhiteDiffuseColor.modelToCameraMatrixUnif, top())
 
-                glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix3f(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, normMatrix)
                 plane.render(gl)
-                glUseProgram(0)
+                glUseProgram()
             }
 
             //Render the Cylinder
@@ -192,18 +192,18 @@ class FragmentAttenuation_() : Framework() {
 
                 if (drawColoredCyl) {
                     glUseProgram(fragVertexDiffuseColor.theProgram)
-                    glUniformMatrix4fv(fragVertexDiffuseColor.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(fragVertexDiffuseColor.modelToCameraMatrixUnif, top())
 
-                    glUniformMatrix3fv(fragVertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                    glUniformMatrix3f(fragVertexDiffuseColor.normalModelToCameraMatrixUnif, normMatrix)
                     cylinder.render(gl, "lit-color")
                 } else {
                     glUseProgram(fragWhiteDiffuseColor.theProgram)
-                    glUniformMatrix4fv(fragWhiteDiffuseColor.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(fragWhiteDiffuseColor.modelToCameraMatrixUnif, top())
 
-                    glUniformMatrix3fv(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                    glUniformMatrix3f(fragWhiteDiffuseColor.normalModelToCameraMatrixUnif, normMatrix)
                     cylinder.render(gl, "lit")
                 }
-                glUseProgram(0)
+                glUseProgram()
             }
 
             //Render the light
@@ -214,7 +214,7 @@ class FragmentAttenuation_() : Framework() {
                     scale(0.1f)
 
                     glUseProgram(unlit.theProgram)
-                    glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                     glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f)
                     cube.render(gl, "flat")
                 }
@@ -245,12 +245,12 @@ class FragmentAttenuation_() : Framework() {
         UnProjectionBlock.windowSize = Vec2i(w, h)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, proj to matBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, proj)
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.UNPROJECTION])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, unprojectBuffer.capacity().L, UnProjectionBlock to unprojectBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, UnProjectionBlock to unprojectBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -318,11 +318,9 @@ class FragmentAttenuation_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(fragVertexDiffuseColor.theProgram)
-        glDeleteProgram(fragWhiteDiffuseColor.theProgram)
-        glDeleteProgram(unlit.theProgram)
+        glDeletePrograms(fragVertexDiffuseColor.theProgram, fragWhiteDiffuseColor.theProgram, unlit.theProgram)
 
-        glDeleteBuffers(Buffer.MAX, bufferName)
+        glDeleteBuffers(bufferName)
 
         cylinder.dispose(gl)
         plane.dispose(gl)

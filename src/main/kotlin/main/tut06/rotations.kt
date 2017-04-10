@@ -99,7 +99,7 @@ class Rotations_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffers(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
@@ -141,7 +141,7 @@ class Rotations_ : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
         glUseProgram()
     }
 
@@ -160,8 +160,8 @@ class Rotations_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
-        glClearBuffer(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         glUseProgram(theProgram)
 
@@ -172,8 +172,8 @@ class Rotations_ : Framework() {
 
             val transformMatrix = it.constructMatrix(elapsedTime)
 
-            glUniformMatrix4(modelToCameraMatrixUnif, transformMatrix)
-            glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
+            glUniformMatrix4f(modelToCameraMatrixUnif, transformMatrix)
+            glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
         }
 
         glBindVertexArray()
@@ -186,7 +186,7 @@ class Rotations_ : Framework() {
         cameraToClipMatrix.b1 = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
         glUseProgram()
 
         glViewport(w, h)
@@ -196,7 +196,7 @@ class Rotations_ : Framework() {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(bufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vao, bufferObject, vertexData, indexData)
     }

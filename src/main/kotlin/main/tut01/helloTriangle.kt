@@ -11,12 +11,9 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
 import glNext.*
-import glm.L
-import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import main.tut13.GeomImpostor_
 import uno.buffer.*
 
 
@@ -63,8 +60,8 @@ class HelloTriangle_ : Framework() {
 
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArray(vao)
+        glBindVertexArray(vao)
     }
 
     fun initializeProgram(gl: GL3) {
@@ -123,7 +120,7 @@ class HelloTriangle_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(positionBufferObject)
+        glGenBuffer(positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
@@ -137,7 +134,7 @@ class HelloTriangle_ : Framework() {
      */
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        glClearBufferf(GL_COLOR)
 
         glUseProgram(theProgram)
 
@@ -145,7 +142,7 @@ class HelloTriangle_ : Framework() {
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+        glDrawArrays(3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glUseProgram()
@@ -158,8 +155,8 @@ class HelloTriangle_ : Framework() {
      * @param w
      * @param h
      */
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+        glViewport(w, h)
     }
 
     /**
@@ -169,8 +166,8 @@ class HelloTriangle_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao, vertexPositions)
     }

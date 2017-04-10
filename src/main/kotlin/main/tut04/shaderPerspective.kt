@@ -32,7 +32,7 @@ class ShaderPerspective_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         glEnable(GL_CULL_FACE)
@@ -59,7 +59,7 @@ class ShaderPerspective_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(vertexBufferObject)
+        glGenBuffer(vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
@@ -68,7 +68,7 @@ class ShaderPerspective_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
+        glClearBufferf(GL_COLOR, 0)
 
         glUseProgram(theProgram)
 
@@ -81,7 +81,7 @@ class ShaderPerspective_ : Framework() {
         glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
         glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
 
-        glDrawArrays(GL_TRIANGLES, 36)
+        glDrawArrays(36)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glDisableVertexAttribArray(Semantic.Attr.COLOR)
@@ -96,8 +96,8 @@ class ShaderPerspective_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(vertexBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vao, vertexBufferObject, vertexData)
     }

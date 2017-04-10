@@ -38,7 +38,7 @@ class CpuPositionOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
@@ -50,7 +50,7 @@ class CpuPositionOffset_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(positionBufferObject)
+        glGenBuffer(positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
@@ -64,7 +64,7 @@ class CpuPositionOffset_ : Framework() {
         computePositionOffsets(offset)
         adjustVertexData(gl, offset)
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        glClearBufferf(GL_COLOR)
 
         glUseProgram(theProgram)
 
@@ -116,8 +116,8 @@ class CpuPositionOffset_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao, vertexPositions)
     }

@@ -16,7 +16,6 @@ import glm.mat.Mat4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import uno.buffer.intBufferBig
-import uno.buffer.put
 
 /**
  * Created by elect on 02/03/17.
@@ -79,20 +78,20 @@ class WorldWithUBO_ : Framework() {
         glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE * 2, GL_STREAM_DRAW)
         glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesBufferName, 0, Mat4.SIZE * 2.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesBufferName, 0, Mat4.SIZE * 2)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_DEPTH, 1)
-        glClearBuffer(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
 
         val camPos = resolveCamPosition()
 
         val camMat = calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f))
 
         glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName)
-        glBufferSubData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, Mat4.SIZE.L, camMat)
+        glBufferSubData(GL_UNIFORM_BUFFER, Mat4.SIZE, camMat)
         glBindBuffer(GL_UNIFORM_BUFFER)
 
         val modelMatrix = MatrixStack()
@@ -103,7 +102,7 @@ class WorldWithUBO_ : Framework() {
             scale(100.0f, 1.0f, 100.0f)
 
             glUseProgram(uniformColor.theProgram)
-            glUniformMatrix4(uniformColor.modelToWorldMatrixUnif, top())
+            glUniformMatrix4f(uniformColor.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColor.baseColorUnif, 0.302f, 0.416f, 0.0589f, 1.0f)
             meshes[MESH.PLANE].render(gl)
             glUseProgram()
@@ -130,7 +129,7 @@ class WorldWithUBO_ : Framework() {
                 scale(1.0f)
 
                 glUseProgram(objectColor.theProgram)
-                glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
+                glUniformMatrix4f(objectColor.modelToWorldMatrixUnif, top())
                 meshes[MESH.CUBE_COLOR].render(gl)
                 glUseProgram()
             }
@@ -186,7 +185,7 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.694f, 0.4f, 0.106f, 1.0f)
             meshes[MESH.CYLINDER].render(gl)
             glUseProgram()
@@ -198,7 +197,7 @@ class WorldWithUBO_ : Framework() {
             scale(3.0f, coneHeight, 3.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
             glUniform4f(uniformColorTint.baseColorUnif, 0.0f, 1.0f, 0.0f, 1.0f)
             meshes[MESH.CONE].render(gl)
             glUseProgram()
@@ -220,8 +219,8 @@ class WorldWithUBO_ : Framework() {
             translate(Vec3(0.0f, 0.5f, 0.0f))
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
-            glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniform4f(uniformColorTint.baseColorUnif, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram()
 
@@ -233,8 +232,8 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
-            glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniform4f(uniformColorTint.baseColorUnif, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram()
         }
@@ -284,7 +283,7 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(objectColor.theProgram)
-            glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
+            glUniformMatrix4f(objectColor.modelToWorldMatrixUnif, top())
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram()
 
@@ -299,7 +298,7 @@ class WorldWithUBO_ : Framework() {
             rotateY(45.0f)
 
             glUseProgram(objectColor.theProgram)
-            glUniformMatrix4(objectColor.modelToWorldMatrixUnif, top())
+            glUniformMatrix4f(objectColor.modelToWorldMatrixUnif, top())
             meshes[MESH.CUBE_COLOR].render(gl)
             glUseProgram()
         }
@@ -317,8 +316,8 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
-            glUniform4f(uniformColorTint.baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniform4f(uniformColorTint.baseColorUnif, 1.0f)
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram()
 
@@ -330,8 +329,8 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
-            glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniform4f(uniformColorTint.baseColorUnif, 0.9f)
             meshes[MESH.CUBE_TINT].render(gl)
             glUseProgram()
 
@@ -343,8 +342,8 @@ class WorldWithUBO_ : Framework() {
             translate(0.0f, 0.5f, 0.0f)
 
             glUseProgram(uniformColorTint.theProgram)
-            glUniformMatrix4(uniformColorTint.modelToWorldMatrixUnif, top())
-            glUniform4f(uniformColorTint.baseColorUnif, 0.9f, 0.9f, 0.9f, 0.9f)
+            glUniformMatrix4f(uniformColorTint.modelToWorldMatrixUnif, top())
+            glUniform4f(uniformColorTint.baseColorUnif, 0.9f)
             meshes[MESH.CYLINDER].render(gl)
             glUseProgram()
         }
@@ -358,18 +357,16 @@ class WorldWithUBO_ : Framework() {
         val perspMatrix = MatrixStack()
         perspMatrix.perspective(45.0f, w / h.f, zNear, zFar)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, perspMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName)
+        glBufferSubData(GL_UNIFORM_BUFFER, perspMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(uniformColor.theProgram)
-        glDeleteProgram(objectColor.theProgram)
-        glDeleteProgram(uniformColorTint.theProgram)
+        glDeletePrograms(uniformColor.theProgram, objectColor.theProgram, uniformColorTint.theProgram)
 
         meshes.forEach { it.dispose(gl) }
     }

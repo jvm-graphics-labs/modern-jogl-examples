@@ -5,6 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import glm.L
 import glm.f
 import glm.mat.Mat4
@@ -16,7 +17,6 @@ import main.framework.Semantic
 import main.framework.component.Mesh
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*
@@ -84,12 +84,12 @@ class BasicLighting_() : Framework() {
         glDepthRangef(0.0f, 1.0f)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(1, projectionUniformBuffer)
+        glGenBuffer(projectionUniformBuffer)
         glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
         glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
     }
@@ -103,62 +103,57 @@ class BasicLighting_() : Framework() {
 
         with(gl) {
 
-            glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-            glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+            glClearBufferf(GL_COLOR, 0)
+            glClearBufferf(GL_DEPTH)
 
             val modelMatrix = MatrixStack(viewPole.calcMatrix())
 
             val lightDirCameraSpace = modelMatrix.top() * lightDirection
 
-            lightDirCameraSpace to vecBuffer
-
             glUseProgram(whiteDiffuseColor.theProgram)
-            glUniform3fv(whiteDiffuseColor.dirToLightUnif, 1, vecBuffer)
+            glUniform3f(whiteDiffuseColor.dirToLightUnif, lightDirCameraSpace)
             glUseProgram(vertexDiffuseColor.theProgram)
-            glUniform3fv(vertexDiffuseColor.dirToLightUnif, 1, vecBuffer)
-            glUseProgram(0)
+            glUniform3f(vertexDiffuseColor.dirToLightUnif, lightDirCameraSpace)
+            glUseProgram()
 
             modelMatrix run {
 
                 //  Render the ground plane
                 run {
 
-                    top() to matBuffer
-
                     glUseProgram(whiteDiffuseColor.theProgram)
-                    glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                    glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
                     val normalMatrix = top().toMat3()
-                    glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                    glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                    glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
+                    glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
                     planeMesh.render(gl)
-                    glUseProgram(0)
+                    glUseProgram()
                 }
 
                 //  Render the Cylinder
                 run {
 
                     applyMatrix(objectPole.calcMatrix())
-                    top() to matBuffer
 
                     if (drawColoredCyl) {
 
                         glUseProgram(vertexDiffuseColor.theProgram)
-                        glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                        glUniformMatrix4f(vertexDiffuseColor.modelToCameraMatrixUnif, top())
                         val normalMatrix = top().toMat3()
-                        glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                        glUniformMatrix3f(vertexDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
+                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f)
                         cylinderMesh.render(gl, "lit-color")
 
                     } else {
 
                         glUseProgram(whiteDiffuseColor.theProgram)
-                        glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                        glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
                         val normalMatrix = top().toMat3()
-                        glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, normalMatrix to matBuffer)
-                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                        glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
+                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
                         cylinderMesh.render(gl, "lit")
                     }
-                    glUseProgram(0)
+                    glUseProgram()
                 }
             }
         }
@@ -172,11 +167,11 @@ class BasicLighting_() : Framework() {
 
         perspMatrix.perspective(45.0f, w.f / h, zNear, zFar)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, perspMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, perspMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -210,10 +205,9 @@ class BasicLighting_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(vertexDiffuseColor.theProgram)
-        glDeleteProgram(whiteDiffuseColor.theProgram)
+        glDeletePrograms(vertexDiffuseColor.theProgram, whiteDiffuseColor.theProgram)
 
-        glDeleteBuffers(1, projectionUniformBuffer)
+        glDeleteBuffer(projectionUniformBuffer)
 
         cylinderMesh.dispose(gl)
         planeMesh.dispose(gl)

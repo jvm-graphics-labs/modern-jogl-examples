@@ -101,7 +101,7 @@ class Scale_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffers(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
@@ -143,7 +143,7 @@ class Scale_ : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
         glUseProgram()
     }
 
@@ -162,8 +162,8 @@ class Scale_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
-        glClearBuffer(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         glUseProgram(theProgram)
 
@@ -174,7 +174,7 @@ class Scale_ : Framework() {
 
             val transformMatrix = it.constructMatrix(elapsedTime)
 
-            glUniformMatrix4(modelToCameraMatrixUnif, transformMatrix)
+            glUniformMatrix4f(modelToCameraMatrixUnif, transformMatrix)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
         }
 
@@ -188,7 +188,7 @@ class Scale_ : Framework() {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
         glUseProgram()
 
         glViewport(w, h)

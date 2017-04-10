@@ -5,6 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import glm.f
 import glm.glm
 import glm.mat.Mat4
@@ -13,10 +14,8 @@ import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
-import kotlin.properties.Delegates
 
 /**
  * Created by GBarbieri on 10.03.2017.
@@ -98,14 +97,14 @@ class GimbalLock_ : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
     }
 
     public override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val currMatrix = MatrixStack()
                 .translate(Vec3(0.0f, 0.0f, -200.0f))
@@ -123,8 +122,8 @@ class GimbalLock_ : Framework() {
                 .scale(Vec3(3.0f))
                 .rotateX(-90f)
         //Set the base color for this object.
-        glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-        glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, currMatrix.top().to(matBuffer))
+        glUniform4f(baseColorUnif, 1.0f)
+        glUniformMatrix4f(modelToCameraMatrixUnif, currMatrix.top())
 
         `object`.render(gl, "tint")
 
@@ -155,8 +154,8 @@ class GimbalLock_ : Framework() {
 
             glUseProgram(theProgram)
             //Set the base color for this object.
-            glUniform4fv(baseColorUnif, 1, baseColor to vecBuffer)
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+            glUniform4f(baseColorUnif, baseColor)
+            glUniformMatrix4f(modelToCameraMatrixUnif, top())
 
             gimbals[axis.ordinal].render(gl)
 

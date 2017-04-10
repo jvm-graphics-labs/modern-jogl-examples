@@ -6,15 +6,16 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.BYTES
-import glm.L
 import glm.f
 import glm.size
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
+import uno.buffer.shortBufferOf
 import uno.glsl.programOf
 
 /**
@@ -50,8 +51,8 @@ class VertexClipping_ : Framework() {
         initializeProgram(gl)
         initializeBuffers(gl)
 
-        glGenVertexArrays(1, vao)
-        glBindVertexArray(vao[0])
+        glGenVertexArray(vao)
+        glBindVertexArray(vao)
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
@@ -91,7 +92,7 @@ class VertexClipping_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
     }
 
@@ -110,17 +111,17 @@ class VertexClipping_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
-        glClearBuffer(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         glUseProgram(theProgram)
         glBindVertexArray(vao)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f)
-        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
+        glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
-        glDrawElementsBaseVertex(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
+        glDrawElementsBaseVertex(indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
 
         glBindVertexArray()
         glUseProgram()
@@ -132,7 +133,7 @@ class VertexClipping_ : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
 
         glViewport(w, h)
@@ -142,7 +143,7 @@ class VertexClipping_ : Framework() {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(bufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vao, bufferObject, vertexData, indexData)
     }

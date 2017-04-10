@@ -2,14 +2,11 @@ package main.tut09
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.newt.event.MouseEvent
-import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import com.jogamp.opengl.util.GLBuffers
-import glm.L
+import glNext.*
 import glm.f
-import glm.mat.Mat3
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._3.Vec3
@@ -17,18 +14,11 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import org.xml.sax.SAXException
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Created by GBarbieri on 23.03.2017.
@@ -92,14 +82,14 @@ class AmbientLighting_() : Framework() {
         glDepthRangef(0.0f, 1.0f)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(1, projectionUniformBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glGenBuffer(projectionUniformBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer[0], 0, Mat4.SIZE.toLong())
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializeProgram(gl: GL3) {
@@ -111,8 +101,8 @@ class AmbientLighting_() : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack().setMatrix(viewPole.calcMatrix())
 
@@ -133,16 +123,16 @@ class AmbientLighting_() : Framework() {
         } else {
 
             glUseProgram(whiteDiffuse.theProgram)
-            glUniform4f(whiteDiffuse.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+            glUniform4f(whiteDiffuse.lightIntensityUnif, 1.0f)
             glUseProgram(vertexDiffuse.theProgram)
-            glUniform4f(vertexDiffuse.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+            glUniform4f(vertexDiffuse.lightIntensityUnif, 1.0f)
         }
 
         glUseProgram(whiteDiffuse.theProgram)
-        glUniform3fv(whiteDiffuse.dirToLightUnif, 1, lightDirCameraSpace to vecBuffer)
+        glUniform3f(whiteDiffuse.dirToLightUnif, lightDirCameraSpace)
         glUseProgram(vertexDiffuse.theProgram)
-        glUniform3fv(vertexDiffuse.dirToLightUnif, 1, vecBuffer)
-        glUseProgram(0)
+        glUniform3f(vertexDiffuse.dirToLightUnif, lightDirCameraSpace)
+        glUseProgram()
 
         modelMatrix run {
 
@@ -150,11 +140,11 @@ class AmbientLighting_() : Framework() {
             run {
 
                 glUseProgram(whiteDiffuse.theProgram)
-                glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(whiteDiffuse.modelToCameraMatrixUnif, top())
                 val normMatrix = top().toMat3()
-                glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix3f(whiteDiffuse.normalModelToCameraMatrixUnif, normMatrix)
                 plane.render(gl)
-                glUseProgram(0)
+                glUseProgram()
 
             }
 
@@ -165,18 +155,18 @@ class AmbientLighting_() : Framework() {
 
                 if (drawColoredCyl) {
                     glUseProgram(vertexDiffuse.theProgram)
-                    glUniformMatrix4fv(vertexDiffuse.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(vertexDiffuse.modelToCameraMatrixUnif, top())
                     val normMatrix = top().toMat3()
-                    glUniformMatrix3fv(vertexDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                    glUniformMatrix3f(vertexDiffuse.normalModelToCameraMatrixUnif, normMatrix)
                     cylinder.render(gl, "lit-color")
                 } else {
                     glUseProgram(whiteDiffuse.theProgram)
-                    glUniformMatrix4fv(whiteDiffuse.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(whiteDiffuse.modelToCameraMatrixUnif, top())
                     val normMatrix = top().toMat3()
-                    glUniformMatrix3fv(whiteDiffuse.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                    glUniformMatrix3f(whiteDiffuse.normalModelToCameraMatrixUnif, normMatrix)
                     cylinder.render(gl, "lit")
                 }
-                glUseProgram(0)
+                glUseProgram()
             }
         }
     }
@@ -190,11 +180,11 @@ class AmbientLighting_() : Framework() {
 
         perspMatrix.perspective(45.0f, w.f / h, zNear, zFar)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, perspMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, perspMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -233,12 +223,9 @@ class AmbientLighting_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(vertexDiffuseColor.theProgram)
-        glDeleteProgram(whiteDiffuseColor.theProgram)
-        glDeleteProgram(vertexAmbDiffuseColor.theProgram)
-        glDeleteProgram(whiteAmbDiffuseColor.theProgram)
+        glDeletePrograms(vertexDiffuseColor.theProgram, whiteDiffuseColor.theProgram, vertexAmbDiffuseColor.theProgram, whiteAmbDiffuseColor.theProgram)
 
-        glDeleteBuffers(1, projectionUniformBuffer)
+        glDeleteBuffer(projectionUniformBuffer)
 
         cylinder.dispose(gl)
         plane.dispose(gl)

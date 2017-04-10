@@ -40,7 +40,7 @@ class VertPositionOffset_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         startingTime = System.currentTimeMillis()
@@ -55,7 +55,7 @@ class VertPositionOffset_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
 
-        glGenBuffers(positionBufferObject)
+        glGenBuffer(positionBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexPositions, GL_STATIC_DRAW)
@@ -67,7 +67,7 @@ class VertPositionOffset_ : Framework() {
         val offset = Vec2(0f)
         computePositionOffsets(offset)
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        glClearBufferf(GL_COLOR)
 
         glUseProgram(theProgram)
 
@@ -77,7 +77,7 @@ class VertPositionOffset_ : Framework() {
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+        glDrawArrays(3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
 
@@ -104,8 +104,8 @@ class VertPositionOffset_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(positionBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao, vertexPositions)
     }

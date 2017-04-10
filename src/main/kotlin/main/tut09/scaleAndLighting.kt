@@ -2,11 +2,10 @@ package main.tut09
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.newt.event.MouseEvent
-import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import com.jogamp.opengl.util.GLBuffers
+import glNext.*
 import glm.L
 import glm.f
 import glm.mat.Mat4
@@ -16,18 +15,12 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import org.xml.sax.SAXException
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.logging.Level
-import java.util.logging.Logger
-import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Created by GBarbieri on 23.03.2017.
@@ -88,14 +81,14 @@ class ScaleAndLighting_() : Framework() {
         glDepthRangef(0.0f, 1.0f)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(1, projectionUniformBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glGenBuffer(projectionUniformBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializeProgram(gl: GL3) {
@@ -105,33 +98,30 @@ class ScaleAndLighting_() : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack().setMatrix(viewPole.calcMatrix())
 
         val lightDirCameraSpace = modelMatrix.top() * lightDirection
 
         glUseProgram(whiteDiffuseColor.theProgram)
-        glUniform3fv(whiteDiffuseColor.dirToLightUnif, 1, lightDirCameraSpace to vecBuffer)
+        glUniform3f(whiteDiffuseColor.dirToLightUnif, lightDirCameraSpace)
         glUseProgram(vertexDiffuseColor.theProgram)
-        glUniform3fv(vertexDiffuseColor.dirToLightUnif, 1, vecBuffer)
-        glUseProgram(0)
+        glUniform3f(vertexDiffuseColor.dirToLightUnif, lightDirCameraSpace)
+        glUseProgram()
 
         modelMatrix run {
 
             //Render the ground plane.
             run {
 
-                top() to matBuffer
-
                 glUseProgram(whiteDiffuseColor.theProgram)
-                glUniformMatrix4fv(whiteDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
-                top().toMat3() to matBuffer
-                glUniformMatrix3fv(whiteDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer)
-                glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
+                glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, top())
+                glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
                 plane.render(gl)
-                glUseProgram(0)
+                glUseProgram()
 
             }
 
@@ -143,20 +133,17 @@ class ScaleAndLighting_() : Framework() {
                 if (scaleCylinder)
                     scale(1.0f, 1.0f, 0.2f)
 
-                top() to matBuffer
-
                 glUseProgram(vertexDiffuseColor.theProgram)
-                glUniformMatrix4fv(vertexDiffuseColor.modelToCameraMatrixUnif, 1, false, matBuffer)
+                glUniformMatrix4f(vertexDiffuseColor.modelToCameraMatrixUnif, top())
 
                 val normMatrix = top().toMat3()
                 if (doInverseTranspose)
                     normMatrix.inverse().transpose()
 
-                normMatrix to matBuffer
-                glUniformMatrix3fv(vertexDiffuseColor.normalModelToCameraMatrixUnif, 1, false, matBuffer)
-                glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                glUniformMatrix3f(vertexDiffuseColor.normalModelToCameraMatrixUnif, normMatrix)
+                glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f)
                 cylinder.render(gl, "lit-color")
-                glUseProgram(0)
+                glUseProgram()
             }
         }
     }
@@ -169,11 +156,11 @@ class ScaleAndLighting_() : Framework() {
 
         perspMatrix.perspective(45.0f, w.f / h, zNear, zFar)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, perspMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, perspMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {

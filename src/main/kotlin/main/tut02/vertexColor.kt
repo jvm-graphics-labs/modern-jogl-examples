@@ -5,8 +5,6 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.L
-import glm.size
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
@@ -42,7 +40,7 @@ class VertexColor_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
     }
 
@@ -52,7 +50,7 @@ class VertexColor_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl){
 
-        glGenBuffers(vertexBufferObject)
+        glGenBuffer(vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
@@ -61,7 +59,7 @@ class VertexColor_ : Framework() {
 
     override fun display(gl: GL3) = with(gl){
 
-        glClearBuffer(GL_COLOR, 0)
+        glClearBufferf(GL_COLOR, 0)
 
         glUseProgram(theProgram)
 
@@ -85,8 +83,8 @@ class VertexColor_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, vertexBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vertexBufferObject, vao, vertexData)
     }

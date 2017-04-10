@@ -1,16 +1,16 @@
 package glNext
 
 import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL3
-import glm.*
-import glm.mat.Mat4
-import glm.vec._2.Vec2
+import glm.L
+import glm.f
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
-import uno.buffer.*
-import java.nio.*
+import uno.buffer.byteBufferBig
+import uno.buffer.floatBufferBig
+import uno.buffer.intBufferBig
+import java.nio.IntBuffer
 import kotlin.reflect.KClass
 
 /**
@@ -29,20 +29,29 @@ fun GL3.glDrawArrays(mode: Int, count: Int) = glDrawArrays(mode, 0, count)
 fun GL3.glDrawElements(count: Int, type: Int) = glDrawElements(GL.GL_TRIANGLES, count, type, 0)
 fun GL3.glDrawElements(mode: Int, count: Int, type: Int) = glDrawElements(mode, count, type, 0)
 
-fun GL3.glClearBuffer(buffer: Int, f: Float) = when (buffer) {
-    GL2ES3.GL_COLOR -> glClearBuffer(buffer, f, f, f, f)
+fun GL3.glDrawElementsBaseVertex(count: Int, type: Int, indices_buffer_offset: Long, basevertex: Int) =
+        glDrawElementsBaseVertex(GL.GL_TRIANGLES, count, type, indices_buffer_offset, basevertex)
+
+fun GL3.glClearBufferf(buffer: Int, f: Float) = when (buffer) {
+    GL2ES3.GL_COLOR -> glClearBufferf(buffer, f, f, f, f)
     GL2ES3.GL_DEPTH -> glClearBufferfv(buffer, 0, matBuffer.put(0, f))
     else -> throw Error()
 }
 
-fun GL3.glClearBuffer(buffer: Int, r: Float, g: Float, b: Float, a: Float) = glClearBufferfv(buffer, 0, matBuffer.put(0, r).put(1, g).put(2, b).put(3, a))
-fun GL3.glClearBuffer(buffer: Int, n: Number) = when (buffer) {
-    GL2ES3.GL_COLOR -> glClearBuffer(buffer, n, n, n, n)
+fun GL3.glClearBufferf(buffer: Int, r: Float, g: Float, b: Float, a: Float) = glClearBufferfv(buffer, 0, matBuffer.put(0, r).put(1, g).put(2, b).put(3, a))
+fun GL3.glClearBufferf(buffer: Int, n: Number) = when (buffer) {
+    GL2ES3.GL_COLOR -> glClearBufferf(buffer, n, n, n, n)
     GL2ES3.GL_DEPTH -> glClearBufferfv(buffer, 0, matBuffer.put(0, n.f))
     else -> throw Error()
 }
 
-fun GL3.glClearBuffer(buffer: Int, r: Number, g: Number, b: Number, a: Number) = glClearBuffer(buffer, r.f, g.f, b.f, a.f)
+fun GL3.glClearBufferf(buffer: Int) = when (buffer) {
+    GL2ES3.GL_COLOR -> glClearBufferfv(buffer, 0, matBuffer.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 1f))
+    GL2ES3.GL_DEPTH -> glClearBufferfv(buffer, 0, matBuffer.put(0, 1f))
+    else -> throw Error()
+}
+
+fun GL3.glClearBufferf(buffer: Int, r: Number, g: Number, b: Number, a: Number) = glClearBufferf(buffer, r.f, g.f, b.f, a.f)
 fun GL3.glVertexAttribPointer(index: Int, kClass: KClass<*>, offset: Int = 0) = when (kClass) {
     Vec4::class -> glVertexAttribPointer(index, Vec4.length, GL.GL_FLOAT, false, Vec4.SIZE, offset.L)
     Vec3::class -> glVertexAttribPointer(index, Vec3.length, GL.GL_FLOAT, false, Vec3.SIZE, offset.L)

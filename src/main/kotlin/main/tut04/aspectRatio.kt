@@ -39,7 +39,7 @@ class AspectRatio_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         glEnable(GL_CULL_FACE)
@@ -65,13 +65,13 @@ class AspectRatio_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(vertexBufferObject)
+        glGenBuffer(vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
@@ -80,7 +80,7 @@ class AspectRatio_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
+        glClearBufferf(GL_COLOR, 0)
 
         glUseProgram(theProgram)
 
@@ -93,7 +93,7 @@ class AspectRatio_ : Framework() {
         glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
         glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
 
-        glDrawArrays(GL_TRIANGLES, 36)
+        glDrawArrays(36)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glDisableVertexAttribArray(Semantic.Attr.COLOR)
@@ -107,7 +107,7 @@ class AspectRatio_ : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram(theProgram)
 
         glViewport(w, h)
@@ -116,8 +116,8 @@ class AspectRatio_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(vertexBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vertexBufferObject, vao, vertexData)
     }

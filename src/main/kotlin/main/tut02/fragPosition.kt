@@ -38,7 +38,7 @@ class FragPosition_ : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
     }
 
@@ -74,7 +74,7 @@ class FragPosition_ : Framework() {
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
-        glGenBuffers(vertexBufferObject)
+        glGenBuffer(vertexBufferObject)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
@@ -83,7 +83,7 @@ class FragPosition_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0, 0, 0, 1)
+        glClearBufferf(GL_COLOR)
 
         glUseProgram(theProgram)
 
@@ -91,7 +91,7 @@ class FragPosition_ : Framework() {
         glEnableVertexAttribArray(Semantic.Attr.POSITION)
         glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+        glDrawArrays(3)
 
         glDisableVertexAttribArray(Semantic.Attr.POSITION)
         glUseProgram()
@@ -104,8 +104,8 @@ class FragPosition_ : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(vertexBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vertexBufferObject, vao, vertexData)
     }

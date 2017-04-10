@@ -30,18 +30,34 @@ fun GL3.glBufferData(target: Int, data: IntBuffer, usage: Int) = glBufferData(ta
 fun GL3.glBufferData(target: Int, data: LongBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
 fun GL3.glBufferData(target: Int, data: FloatBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
 fun GL3.glBufferData(target: Int, data: DoubleBuffer, usage: Int) = glBufferData(target, data.size.L, data, usage)
+
 fun GL3.glBufferData(target: Int, size: Int, usage: Int) = glBufferData(target, size.L, null, usage)
+
+fun GL3.glBufferSubData(target: Int, offset: Int, data: ByteBuffer) = glBufferSubData(target, offset.L,  data.capacity().L, data)
+fun GL3.glBufferSubData(target: Int, offset: Int, data: ShortBuffer) = glBufferSubData(target, offset.L,  data.capacity() * Short.BYTES.L, data)
+fun GL3.glBufferSubData(target: Int, offset: Int, data: IntBuffer) = glBufferSubData(target, offset.L,  data.capacity() * Int.BYTES.L, data)
+fun GL3.glBufferSubData(target: Int, offset: Int, data: LongBuffer) = glBufferSubData(target, offset.L,  data.capacity() * Long.BYTES.L, data)
+fun GL3.glBufferSubData(target: Int, offset: Int, data: FloatBuffer) = glBufferSubData(target, offset.L,  data.capacity() * Float.BYTES.L, data)
+fun GL3.glBufferSubData(target: Int, offset: Int, data: DoubleBuffer) = glBufferSubData(target, offset.L,  data.capacity() * Double.BYTES.L, data)
+
 fun GL3.glBufferSubData(target: Int, data: ByteBuffer) = glBufferSubData(target, 0, data.capacity().L, data)
 fun GL3.glBufferSubData(target: Int, data: ShortBuffer) = glBufferSubData(target, 0, data.capacity() * Short.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: IntBuffer) = glBufferSubData(target, 0, data.capacity() * Int.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: LongBuffer) = glBufferSubData(target, 0, data.capacity() * Long.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: FloatBuffer) = glBufferSubData(target, 0, data.capacity() * Float.BYTES.L, data)
 fun GL3.glBufferSubData(target: Int, data: DoubleBuffer) = glBufferSubData(target, 0, data.capacity() * Double.BYTES.L, data)
-fun GL3.glBufferSubData(target: Int, offset: Long, size: Long, mat4: Mat4) = glBufferSubData(target, offset, size, mat4 to matBuffer)
+
+
+// ----- Mat4 -----
+fun GL3.glBufferData(target: Int, mat: Mat4, usage: Int) = glBufferData(target, 16 * Float.BYTES.L, mat to matBuffer, usage)
+fun GL3.glBufferSubData(target: Int, offset: Int, size: Long, mat4: Mat4) = glBufferSubData(target, offset.L, size, mat4 to matBuffer)
+fun GL3.glBufferSubData(target: Int, offset: Int, mat: Mat4) = glBufferSubData(target, offset.L,  16 * Float.BYTES.L, mat to matBuffer)
+fun GL3.glBufferSubData(target: Int, mat: Mat4) = glBufferSubData(target, 0, 16 * Float.BYTES.L, mat to matBuffer)
+
 fun GL3.glBindBuffer(target: Int) = glBindBuffer(target, 0)
 fun GL3.glBindBuffer(target: Int, buffer: IntBuffer) = glBindBuffer(target, buffer[0])
 
-fun GL3.glBindBufferRange(target: Int, index: Int, buffer: IntBuffer, offset: Long, size: Long) = glBindBufferRange(target, index, buffer[0], offset, size)
+fun GL3.glBindBufferRange(target: Int, index: Int, buffer: IntBuffer, offset: Int, size: Int) = glBindBufferRange(target, index, buffer[0], offset.L, size.L)
 
 fun GL3.withBuffer(target: Int, buffer: IntBuffer, block: Buffer.(GL3) -> Unit) = withBuffer(target, buffer[0], block)
 fun GL3.withBuffer(target: Int, buffer: Int, block: Buffer.(gl: GL3) -> Unit) {

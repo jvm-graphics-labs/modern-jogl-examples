@@ -5,6 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -83,14 +84,14 @@ class QuaternionYPR_() : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val matrixStack = MatrixStack()
                 .translate(Vec3(0.0f, 0.0f, -200.0f))
@@ -102,12 +103,12 @@ class QuaternionYPR_() : Framework() {
                 .scale(3.0f, 3.0f, 3.0f)
                 .rotateX(-90.0f)
 
-        glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-        glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, matrixStack.top() to matBuffer)
+        glUniform4f(baseColorUnif, 1.0f)
+        glUniformMatrix4f(modelToCameraMatrixUnif, matrixStack.top())
 
         ship.render(gl, "tint")
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -116,15 +117,15 @@ class QuaternionYPR_() : Framework() {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
-    override fun end(gl: GL3) {
+    override fun end(gl: GL3) = with(gl){
 
-        gl.glDeleteProgram(theProgram)
+        glDeleteProgram(theProgram)
 
         ship.dispose(gl)
     }

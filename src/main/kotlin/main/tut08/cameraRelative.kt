@@ -5,6 +5,7 @@ import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -12,7 +13,6 @@ import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 
@@ -90,14 +90,14 @@ class CameraRelative_ : Framework() {
         cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
     }
 
     public override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val currMatrix = MatrixStack()
 
@@ -112,7 +112,7 @@ class CameraRelative_ : Framework() {
             scale(100.0f, 1.0f, 100.0f)
 
             glUniform4f(baseColorUnif, 0.2f, 0.5f, 0.2f, 1.0f)
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+            glUniformMatrix4f(modelToCameraMatrixUnif, top())
 
             plane.render(gl)
 
@@ -122,8 +122,8 @@ class CameraRelative_ : Framework() {
             applyMatrix(orientation.toMat4())
             rotateX(-90.0f)
 
-            glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
-            glUniformMatrix4fv(modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+            glUniform4f(baseColorUnif, 1.0f)
+            glUniformMatrix4f(modelToCameraMatrixUnif, top())
 
             ship.render(gl, "tint")
         }
@@ -167,15 +167,15 @@ class CameraRelative_ : Framework() {
         cameraToClipMatrix[1].y = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4fv(cameraToClipMatrixUnif, 1, false, cameraToClipMatrix to matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
+        glUseProgram()
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
-    public override fun end(gl: GL3) {
+    public override fun end(gl: GL3) = with(gl) {
 
-        gl.glDeleteProgram(theProgram)
+        glDeleteProgram(theProgram)
 
         plane.dispose(gl)
         ship.dispose(gl)

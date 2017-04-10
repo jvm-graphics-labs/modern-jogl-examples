@@ -50,7 +50,7 @@ class DepthClamping_ : Framework() {
         initializeProgram(gl)
         initializeBuffers(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
 
         val colorData = Vec3.SIZE * numberOfVertices
@@ -91,7 +91,7 @@ class DepthClamping_ : Framework() {
         perspectiveMatrix[11] = -1.0f
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
     }
 
@@ -110,18 +110,18 @@ class DepthClamping_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBuffer(GL_COLOR, 0)
-        glClearBuffer(GL_DEPTH, 1)
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         glUseProgram(theProgram)
 
         glBindVertexArray(vao)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f)
-        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
+        glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
 
         glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
-        glDrawElementsBaseVertex(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
+        glDrawElementsBaseVertex(indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
 
         glBindVertexArray()
         glUseProgram()
@@ -133,7 +133,7 @@ class DepthClamping_ : Framework() {
         perspectiveMatrix[5] = frustumScale
 
         glUseProgram(theProgram)
-        glUniformMatrix4(perspectiveMatrixUnif, perspectiveMatrix)
+        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
         glUseProgram()
 
         glViewport(w, h)
@@ -143,7 +143,7 @@ class DepthClamping_ : Framework() {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(bufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vao, bufferObject, vertexData, indexData)
     }

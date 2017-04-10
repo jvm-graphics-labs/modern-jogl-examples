@@ -5,6 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.glBindBufferRange
 import glm.Glm
 import glm.L
 import glm.f
@@ -90,7 +91,7 @@ class VertexPointLighting_() : Framework() {
         glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
     }
