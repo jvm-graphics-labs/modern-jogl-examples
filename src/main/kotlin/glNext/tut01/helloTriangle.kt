@@ -123,7 +123,7 @@ class HelloTriangle_Next : Framework() {
 
         glGenBuffers(positionBufferObject)
 
-        (positionBufferObject bindTo GL_ARRAY_BUFFER) { data(vertexPositions, GL_STATIC_DRAW) }
+//        (positionBufferObject bindTo GL_ARRAY_BUFFER) { data(vertexPositions, GL_STATIC_DRAW) }
     }
 
     /**
