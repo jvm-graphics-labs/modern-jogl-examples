@@ -13,6 +13,12 @@ He is also supporting the html form of the documentation [here](https://paroj.gi
 
 You can find the examples in java under [`src/main/java`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/java/main) and the corresponding in kotlin under [`src/main/kotlin`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/kotlin/main)
 
+Few comments on Kotlin: 
+
+- it's awesome
+- [`src/main/kotlin/main`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/kotlin/main) is an example, showing also how you can exploit some overloading gl functions to reduce the boiler plate arguments
+- [`src/main/kotlin/glNext`](https://github.com/java-opengl-labs/modern-jogl-examples/tree/master/src/main/kotlin/glNext) pushes reduction and expressiveness to the top, substituting many gl commands with constructs that rearrange some common gl patterns to bring *a lot* of code down
+
 Status:
 
 - [x] Chapter 1, Hello Triangle
