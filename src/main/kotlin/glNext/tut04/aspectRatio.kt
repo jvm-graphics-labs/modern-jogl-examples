@@ -91,9 +91,6 @@ class AspectRatio_Next : Framework() {
                     Semantic.Attr.COLOR to colorData){
 
                 glDrawArrays(36)
-
-                glDisableVertexAttribArray(Semantic.Attr.POSITION)
-                glDisableVertexAttribArray(Semantic.Attr.COLOR)
             }
 
         }
