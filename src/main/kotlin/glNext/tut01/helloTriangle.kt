@@ -6,15 +6,11 @@ package glNext.tut01
 
 
 import com.jogamp.newt.event.KeyEvent
-import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
-import uno.buffer.destroy
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -69,7 +65,8 @@ class HelloTriangle_Next : Framework() {
 
     fun initializeProgram(gl: GL3) {
 
-        val shaderList = listOf(createShader(gl, GL_VERTEX_SHADER, strVertexShader), createShader(gl, GL_FRAGMENT_SHADER, strFragmentShader))
+        val shaderList = listOf(createShader(gl, GL_VERTEX_SHADER, strVertexShader),
+                createShader(gl, GL_FRAGMENT_SHADER, strFragmentShader))
 
         theProgram = createProgram(gl, shaderList)
 
@@ -136,15 +133,12 @@ class HelloTriangle_Next : Framework() {
     override fun display(gl: GL3) = with(gl) {
 
         clear {
-            color(0, 0, 0, 1)
-            depth(1)
+            color()
+            depth()
         }
 
         usingProgram(theProgram) {
-
-            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
-                glDrawArrays(3)
-            }
+            withVertexLayout(positionBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 

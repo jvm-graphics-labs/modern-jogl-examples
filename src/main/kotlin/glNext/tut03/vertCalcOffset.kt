@@ -4,9 +4,7 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -51,7 +49,7 @@ class VertCalcOffset_Next : Framework() {
 
             elapsedTimeUniform = "time".location
 
-            "loopDuration".uniform1f = 5f
+            "loopDuration".location.float = 5f
         }
     }
 
@@ -72,9 +70,7 @@ class VertCalcOffset_Next : Framework() {
 
             elapsedTimeUniform.float = (System.currentTimeMillis() - startingTime) / 1_000.0f
 
-            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION){
-                glDrawArrays(3)
-            }
+            withVertexLayout(positionBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 
@@ -86,7 +82,7 @@ class VertCalcOffset_Next : Framework() {
 
         glDeleteProgram(theProgram)
         glDeleteBuffer(positionBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(positionBufferObject, vao)
     }

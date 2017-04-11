@@ -1,14 +1,12 @@
 package main.tut03
 
 import com.jogamp.newt.event.KeyEvent
-import com.jogamp.opengl.GL.*
+import com.jogamp.opengl.GL.GL_ARRAY_BUFFER
+import com.jogamp.opengl.GL.GL_STATIC_DRAW
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
-import glNext.tut03.FragChangeColor_
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -78,12 +76,12 @@ class FragChangeColor_ : Framework() {
         glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000f)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+        glEnableVertexAttribArray(glf.pos4)
+        glVertexAttribPointer(glf.pos4)
 
         glDrawArrays(3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        glDisableVertexAttribArray(glf.pos4)
 
         glUseProgram()
     }

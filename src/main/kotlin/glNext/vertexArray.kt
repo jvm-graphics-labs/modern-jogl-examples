@@ -5,9 +5,11 @@
 
 package glNext
 
+import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL3
 import glm.L
+import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import java.nio.IntBuffer
 import kotlin.reflect.KClass
@@ -32,39 +34,81 @@ infix fun GL3.glDeleteVertexArrays(vertexArrays: IntBuffer) = glDeleteVertexArra
 infix fun GL3.glDeleteVertexArray(vertexArray: Int) = glDeleteVertexArrays(1, int.put(0, vertexArray))
 
 
-inline fun GL3.withVertexLayout(buffer: IntBuffer, layout: KClass<*>, vararg params: Pair<Int, Int>, block: () -> Unit) =
-        withVertexLayout(buffer[0], layout, *params, block = block)
-
-inline fun GL3.withVertexLayout(buffer: Int, layout: KClass<*>, vararg params: Pair<Int, Int>, block: () -> Unit) {
-
-    when (layout) {
-        Vec4::class -> {
-            glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
-            for (p in params) {
-                glEnableVertexAttribArray(p.first)
-                glVertexAttribPointer(p.first, Vec4.length, GL2ES2.GL_FLOAT, false, Vec4.SIZE, p.second.L)
-            }
-            glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
-            block()
-            for (p in params)
-                glDisableVertexAttribArray(p.first)
-        }
+inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, block: () -> Unit) {
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
+    for (attr in format.attribute) {
+        glEnableVertexAttribArray(attr.index)
+        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, attr.pointer)
     }
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
+    block()
+    for (attr in format.attribute)
+        glDisableVertexAttribArray(attr.index)
 }
 
-inline fun GL3.withVertexLayout(buffer: IntBuffer, layout: KClass<*>, index: Int, block: () -> Unit) =
-        withVertexLayout(buffer[0], layout, index, block)
+inline fun GL3.withVertexLayout(buffer: IntBuffer,
+                                format0: VertexLayout, index0: Int, offset0: Int,
+                                format1: VertexLayout, index1: Int, offset1: Int, block: () -> Unit) {
 
-inline fun GL3.withVertexLayout(buffer: Int, layout: KClass<*>, index: Int, block: () -> Unit) {
-
-    when (layout) {
-        Vec4::class -> {
-            glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
-            glEnableVertexAttribArray(index)
-            glVertexAttribPointer(index, Vec4.length, GL2ES2.GL_FLOAT, false, Vec4.SIZE, 0)
-            glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
-            block()
-            glDisableVertexAttribArray(index)
-        }
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
+    for (attr in format0.attribute) {
+        glEnableVertexAttribArray(attr.index)
+        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, offset0 + attr.pointer)
     }
+    for (attr in format1.attribute) {
+        glEnableVertexAttribArray(attr.index)
+        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, offset1 + attr.pointer)
+    }
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
+    block()
+    for (attr in format0.attribute)
+        glDisableVertexAttribArray(attr.index)
+    for (attr in format1.attribute)
+        glDisableVertexAttribArray(attr.index)
+}
+
+/** For un-interleaved, that is not-interleaved */
+inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, vararg offset: Int, block: () -> Unit) {
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
+    for (i in format.attribute.indices) {
+        val attr = format.attribute[i]
+        glEnableVertexAttribArray(attr.index)
+        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, 0, offset[i].L)
+    }
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
+    block()
+    for (attr in format.attribute)
+        glDisableVertexAttribArray(attr.index)
+}
+
+
+fun GL3.glEnableVertexAttribArray(layout: VertexLayout) = glEnableVertexAttribArray(layout[0].index)
+fun GL3.glEnableVertexAttribArray(attribute: VertexAttribute) = glEnableVertexAttribArray(attribute.index)
+
+fun GL3.glDisableVertexAttribArray(layout: VertexLayout) = glDisableVertexAttribArray(layout[0].index)
+fun GL3.glDisableVertexAttribArray(attribute: VertexAttribute) = glDisableVertexAttribArray(attribute.index)
+
+fun GL3.glVertexAttribPointer(layout: VertexLayout) = glVertexAttribPointer(layout[0])
+fun GL3.glVertexAttribPointer(attribute: VertexAttribute) =
+        glVertexAttribPointer(
+                attribute.index,
+                attribute.size,
+                attribute.type,
+                attribute.normalized,
+                attribute.interleavedStride,
+                attribute.pointer)
+fun GL3.glVertexAttribPointer(layout: VertexLayout, offset: Int) = glVertexAttribPointer(layout[0], offset)
+fun GL3.glVertexAttribPointer(attribute: VertexAttribute, offset: Int) =
+        glVertexAttribPointer(
+                attribute.index,
+                attribute.size,
+                attribute.type,
+                attribute.normalized,
+                0,  // tightly packed
+                offset.L)
+
+fun GL3.glVertexAttribPointer(index: Int, kClass: KClass<*>, offset: Int = 0) = when (kClass) {
+    Vec4::class -> glVertexAttribPointer(index, Vec4.length, GL.GL_FLOAT, false, Vec4.SIZE, offset.L)
+    Vec3::class -> glVertexAttribPointer(index, Vec3.length, GL.GL_FLOAT, false, Vec3.SIZE, offset.L)
+    else -> throw Error()
 }

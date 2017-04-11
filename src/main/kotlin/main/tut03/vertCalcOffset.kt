@@ -75,12 +75,12 @@ class VertCalcOffset_ : Framework() {
         glUniform1f(elapsedTimeUniform, (System.currentTimeMillis() - startingTime) / 1_000.0f)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+        glEnableVertexAttribArray(glf.pos4)
+        glVertexAttribPointer(glf.pos4)
 
         glDrawArrays(3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        glDisableVertexAttribArray(glf.pos4)
 
         glUseProgram()
     }

@@ -52,11 +52,7 @@ fun GL3.glClearBufferf(buffer: Int) = when (buffer) {
 }
 
 fun GL3.glClearBufferf(buffer: Int, r: Number, g: Number, b: Number, a: Number) = glClearBufferf(buffer, r.f, g.f, b.f, a.f)
-fun GL3.glVertexAttribPointer(index: Int, kClass: KClass<*>, offset: Int = 0) = when (kClass) {
-    Vec4::class -> glVertexAttribPointer(index, Vec4.length, GL.GL_FLOAT, false, Vec4.SIZE, offset.L)
-    Vec3::class -> glVertexAttribPointer(index, Vec3.length, GL.GL_FLOAT, false, Vec3.SIZE, offset.L)
-    else -> throw Error()
-}
+
 
 fun GL3.glViewport(width: Int, height: Int) = glViewport(0, 0, width, height)
 
@@ -85,16 +81,19 @@ object Clear {
 
     lateinit var gl: GL3
 
-    fun color(n: Number) = color(n, n, n, n)
-    fun color(r: Number, g: Number, b: Number, a: Number)
-            = gl.glClearBufferfv(GL2ES3.GL_COLOR, 0, matBuffer.put(0, r.f).put(1, g.f).put(2, b.f).put(3, a.f))
 
+    fun color() = color(0f, 0f, 0f, 1f)
     fun color(f: Float) = color(f, f, f, f)
     fun color(r: Float, g: Float, b: Float, a: Float) =
             gl.glClearBufferfv(GL2ES3.GL_COLOR, 0, matBuffer.put(0, r).put(1, g).put(2, b).put(3, a))
 
-    fun depth(depth: Number) = depth(depth.f)
+    fun color(n: Number) = color(n, n, n, n)
+    fun color(r: Number, g: Number, b: Number, a: Number)
+            = gl.glClearBufferfv(GL2ES3.GL_COLOR, 0, matBuffer.put(0, r.f).put(1, g.f).put(2, b.f).put(3, a.f))
+
+    fun depth() = depth(1f)
     fun depth(depth: Float) = gl.glClearBufferfv(GL2ES3.GL_DEPTH, 0, matBuffer.put(0, depth))
+    fun depth(depth: Number) = depth(depth.f)
 }
 
 

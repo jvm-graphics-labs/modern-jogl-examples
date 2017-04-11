@@ -115,7 +115,7 @@ class FragmentAttenuation_() : Framework() {
         glDepthRangef(0.0f, 1.0f)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(Buffer.MAX, bufferName)
+        glGenBuffers(bufferName)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
         glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)

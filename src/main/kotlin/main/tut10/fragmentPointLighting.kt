@@ -5,7 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
-import glNext.glBindBufferRange
+import glNext.*
 import glm.Glm
 import glm.L
 import glm.f
@@ -17,7 +17,6 @@ import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.mousePole.*
 import uno.time.Timer
@@ -91,14 +90,14 @@ class FragmentPointLighting_() : Framework() {
         glDepthRangef(0.0f, 1.0f)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(1, projectionUniformBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glGenBuffers(projectionUniformBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializePrograms(gl: GL3) {
@@ -113,8 +112,8 @@ class FragmentPointLighting_() : Framework() {
 
         lightTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack()
         modelMatrix.setMatrix(viewPole.calcMatrix())
@@ -140,14 +139,14 @@ class FragmentPointLighting_() : Framework() {
             run {
 
                 glUseProgram(whiteProgram.theProgram)
-                glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(whiteProgram.modelToCameraMatrixUnif, top())
 
                 val invTransform = top().inverse()
                 val lightPosModelSpace = invTransform * lightPosCameraSpace
-                glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace to vecBuffer)
+                glUniform3f(whiteProgram.modelSpaceLightPosUnif, lightPosModelSpace)
 
                 plane.render(gl)
-                glUseProgram(0)
+                glUseProgram()
             }
 
             //Render the Cylinder
@@ -163,31 +162,30 @@ class FragmentPointLighting_() : Framework() {
 
                 if (drawColoredCyl) {
                     glUseProgram(vertColorProgram.theProgram)
-                    glUniformMatrix4fv(vertColorProgram.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(vertColorProgram.modelToCameraMatrixUnif, top())
 
-                    glUniform3fv(vertColorProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace to vecBuffer)
+                    glUniform3f(vertColorProgram.modelSpaceLightPosUnif, lightPosModelSpace)
 
                     cylinder.render(gl, "lit-color")
                 } else {
                     glUseProgram(whiteProgram.theProgram)
-                    glUniformMatrix4fv(whiteProgram.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(whiteProgram.modelToCameraMatrixUnif, top())
 
-                    glUniform3fv(whiteProgram.modelSpaceLightPosUnif, 1, lightPosModelSpace to vecBuffer)
+                    glUniform3f(whiteProgram.modelSpaceLightPosUnif, lightPosModelSpace)
 
                     cylinder.render(gl, "lit")
                 }
-                glUseProgram(0)
+                glUseProgram()
             }
 
             if (drawLight)
 
                 run {
-
                     translate(worldLightPos)
                     scale(0.1f, 0.1f, 0.1f)
 
                     glUseProgram(unlit.theProgram)
-                    glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                     glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f)
                     cube.render(gl, "flat")
                 }
@@ -214,11 +212,11 @@ class FragmentPointLighting_() : Framework() {
 
         perspMatrix.perspective(45.0f, w.f / h, zNear, zFar)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, perspMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, perspMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -264,13 +262,10 @@ class FragmentPointLighting_() : Framework() {
 
     override fun end(gl: GL3) = with(gl){
 
-        glDeleteProgram(vertexDiffuseColor.theProgram)
-        glDeleteProgram(whiteDiffuseColor.theProgram)
-        glDeleteProgram(fragVertexDiffuseColor.theProgram)
-        glDeleteProgram(fragWhiteDiffuseColor.theProgram)
-        glDeleteProgram(unlit.theProgram)
+        glDeletePrograms(vertexDiffuseColor.theProgram, whiteDiffuseColor.theProgram, fragVertexDiffuseColor.theProgram,
+                fragWhiteDiffuseColor.theProgram, unlit.theProgram)
 
-        glDeleteBuffers(1, projectionUniformBuffer)
+        glDeleteBuffer(projectionUniformBuffer)
 
         cylinder.dispose(gl)
         plane.dispose(gl)

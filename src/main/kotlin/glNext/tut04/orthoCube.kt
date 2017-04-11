@@ -1,14 +1,11 @@
-package main.tut04
+package glNext.tut04
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
 import glm.size
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -17,10 +14,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    OrthoCube_().setup("Tutorial 04 - Ortho Cube")
+    OrthoCube_Next().setup("Tutorial 04 - Ortho Cube")
 }
 
-class OrthoCube_ : Framework() {
+class OrthoCube_Next : Framework() {
 
     var theProgram = 0
     var offsetUniform = 0
@@ -35,9 +32,7 @@ class OrthoCube_ : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        faceCulling(true, frontFace = GL_CW)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -51,35 +46,24 @@ class OrthoCube_ : Framework() {
 
         glGenBuffer(vertexBufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, 0)
+        clear { color(0) }
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glUniform2f(offsetUniform, 0.5f, 0.25f)
+            glUniform2f(offsetUniform, 0.5f, 0.25f)
 
-        val colorData = vertexData.size / 2
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glEnableVertexAttribArray(glf.pos4_col4)
-        glEnableVertexAttribArray(glf.pos4_col4[1])
-        glVertexAttribPointer(glf.pos4_col4, 0)
-        glVertexAttribPointer(glf.pos4_col4[1], colorData)
+            val colorData = vertexData.size / 2
 
-        glDrawArrays(36)
-
-        glDisableVertexAttribArray(glf.pos4_col4)
-        glDisableVertexAttribArray(glf.pos4_col4[1])
-
-        glUseProgram()
+            withVertexLayout(vertexBufferObject, glf.pos4_col4, 0, colorData) { glDrawArrays(36) }
+        }
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl){
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
         glViewport(w, h)
     }
 

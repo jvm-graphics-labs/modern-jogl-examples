@@ -6,9 +6,7 @@ import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -37,7 +35,7 @@ class FragPosition_Next : Framework() {
         initializeProgram(gl)
         initializeVertexBuffer(gl)
 
-        glGenVertexArrays(vao)
+        glGenVertexArray(vao)
         glBindVertexArray(vao)
     }
 
@@ -75,32 +73,27 @@ class FragPosition_Next : Framework() {
 
         glGenBuffers(vertexBufferObject)
 
-        withArrayBuffer(vertexBufferObject[0]) { data(vertexData, GL_STATIC_DRAW) }
+        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        clear {
-            color(0, 0, 0, 1)
-        }
+        clear { color() }
 
         usingProgram(theProgram) {
-
-            withVertexLayout(vertexBufferObject,Vec4::class, Semantic.Attr.POSITION) {
-                glDrawArrays(3)
-            }
+            withVertexLayout(vertexBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 
-    public override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    public override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(1, vertexBufferObject)
-        glDeleteVertexArrays(1, vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vertexBufferObject, vao)
     }

@@ -5,6 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import glm.L
 import glm.f
 import glm.glm
@@ -15,10 +16,9 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
+import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
 import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
 import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
-import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnOnly
-import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.buffer.put
@@ -101,15 +101,15 @@ class BlinnVsPhongLighting_() : Framework() {
         glEnable(GL_DEPTH_CLAMP)
 
 
-        glGenBuffers(1, projectionUniformBuffer)
+        glGenBuffer(projectionUniformBuffer)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projectionUniformBuffer, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializePrograms(gl: GL3) {
@@ -126,8 +126,8 @@ class BlinnVsPhongLighting_() : Framework() {
 
         lightTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack()
         modelMatrix.setMatrix(viewPole.calcMatrix())
@@ -141,38 +141,36 @@ class BlinnVsPhongLighting_() : Framework() {
         glUseProgram(whiteProg.theProgram)
         glUniform4f(whiteProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(whiteProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUniform3fv(whiteProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to vecBuffer)
+        glUniform3f(whiteProg.cameraSpaceLightPosUnif, lightPosCameraSpace)
         glUniform1f(whiteProg.lightAttenuationUnif, lightAttenuation)
         glUniform1f(whiteProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel))
-        glUniform4fv(whiteProg.baseDiffuseColorUnif, 1, (if (drawDark) darkColor else lightColor) to vecBuffer)
+        glUniform4f(whiteProg.baseDiffuseColorUnif, if (drawDark) darkColor else lightColor)
 
         glUseProgram(colorProg.theProgram)
         glUniform4f(colorProg.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(colorProg.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUniform3fv(colorProg.cameraSpaceLightPosUnif, 1, lightPosCameraSpace to vecBuffer)
+        glUniform3f(colorProg.cameraSpaceLightPosUnif, lightPosCameraSpace)
         glUniform1f(colorProg.lightAttenuationUnif, lightAttenuation)
         glUniform1f(colorProg.shininessFactorUnif, MaterialParameters.getSpecularValue(lightModel))
-        glUseProgram(0)
+        glUseProgram()
 
         modelMatrix run {
 
             //Render the ground plane.
             run {
-
                 val normMatrix = top().toMat3()
                 normMatrix.inverse_().transpose_()
 
                 glUseProgram(whiteProg.theProgram)
-                glUniformMatrix4fv(whiteProg.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(whiteProg.modelToCameraMatrixUnif, top())
 
-                glUniformMatrix3fv(whiteProg.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix3f(whiteProg.normalModelToCameraMatrixUnif, normMatrix)
                 plane.render(gl)
-                glUseProgram(0)
+                glUseProgram()
             }
 
             //Render the Cylinder
             run {
-
                 applyMatrix(objectPole.calcMatrix())
 
                 if (scaleCyl)
@@ -183,13 +181,13 @@ class BlinnVsPhongLighting_() : Framework() {
 
                 val prog = if (drawColoredCyl) colorProg else whiteProg
                 glUseProgram(prog.theProgram)
-                glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(prog.modelToCameraMatrixUnif, top())
 
-                glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix3f(prog.normalModelToCameraMatrixUnif, normMatrix)
 
                 cylinder.render(gl, if (drawColoredCyl) "lit-color" else "lit")
 
-                glUseProgram(0)
+                glUseProgram()
             }
 
             //Render the light
@@ -200,7 +198,7 @@ class BlinnVsPhongLighting_() : Framework() {
                     scale(0.1f)
 
                     glUseProgram(unlit.theProgram)
-                    glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                    glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                     glUniform4f(unlit.objectColorUnif, 0.8078f, 0.8706f, 0.9922f, 1.0f)
                     cube.render(gl, "flat")
                 }
@@ -227,11 +225,11 @@ class BlinnVsPhongLighting_() : Framework() {
 
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer.get(0))
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.toLong(), proj to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projectionUniformBuffer)
+        glBufferSubData(GL_UNIFORM_BUFFER, proj)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -308,13 +306,10 @@ class BlinnVsPhongLighting_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        programs.forEach {
-            glDeleteProgram(it.whiteProgram.theProgram)
-            glDeleteProgram(it.colorProgram.theProgram)
-        }
+        programs.forEach { glDeletePrograms(it.whiteProgram.theProgram, it.colorProgram.theProgram) }
         glDeleteProgram(unlit.theProgram)
 
-        glDeleteBuffers(1, projectionUniformBuffer)
+        glDeleteBuffer(projectionUniformBuffer)
 
         cylinder.dispose(gl)
         plane.dispose(gl)

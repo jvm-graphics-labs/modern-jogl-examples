@@ -5,6 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import glm.L
 import glm.f
 import glm.glm
@@ -109,22 +110,22 @@ class BasicImpostor_() : Framework() {
         glDepthRangef(depthZNear, depthZFar)
         glEnable(GL_DEPTH_CLAMP)
 
-        glGenBuffers(Buffer.MAX, bufferName)
+        glGenBuffers(bufferName)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE, GL_DYNAMIC_DRAW)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.LIGHT, bufferName[Buffer.LIGHT], 0, LightBlock.SIZE.L)
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         //Empty Vertex Array Object.
-        glGenVertexArrays(1, imposterVAO)
+        glGenVertexArray(imposterVAO)
 
         createMaterials(gl)
     }
@@ -196,8 +197,8 @@ class BasicImpostor_() : Framework() {
 
         sphereTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.75f, 0.75f, 1.0f, 1.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
         val worldToCamMat = modelMatrix.top()
@@ -214,8 +215,8 @@ class BasicImpostor_() : Framework() {
         lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE.L, lightData.toBuffer())
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, lightData.toBuffer())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         run {
             glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL],
@@ -225,13 +226,13 @@ class BasicImpostor_() : Framework() {
             normMatrix.inverse_().transpose_()
 
             glUseProgram(litMeshProg.theProgram)
-            glUniformMatrix4fv(litMeshProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top() to matBuffer)
-            glUniformMatrix3fv(litMeshProg.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+            glUniformMatrix4f(litMeshProg.modelToCameraMatrixUnif, modelMatrix.top())
+            glUniformMatrix3f(litMeshProg.normalModelToCameraMatrixUnif, normMatrix)
 
             plane.render(gl)
 
-            glUseProgram(0)
-            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0)
+            glUseProgram()
+            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
         }
 
         drawSphere(gl, modelMatrix, Vec3(0.0f, 10.0f, 0.0f), 4.0f, Materials.BlueShiny, drawImposter[0])
@@ -253,10 +254,10 @@ class BasicImpostor_() : Framework() {
                 scale(0.5f)
 
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
 
                 val lightColor = Vec4(1.0f)
-                glUniform4fv(unlit.objectColorUnif, 1, lightColor to vecBuffer)
+                glUniform4f(unlit.objectColorUnif, lightColor)
                 cube.render(gl, "flat")
             }
 
@@ -270,13 +271,13 @@ class BasicImpostor_() : Framework() {
                 glDisable(GL_DEPTH_TEST)
                 glDepthMask(false)
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                 glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f)
                 cube.render(gl, "flat")
 
                 glDepthMask(true)
                 glEnable(GL_DEPTH_TEST)
-                glUniform4f(unlit.objectColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                glUniform4f(unlit.objectColorUnif, 1.0f)
                 cube.render(gl, "flat")
             }
     }
@@ -304,15 +305,15 @@ class BasicImpostor_() : Framework() {
 
             val cameraSpherePos = modelMatrix.top() * Vec4(position, 1.0f)
             glUseProgram(litImpProgs[currImpostor].theProgram)
-            glUniform3fv(litImpProgs[currImpostor].cameraSpherePosUnif, 1, cameraSpherePos to vecBuffer)
+            glUniform3f(litImpProgs[currImpostor].cameraSpherePosUnif, cameraSpherePos)
             glUniform1f(litImpProgs[currImpostor].sphereRadiusUnif, radius)
 
-            glBindVertexArray(imposterVAO.get(0))
+            glBindVertexArray(imposterVAO)
 
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+            glDrawArrays(GL_TRIANGLE_STRIP, 4)
 
-            glBindVertexArray(0)
-            glUseProgram(0)
+            glBindVertexArray()
+            glUseProgram()
 
         } else
 
@@ -325,14 +326,14 @@ class BasicImpostor_() : Framework() {
                 normMatrix.inverse_().transpose_()
 
                 glUseProgram(litMeshProg.theProgram)
-                glUniformMatrix4fv(litMeshProg.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
-                glUniformMatrix3fv(litMeshProg.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix4f(litMeshProg.modelToCameraMatrixUnif, top())
+                glUniformMatrix3f(litMeshProg.normalModelToCameraMatrixUnif, normMatrix)
 
                 sphere.render(gl, "lit")
 
-                glUseProgram(0)
+                glUseProgram()
             }
-        glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0)
+        glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
     }
 
     fun drawSphereOrbit(gl: GL3, modelMatrix: MatrixStack, orbitCenter: Vec3, orbitAxis: Vec3, orbitRadius: Float,
@@ -364,10 +365,10 @@ class BasicImpostor_() : Framework() {
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION))
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.toLong(), proj to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, proj)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -413,11 +414,10 @@ class BasicImpostor_() : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         repeat(NUMBER_OF_LIGHTS) { glDeleteProgram(litImpProgs[it].theProgram) }
-        glDeleteProgram(litMeshProg.theProgram)
-        glDeleteProgram(unlit.theProgram)
+        glDeletePrograms(litMeshProg.theProgram, unlit.theProgram)
 
         glDeleteBuffers(Buffer.MAX, bufferName)
-        glDeleteVertexArrays(1, imposterVAO)
+        glDeleteVertexArray(imposterVAO)
 
         sphere.dispose(gl)
         plane.dispose(gl)

@@ -4,9 +4,7 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -51,8 +49,8 @@ class FragChangeColor_ : Framework() {
 
             elapsedTimeUniform = "time".location
 
-            "loopDuration".uniform1f = 5f
-            "fragLoopDuration".uniform1f = 5f
+            "loopDuration".location.float = 5f
+            "fragLoopDuration".location.float = 5f
         }
     }
 
@@ -73,9 +71,7 @@ class FragChangeColor_ : Framework() {
 
             elapsedTimeUniform.float = (System.currentTimeMillis() - startingTime) / 1_000f
 
-            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
-                glDrawArrays(3)
-            }
+            withVertexLayout(positionBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 

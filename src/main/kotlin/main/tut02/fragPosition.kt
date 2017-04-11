@@ -7,9 +7,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.glsl.ShaderProgram
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -88,12 +86,12 @@ class FragPosition_ : Framework() {
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+        glEnableVertexAttribArray(glf.pos4)
+        glVertexAttribPointer(glf.pos4)
 
         glDrawArrays(3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        glDisableVertexAttribArray(glf.pos4)
         glUseProgram()
     }
 

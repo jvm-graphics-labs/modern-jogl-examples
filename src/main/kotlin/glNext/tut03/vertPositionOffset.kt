@@ -7,12 +7,10 @@ import glNext.*
 import glm.glm
 import glm.vec._2.Vec2
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
 import uno.glsl.programOf
-import glm.vec._4.Vec4
 
 /**
  * Created by elect on 21/02/17.
@@ -72,9 +70,7 @@ class VertPositionOffset_Next : Framework() {
 
             offsetLocation.vec2 = offset
 
-            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
-                glDrawArrays(3)
-            }
+            withVertexLayout(positionBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 

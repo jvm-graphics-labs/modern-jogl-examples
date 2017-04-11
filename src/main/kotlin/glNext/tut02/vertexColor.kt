@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL3
 import glNext.*
 import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -59,13 +58,7 @@ class VertexColor_Next : Framework() {
         clear { color(0) }
 
         usingProgram(theProgram) {
-
-            withVertexLayout(vertexBufferObject, Vec4::class,
-                    Semantic.Attr.POSITION to 0,
-                    Semantic.Attr.COLOR to Vec4.SIZE * 3) {
-
-                glDrawArrays(3)
-            }
+            withVertexLayout(vertexBufferObject, glf.pos4_col4, 0, Vec4.SIZE * 3) { glDrawArrays(3) }
         }
     }
 

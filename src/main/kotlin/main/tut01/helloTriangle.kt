@@ -11,9 +11,7 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3ES3.GL_GEOMETRY_SHADER
 import glNext.*
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 
 
@@ -139,12 +137,12 @@ class HelloTriangle_ : Framework() {
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
+        glEnableVertexAttribArray(glf.pos4)
+        glVertexAttribPointer(glf.pos4)
 
         glDrawArrays(3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
+        glDisableVertexAttribArray(glf.pos4)
         glUseProgram()
     }
 

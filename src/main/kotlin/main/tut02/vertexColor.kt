@@ -31,9 +31,9 @@ class VertexColor_ : Framework() {
             +0.0f, +0.500f, 0.0f, 1.0f,
             +0.5f, -0.366f, 0.0f, 1.0f,
             -0.5f, -0.366f, 0.0f, 1.0f,
-            +1.0f, +0.000f, 0.0f, 1.0f,
-            +0.0f, +1.000f, 0.0f, 1.0f,
-            +0.0f, +0.000f, 1.0f, 1.0f)
+            +1.0f, +0.0f, 0.0f, 1.0f,
+            +0.0f, +1.0f, 0.0f, 1.0f,
+            +0.0f, +0.0f, 1.0f, 1.0f)
 
     override fun init(gl: GL3) = with(gl) {
 
@@ -64,15 +64,15 @@ class VertexColor_ : Framework() {
         glUseProgram(theProgram)
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, Vec4.SIZE * 3)
+        glEnableVertexAttribArray(glf.pos4_col4)
+        glEnableVertexAttribArray(glf.pos4_col4[1])
+        glVertexAttribPointer(glf.pos4_col4, 0)
+        glVertexAttribPointer(glf.pos4_col4[1], Vec4.SIZE * 3)
 
-        glDrawArrays(GL_TRIANGLES, 3)
+        glDrawArrays(3)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        glDisableVertexAttribArray(Semantic.Attr.COLOR)
+        glDisableVertexAttribArray(glf.pos4_col4)
+        glDisableVertexAttribArray(glf.pos4_col4[1])
         glUseProgram()
     }
 

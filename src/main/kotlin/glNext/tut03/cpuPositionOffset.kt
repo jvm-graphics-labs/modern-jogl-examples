@@ -5,12 +5,9 @@ import com.jogamp.opengl.GL.*
 import glm.glm
 import com.jogamp.opengl.GL3
 import glNext.*
-import glm.glm
 import glm.set
 import glm.vec._2.Vec2
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -62,13 +59,10 @@ class CpuPositionOffset_Next : Framework() {
         computePositionOffsets(offset)
         adjustVertexData(gl, offset)
 
-        clear { color(0, 0, 0, 1) }
+        clear { color() }
 
         usingProgram(theProgram) {
-
-            withVertexLayout(positionBufferObject, Vec4::class, Semantic.Attr.POSITION) {
-                glDrawArrays(3)
-            }
+            withVertexLayout(positionBufferObject, glf.pos4) { glDrawArrays(3) }
         }
     }
 
@@ -96,9 +90,7 @@ class CpuPositionOffset_Next : Framework() {
             newData[iVertex + 1] = vertexPositions[iVertex + 1] + offset.y
         }
 
-        withArrayBuffer(positionBufferObject) {
-            subData(newData)
-        }
+        withArrayBuffer(positionBufferObject) { subData(newData) }
 
         newData.destroy()
     }

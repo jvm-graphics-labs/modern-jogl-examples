@@ -39,13 +39,10 @@ object Program {
 
     var name = 0
     lateinit var gl: GL3
-    //
-//    infix fun String.to(location: Int) = GL20.glBindAttribLocation(name, location, this)
+
     val String.location
         get() = gl.glGetUniformLocation(name, this)
-    var String.uniform1f: Float
-        get() = 0f
-        set(value) = gl.glUniform1f(gl.glGetUniformLocation(name, this), value)
+
     var Int.float: Float
         get() = 0f
         set(value) = gl.glUniform1f(this, value)

@@ -58,6 +58,7 @@ fun GL3.glBindBuffer(target: Int) = glBindBuffer(target, 0)
 fun GL3.glBindBuffer(target: Int, buffer: IntBuffer) = glBindBuffer(target, buffer[0])
 
 fun GL3.glBindBufferRange(target: Int, index: Int, buffer: IntBuffer, offset: Int, size: Int) = glBindBufferRange(target, index, buffer[0], offset.L, size.L)
+fun GL3.glBindBufferBase(target: Int, index: Int) = glBindBufferBase(target, index, 0)
 
 fun GL3.withBuffer(target: Int, buffer: IntBuffer, block: Buffer.(GL3) -> Unit) = withBuffer(target, buffer[0], block)
 fun GL3.withBuffer(target: Int, buffer: Int, block: Buffer.(gl: GL3) -> Unit) {

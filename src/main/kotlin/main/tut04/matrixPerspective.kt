@@ -86,15 +86,15 @@ class MatrixPerspective_ : Framework() {
 
         val colorData = vertexData.size / 2
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec4::class)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
+        glEnableVertexAttribArray(glf.pos4_col4)
+        glEnableVertexAttribArray(glf.pos4_col4[1])
+        glVertexAttribPointer(glf.pos4_col4, 0)
+        glVertexAttribPointer(glf.pos4_col4[1], colorData)
 
         glDrawArrays(36)
 
-        glDisableVertexAttribArray(Semantic.Attr.POSITION)
-        glDisableVertexAttribArray(Semantic.Attr.COLOR)
+        glDisableVertexAttribArray(glf.pos4_col4)
+        glDisableVertexAttribArray(glf.pos4_col4[1])
 
         glUseProgram()
     }

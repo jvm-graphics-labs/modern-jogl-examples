@@ -6,9 +6,7 @@ import com.jogamp.opengl.GL3
 import glNext.*
 import glm.f
 import glm.size
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.destroyBuffers
 import uno.buffer.floatBufferOf
 import uno.buffer.intBufferBig
@@ -86,13 +84,7 @@ class AspectRatio_Next : Framework() {
 
             val colorData = vertexData.size / 2
 
-            withVertexLayout(vertexBufferObject, Vec4::class,
-                    Semantic.Attr.POSITION to 0,
-                    Semantic.Attr.COLOR to colorData){
-
-                glDrawArrays(36)
-            }
-
+            withVertexLayout(vertexBufferObject, glf.pos4_col4, 0, colorData) { glDrawArrays(36) }
         }
     }
 
@@ -101,9 +93,7 @@ class AspectRatio_Next : Framework() {
         perspectiveMatrix[0] = frustumScale / (w / h.f)
         perspectiveMatrix[5] = frustumScale
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
-        glUseProgram(theProgram)
+        usingProgram(theProgram) { glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix) }
 
         glViewport(w, h)
     }
@@ -111,8 +101,8 @@ class AspectRatio_Next : Framework() {
     override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
-        glDeleteBuffers(vertexBufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteBuffer(vertexBufferObject)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vertexBufferObject, vao, vertexData)
     }

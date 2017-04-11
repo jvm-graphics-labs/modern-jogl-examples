@@ -7,6 +7,7 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.GL3.GL_PROGRAM_POINT_SIZE
+import glNext.*
 import glm.BYTES
 import glm.L
 import glm.f
@@ -110,27 +111,25 @@ class GeomImpostor_() : Framework() {
         glEnable(GL_DEPTH_CLAMP)
 
         //Setup our Uniform Buffers
-        glGenBuffers(Buffer.MAX, bufferName)
+        glGenBuffers(bufferName)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE, GL_DYNAMIC_DRAW)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.LIGHT, bufferName[Buffer.LIGHT], 0, LightBlock.SIZE.L)
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
-
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferName[Buffer.IMPOSTER])
-        glBufferData(GL_ARRAY_BUFFER, NUMBER_OF_SPHERES * VertexData.SIZE.L, null, GL_STREAM_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, NUMBER_OF_SPHERES * VertexData.SIZE, GL_STREAM_DRAW)
 
-        glGenVertexArrays(1, imposterVAO)
-        glBindVertexArray(imposterVAO[0])
+        glGenVertexArray(imposterVAO)
+        glBindVertexArray(imposterVAO)
         glEnableVertexAttribArray(Semantic.Attr.CAMERA_SPHERE_POS)
         glVertexAttribPointer(Semantic.Attr.CAMERA_SPHERE_POS, 3, GL_FLOAT, false, VertexData.SIZE, VertexData.OFFSET_CAMERA_POSITION.L)
         glEnableVertexAttribArray(Semantic.Attr.SPHERE_RADIUS)
