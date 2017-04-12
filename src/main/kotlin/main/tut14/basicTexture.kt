@@ -7,6 +7,7 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL2GL3.GL_TEXTURE_1D
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
+import glNext.*
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -115,23 +116,23 @@ class BasicTexture_() : Framework() {
 
         val mtlBuffer = mtl.to(byteBufferBig(MaterialBlock.SIZE))
 
-        glGenBuffers(Buffer.MAX, bufferName)
+        glGenBuffers(bufferName)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.MATERIAL])
-        glBufferData(GL_UNIFORM_BUFFER, MaterialBlock.SIZE.L, mtlBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, mtlBuffer, GL_STATIC_DRAW)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, LightBlock.SIZE, GL_DYNAMIC_DRAW)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         //Bind the static buffers.
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.LIGHT, bufferName[Buffer.LIGHT], 0, LightBlock.SIZE.L)
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL], 0, MaterialBlock.SIZE.L)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         createGaussianTextures(gl)
 
@@ -152,10 +153,10 @@ class BasicTexture_() : Framework() {
             val cosAngleResolution = calcCosAngleResolution(it)
             createGaussianTexture(gl, it, cosAngleResolution)
         }
-        glGenSamplers(1, gaussSampler)
-        glSamplerParameteri(gaussSampler[0], GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glSamplerParameteri(gaussSampler[0], GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glSamplerParameteri(gaussSampler[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glGenSampler(gaussSampler)
+        glSamplerParameteri(gaussSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glSamplerParameteri(gaussSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glSamplerParameteri(gaussSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     }
 
     fun calcCosAngleResolution(level: Int): Int {
@@ -171,7 +172,7 @@ class BasicTexture_() : Framework() {
         glTexImage1D(GL_TEXTURE_1D, 0, GL_R8, cosAngleResolution, 0, GL_RED, GL_UNSIGNED_BYTE, textureData)
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0)
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0)
-        glBindTexture(GL_TEXTURE_1D, 0)
+        glBindTexture(GL_TEXTURE_1D)
 
         textureData.destroy()
     }
@@ -197,8 +198,8 @@ class BasicTexture_() : Framework() {
 
         lightTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.75f, 0.75f, 1.0f, 1.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
         val worldToCamMat = modelMatrix.top()
@@ -217,8 +218,8 @@ class BasicTexture_() : Framework() {
         lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE.L, lightData to lightBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, lightData to lightBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         run {
             glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL], 0, MaterialBlock.SIZE.L)
@@ -234,20 +235,20 @@ class BasicTexture_() : Framework() {
                 val prog = if (useTexture) litTextureProg else litShaderProg
 
                 glUseProgram(prog.theProgram)
-                glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
-                glUniformMatrix3fv(prog.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+                glUniformMatrix4f(prog.modelToCameraMatrixUnif, top())
+                glUniformMatrix3f(prog.normalModelToCameraMatrixUnif, normMatrix)
 
                 glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.GAUSSIAN_TEXTURE)
                 glBindTexture(GL_TEXTURE_1D, gaussTextures[currTexture])
-                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, gaussSampler[0])
+                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, gaussSampler)
 
                 objectMesh.render(gl, "lit")
 
-                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, 0)
-                glBindTexture(GL_TEXTURE_1D, 0)
+                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE)
+                glBindTexture(GL_TEXTURE_1D)
 
-                glUseProgram(0)
-                glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0)
+                glUseProgram()
+                glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
             }
         }
 
@@ -259,20 +260,20 @@ class BasicTexture_() : Framework() {
                 scale(0.25f)
 
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
 
                 val lightColor = Vec4(1.0f)
-                glUniform4fv(unlit.objectColorUnif, 1, lightColor to vecBuffer)
+                glUniform4f(unlit.objectColorUnif, lightColor)
                 cube.render(gl, "flat")
 
                 reset()
                 translate(globalLightDirection * 100.0f)
                 scale(5.0f)
 
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                 cube.render(gl, "flat")
 
-                glUseProgram(0)
+                glUseProgram()
             }
 
         if (drawCameraPos)
@@ -286,13 +287,13 @@ class BasicTexture_() : Framework() {
                 glDisable(GL_DEPTH_TEST)
                 glDepthMask(false)
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                 glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f)
                 cube.render(gl, "flat")
 
                 glDepthMask(true)
                 glEnable(GL_DEPTH_TEST)
-                glUniform4f(unlit.objectColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                glUniform4f(unlit.objectColorUnif, 1.0f)
                 cube.render(gl, "flat")
             }
     }
@@ -318,11 +319,11 @@ class BasicTexture_() : Framework() {
 
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
-        glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION))
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, proj to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
+        glBufferSubData(GL_UNIFORM_BUFFER, proj)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -369,13 +370,11 @@ class BasicTexture_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(litShaderProg.theProgram)
-        glDeleteProgram(litTextureProg.theProgram)
-        glDeleteProgram(unlit.theProgram)
+        glDeletePrograms(litShaderProg.theProgram, litTextureProg.theProgram, unlit.theProgram)
 
-        glDeleteBuffers(Buffer.MAX, bufferName)
-        glDeleteSamplers(1, gaussSampler)
-        glDeleteTextures(NUM_GAUSSIAN_TEXTURES, gaussTextures)
+        glDeleteBuffers(bufferName)
+        glDeleteSampler(gaussSampler)
+        glDeleteTextures(gaussTextures)
 
         objectMesh.dispose(gl)
         cube.dispose(gl)

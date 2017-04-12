@@ -115,7 +115,7 @@ class Interpolation_ : Framework() {
     }
 
     override fun keyPressed(e: KeyEvent) {
-        println(e)
+
         when (e.keyCode) {
 
             KeyEvent.VK_ESCAPE -> quit()
@@ -144,9 +144,9 @@ class Interpolation_ : Framework() {
             KeyEvent.VK_Y,
             KeyEvent.VK_U)
 
-    override fun end(gl: GL3) {
+    override fun end(gl: GL3) =with(gl){
 
-        gl.glDeleteProgram(theProgram)
+        glDeleteProgram(theProgram)
 
         ship.dispose(gl)
     }

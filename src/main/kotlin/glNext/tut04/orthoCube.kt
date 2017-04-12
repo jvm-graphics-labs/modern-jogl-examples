@@ -32,14 +32,14 @@ class OrthoCube_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCulling(true, frontFace = GL_CW)
+        faceCulling(true, GL_BACK, GL_CW)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut04", "ortho-with-offset.vert", "standard-colors.frag")
 
-        offsetUniform = glGetUniformLocation(theProgram, "offset")
+        withProgram(theProgram) { offsetUniform = "offset".location }
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {

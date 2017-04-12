@@ -70,6 +70,8 @@ fun GL3.withBuffer(target: Int, buffer: Int, block: Buffer.(gl: GL3) -> Unit) {
 
 fun GL3.withArrayBuffer(buffer: IntBuffer, block: Buffer.(GL3) -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer[0], block)
 fun GL3.withArrayBuffer(buffer: Int, block: Buffer.(gl: GL3) -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer, block)
+fun GL3.withElementBuffer(buffer: IntBuffer, block: Buffer.(gl: GL3) -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer[0], block)
+fun GL3.withElementBuffer(buffer: Int, block: Buffer.(gl: GL3) -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer, block)
 
 object Buffer {
 

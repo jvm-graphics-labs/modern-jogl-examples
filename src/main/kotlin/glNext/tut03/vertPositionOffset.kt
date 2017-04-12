@@ -47,16 +47,14 @@ class VertPositionOffset_Next : Framework() {
 
         theProgram = programOf(gl, javaClass, "tut03", "position-offset.vert", "standard.frag")
 
-        offsetLocation = glGetUniformLocation(theProgram, "offset")
+        withProgram(theProgram) { offsetLocation = "offset".location }
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {
 
         glGenBuffers(positionBufferObject)
 
-        withArrayBuffer(positionBufferObject) {
-            data(vertexPositions, GL_STATIC_DRAW)
-        }
+        withArrayBuffer(positionBufferObject) { data(vertexPositions, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {

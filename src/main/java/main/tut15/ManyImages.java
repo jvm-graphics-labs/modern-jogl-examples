@@ -297,7 +297,7 @@ public class ManyImages extends Framework {
             gl.glBindSampler(Semantic.Sampler.DIFFUSE, 0);
             gl.glBindTexture(GL_TEXTURE_2D, 0);
 
-            gl.glUseProgram(program.theProgram);
+            gl.glUseProgram(0);
         }
         modelMatrix.pop();
     }

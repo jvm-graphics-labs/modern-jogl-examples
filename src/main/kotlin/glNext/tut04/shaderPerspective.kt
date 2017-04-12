@@ -32,26 +32,23 @@ class ShaderPerspective_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        faceCulling(true, GL_BACK, GL_CW)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut04", "manual-perspective.vert", "standard-colors.frag")
 
-        offsetUniform = glGetUniformLocation(theProgram, "offset")
+        withProgram(theProgram) {
 
-        val frustumScaleUnif = glGetUniformLocation(theProgram, "frustumScale")
-        val zNearUnif = glGetUniformLocation(theProgram, "zNear")
-        val zFarUnif = glGetUniformLocation(theProgram, "zFar")
+            offsetUniform = "offset".location
 
-        glUseProgram(theProgram)
-        glUniform1f(frustumScaleUnif, 1.0f)
-        glUniform1f(zNearUnif, 1.0f)
-        glUniform1f(zFarUnif, 3.0f)
-        glUseProgram()
+            use {
+                "frustumScale".location.float = 1.0f
+                "zNear".location.float = 1.0f
+                "zFar".location.float = 3.0f
+            }
+        }
     }
 
     fun initializeVertexBuffer(gl: GL3) = with(gl) {

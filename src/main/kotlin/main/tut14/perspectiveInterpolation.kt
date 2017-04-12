@@ -4,6 +4,7 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
+import glNext.*
 import main.framework.Framework
 import main.framework.component.Mesh
 import uno.buffer.put
@@ -49,16 +50,16 @@ class PerspectiveInterpolation_() : Framework() {
         persMatrix.perspective(60.0f, 1.0f, zNear, zFar)
 
         glUseProgram(smoothInterp.theProgram)
-        glUniformMatrix4fv(smoothInterp.cameraToClipMatrixUnif, 1, false, persMatrix.top() to matBuffer)
+        glUniformMatrix4f(smoothInterp.cameraToClipMatrixUnif, persMatrix.top())
         glUseProgram(linearInterp.theProgram)
-        glUniformMatrix4fv(linearInterp.cameraToClipMatrixUnif, 1, false, matBuffer)
-        glUseProgram(0)
+        glUniformMatrix4f(linearInterp.cameraToClipMatrixUnif, persMatrix.top())
+        glUseProgram()
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.0f, 0.0f, 0.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0.0f)
+        glClearBufferf(GL_DEPTH)
 
         if (useSmoothInterpolation)
             glUseProgram(smoothInterp.theProgram)
@@ -73,8 +74,8 @@ class PerspectiveInterpolation_() : Framework() {
         glUseProgram(0)
     }
 
-    override fun reshape(gl: GL3, w: Int, h: Int) {
-        gl.glViewport(0, 0, w, h)
+    override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
+        glViewport(w, h)
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -104,14 +105,14 @@ class PerspectiveInterpolation_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(smoothInterp.theProgram)
-        glDeleteProgram(linearInterp.theProgram)
+        glDeletePrograms(smoothInterp.theProgram, linearInterp.theProgram)
 
         fauxHallway.dispose(gl)
         realHallway.dispose(gl)
     }
 
-    class ProgramData(gl: GL3, shader: String,
-                      val theProgram: Int = programOf(gl, PerspectiveInterpolation_::class.java, "tut14", shader + ".vert", shader + ".frag"),
-                      val cameraToClipMatrixUnif: Int = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix"))
+    class ProgramData(gl: GL3, shader: String) {
+        val theProgram = programOf(gl, PerspectiveInterpolation_::class.java, "tut14", shader + ".vert", shader + ".frag")
+        val cameraToClipMatrixUnif = gl.glGetUniformLocation(theProgram, "cameraToClipMatrix")
+    }
 }

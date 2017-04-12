@@ -135,8 +135,8 @@ class GeomImpostor_() : Framework() {
         glEnableVertexAttribArray(Semantic.Attr.SPHERE_RADIUS)
         glVertexAttribPointer(Semantic.Attr.SPHERE_RADIUS, 1, GL_FLOAT, false, VertexData.SIZE, VertexData.OFFSET_SPHERE_RADIUS.L)
 
-        glBindVertexArray(0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray()
+        glBindBuffer(GL_ARRAY_BUFFER)
 
         glEnable(GL_PROGRAM_POINT_SIZE)
 
@@ -167,7 +167,7 @@ class GeomImpostor_() : Framework() {
         ubArray.forEachIndexed { i, it -> it.to(arrayBuffer, i * MaterialEntry.SIZE) }
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.MATERIAL_ARRAY])
-        glBufferData(GL_UNIFORM_BUFFER, arrayBuffer.capacity().L, arrayBuffer, GL_STATIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, arrayBuffer, GL_STATIC_DRAW)
 
         val terrainBuffer = byteBufferBig(MaterialEntry.SIZE)
         MaterialEntry(
@@ -177,8 +177,8 @@ class GeomImpostor_() : Framework() {
                 .to(terrainBuffer)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.MATERIAL_TERRAIN])
-        glBufferData(GL_UNIFORM_BUFFER, MaterialEntry.SIZE.L, terrainBuffer, GL_STATIC_DRAW)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferData(GL_UNIFORM_BUFFER, terrainBuffer, GL_STATIC_DRAW)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         destroyBuffers(arrayBuffer, terrainBuffer)
     }
@@ -213,8 +213,8 @@ class GeomImpostor_() : Framework() {
 
         sphereTimer.update()
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.75f, 0.75f, 1.0f, 1.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
+        glClearBufferf(GL_DEPTH)
 
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
 
@@ -232,8 +232,8 @@ class GeomImpostor_() : Framework() {
         lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, LightBlock.SIZE.L, lightData.toBuffer())
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, lightData.toBuffer())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         run {
             glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL_TERRAIN], 0, MaterialEntry.SIZE.L)
@@ -242,13 +242,13 @@ class GeomImpostor_() : Framework() {
             normMatrix.inverse_().transpose_()
 
             glUseProgram(litMeshProg.theProgram)
-            glUniformMatrix4fv(litMeshProg.modelToCameraMatrixUnif, 1, false, modelMatrix.top() to matBuffer)
-            glUniformMatrix3fv(litMeshProg.normalModelToCameraMatrixUnif, 1, false, normMatrix to matBuffer)
+            glUniformMatrix4f(litMeshProg.modelToCameraMatrixUnif, modelMatrix.top())
+            glUniformMatrix3f(litMeshProg.normalModelToCameraMatrixUnif, normMatrix)
 
             plane.render(gl)
 
-            glUseProgram(0)
-            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0)
+            glUseProgram()
+            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
         }
 
         run {
@@ -272,8 +272,8 @@ class GeomImpostor_() : Framework() {
             posSizeArray.forEachIndexed { i, it -> it.to(impostorBuffer, VertexData.SIZE * i) }
 
             glBindBuffer(GL_ARRAY_BUFFER, bufferName[Buffer.IMPOSTER])
-            glBufferData(GL_ARRAY_BUFFER, NUMBER_OF_SPHERES * VertexData.SIZE.L, impostorBuffer, GL_STREAM_DRAW)
-            glBindBuffer(GL_ARRAY_BUFFER, 0)
+            glBufferData(GL_ARRAY_BUFFER, impostorBuffer, GL_STREAM_DRAW)
+            glBindBuffer(GL_ARRAY_BUFFER)
         }
 
         run {
@@ -281,12 +281,12 @@ class GeomImpostor_() : Framework() {
                     MaterialEntry.SIZE * NUMBER_OF_SPHERES.L)
 
             glUseProgram(litImpProg.theProgram)
-            glBindVertexArray(imposterVAO[0])
-            glDrawArrays(GL_POINTS, 0, NUMBER_OF_SPHERES)
-            glBindVertexArray(0)
-            glUseProgram(0)
+            glBindVertexArray(imposterVAO)
+            glDrawArrays(GL_POINTS, NUMBER_OF_SPHERES)
+            glBindVertexArray()
+            glUseProgram()
 
-            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, 0)
+            glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
         }
 
         if (drawLights)
@@ -297,10 +297,10 @@ class GeomImpostor_() : Framework() {
                 scale(0.5f)
 
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
 
                 val lightColor = Vec4(1.0f)
-                glUniform4fv(unlit.objectColorUnif, 1, lightColor to vecBuffer)
+                glUniform4f(unlit.objectColorUnif, lightColor)
                 cube.render(gl, "flat")
             }
 
@@ -314,13 +314,13 @@ class GeomImpostor_() : Framework() {
                 glDisable(GL_DEPTH_TEST)
                 glDepthMask(false)
                 glUseProgram(unlit.theProgram)
-                glUniformMatrix4fv(unlit.modelToCameraMatrixUnif, 1, false, top() to matBuffer)
+                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                 glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f)
                 cube.render(gl, "flat")
 
                 glDepthMask(true)
                 glEnable(GL_DEPTH_TEST)
-                glUniform4f(unlit.objectColorUnif, 1.0f, 1.0f, 1.0f, 1.0f)
+                glUniform4f(unlit.objectColorUnif, 1.0f)
                 cube.render(gl, "flat")
             }
     }
@@ -365,10 +365,10 @@ class GeomImpostor_() : Framework() {
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, proj to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, proj)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun mousePressed(e: MouseEvent) {
@@ -405,12 +405,10 @@ class GeomImpostor_() : Framework() {
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(litImpProg.theProgram)
-        glDeleteProgram(litMeshProg.theProgram)
-        glDeleteProgram(unlit.theProgram)
+        glDeletePrograms(litImpProg.theProgram, litMeshProg.theProgram, unlit.theProgram)
 
-        glDeleteBuffers(Buffer.MAX, bufferName)
-        glDeleteVertexArrays(1, imposterVAO)
+        glDeleteBuffers(bufferName)
+        glDeleteVertexArray(imposterVAO)
 
         sphere.dispose(gl)
         plane.dispose(gl)

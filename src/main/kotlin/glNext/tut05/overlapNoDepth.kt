@@ -1,4 +1,4 @@
-package main.tut05
+package glNext.tut05
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
@@ -11,7 +11,6 @@ import glm.size
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -20,10 +19,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    OverlapNoDepth_().setup("Tutorial 05 - Overlap No Depth")
+    OverlapNoDepth_Next().setup("Tutorial 05 - Overlap No Depth")
 }
 
-class OverlapNoDepth_ : Framework() {
+class OverlapNoDepth_Next : Framework() {
 
     object Buffer {
         val VERTEX = 0
@@ -55,31 +54,30 @@ class OverlapNoDepth_ : Framework() {
         initializeBuffers(gl)
         initializeVertexArrays(gl)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        faceCulling(true, GL_BACK, GL_CW)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut05", "standard.vert", "standard.frag")
 
-        offsetUniform = glGetUniformLocation(theProgram, "offset")
+        withProgram(theProgram) {
 
-        perspectiveMatrixUnif = glGetUniformLocation(theProgram, "perspectiveMatrix")
+            offsetUniform = "offset".location
+            perspectiveMatrixUnif = "perspectiveMatrix".location
 
-        val zNear = 1.0f
-        val zFar = 3.0f
+            val zNear = 1.0f
+            val zFar = 3.0f
 
-        perspectiveMatrix[0] = frustumScale
-        perspectiveMatrix[5] = frustumScale
-        perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
-        perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
-        perspectiveMatrix[11] = -1.0f
+            perspectiveMatrix[0] = frustumScale
+            perspectiveMatrix[5] = frustumScale
+            perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
+            perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
+            perspectiveMatrix[11] = -1.0f
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
-        glUseProgram()
+            glUseProgram(theProgram)
+            glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
+        }
     }
 
     fun initializeBuffers(gl: GL3) = with(gl) {

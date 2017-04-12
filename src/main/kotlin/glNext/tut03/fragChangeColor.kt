@@ -45,12 +45,14 @@ class FragChangeColor_ : Framework() {
 
         theProgram = programOf(gl, javaClass, "tut03", "calc-offset.vert", "calc-color.frag")
 
-        usingProgram(theProgram) {
+        withProgram(theProgram) {
 
             elapsedTimeUniform = "time".location
 
-            "loopDuration".location.float = 5f
-            "fragLoopDuration".location.float = 5f
+            use {
+                "loopDuration".location.float = 5f
+                "fragLoopDuration".location.float = 5f
+            }
         }
     }
 

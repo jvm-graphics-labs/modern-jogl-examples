@@ -175,9 +175,9 @@ class GimbalLock_ : Framework() {
         glViewport(0, 0, w, h)
     }
 
-    public override fun end(gl: GL3) {
+    public override fun end(gl: GL3) = with(gl){
 
-        gl.glDeleteProgram(theProgram)
+        glDeleteProgram(theProgram)
 
         `object`.dispose(gl)
         gimbals.forEach { it.dispose(gl) }

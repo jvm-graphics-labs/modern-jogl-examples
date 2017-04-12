@@ -35,7 +35,7 @@ fun GL3.glGetProgramInfoLog(program: Int): String {
     return String(bytes)
 }
 
-object Program {
+object ProgramA {
 
     var name = 0
     lateinit var gl: GL3
@@ -58,6 +58,23 @@ object Program {
 
     infix fun Vec4.to(location: Int) = gl.glUniform4fv(location, 1, this to matBuffer)
     infix fun Mat4.to(location: Int) = gl.glUniformMatrix4fv(location, 1, false, this to matBuffer)
+}
+
+object ProgramB {
+
+    var name = 0
+    lateinit var gl: GL3
+
+    val String.location
+        get() = gl.glGetUniformLocation(name, this)
+
+    inline fun use(block: ProgramA.(GL3) -> Unit) {
+        gl.glUseProgram(name)
+        ProgramA.gl = gl
+        ProgramA.name = name
+        ProgramA.block(gl)
+        gl.glUseProgram(0)
+    }
 }
 
 
@@ -104,17 +121,18 @@ fun GL3.glUniformMatrix3f(location: Int, value: Mat4) {
     glUniformMatrix3fv(location, 1, false, value to matBuffer)
 }
 
-inline fun GL3.usingProgram(program: Int, block: Program.(GL3) -> Unit) {
-    Program.gl = this
-    Program.name = program
+inline fun GL3.usingProgram(program: Int, block: ProgramA.(GL3) -> Unit) {
+    ProgramA.gl = this
+    ProgramA.name = program
     glUseProgram(program)
-    Program.block(this)
+    ProgramA.block(this)
     glUseProgram(0)
 }
 
-inline fun withProgram(program: Int, block: Program.() -> Unit) {
-    Program.name = program
-    return Program.block()
+inline fun GL3.withProgram(program: Int, block: ProgramB.() -> Unit) {
+    ProgramB.gl = this
+    ProgramB.name = program
+    return ProgramB.block()
 }
 
 fun GL3.glDeletePrograms(vararg programs: Int) = programs.forEach { glDeleteProgram(it) }

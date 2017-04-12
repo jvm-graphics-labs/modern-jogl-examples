@@ -6,6 +6,7 @@ import com.jogamp.opengl.GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.util.texture.spi.DDSImage
+import glNext.*
 import glm.L
 import glm.f
 import glm.mat.Mat4
@@ -85,13 +86,13 @@ class GammaCheckers_ : Framework() {
         glEnable(GL_DEPTH_CLAMP)
 
         //Setup our Uniform Buffers
-        glGenBuffers(1, projBufferName)
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glGenBuffer(projBufferName)
+        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         loadCheckerTextures(gl)
         createSamplers(gl)
@@ -138,7 +139,7 @@ class GammaCheckers_ : Framework() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, ddsImage.numMipMaps - 1)
 
-        glBindTexture(GL_TEXTURE_2D, 0)
+        glBindTexture(GL_TEXTURE_2D)
     }
 
     fun createSamplers(gl: GL3) = with(gl) {
@@ -163,8 +164,8 @@ class GammaCheckers_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(.75f, .75f, 1f, 1f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, .75f, .75f, 1f, 1f)
+        glClearBufferf(GL_DEPTH)
 
         camTimer.update()
 
@@ -183,7 +184,7 @@ class GammaCheckers_ : Framework() {
         val prog = if (drawGammaProgram) progGamma else progNoGamma
 
         glUseProgram(prog.theProgram)
-        glUniformMatrix4fv(prog.modelToCameraMatrixUnif, 1, false, modelMatrix.top() to matBuffer)
+        glUniformMatrix4f(prog.modelToCameraMatrixUnif, modelMatrix.top())
 
         glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
         glBindTexture(GL_TEXTURE_2D, textureName[if (drawGammaTexture) Texture.Gamma else Texture.Linear])
@@ -194,21 +195,21 @@ class GammaCheckers_ : Framework() {
         else
             plane.render(gl, "tex")
 
-        glBindSampler(Semantic.Sampler.DIFFUSE, 0)
-        glBindTexture(GL_TEXTURE_2D, 0)
+        glBindSampler(Semantic.Sampler.DIFFUSE)
+        glBindTexture(GL_TEXTURE_2D)
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
 
         val cameraToClipMatrix = glm.perspective(90f.rad, w / h.f, 1f, 1000f)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, cameraToClipMatrix to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
+        glBufferSubData(GL_UNIFORM_BUFFER, cameraToClipMatrix)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
@@ -216,9 +217,9 @@ class GammaCheckers_ : Framework() {
         plane.dispose(gl)
         corridor.dispose(gl)
 
-        glDeleteBuffers(1, projBufferName)
-        glDeleteTextures(Texture.MAX, textureName)
-        glDeleteSamplers(Samplers.MAX, samplerName)
+        glDeleteBuffer(projBufferName)
+        glDeleteTextures(textureName)
+        glDeleteSamplers(samplerName)
 
         destroyBuffers(projBufferName, textureName, samplerName)
     }
@@ -268,7 +269,7 @@ class GammaCheckers_ : Framework() {
                 glUniform1i(
                         glGetUniformLocation(theProgram, "colorTexture"),
                         Semantic.Sampler.DIFFUSE)
-                glUseProgram(0)
+                glUseProgram()
             }
         }
     }

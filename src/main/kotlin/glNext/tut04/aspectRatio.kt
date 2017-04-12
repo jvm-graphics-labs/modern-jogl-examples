@@ -39,14 +39,14 @@ class AspectRatio_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCulling(true, frontFace = GL_CW)
+        faceCulling(true, GL_BACK, GL_CW)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut04", "matrix-perspective.vert", "standard-colors.frag")
 
-        usingProgram(theProgram) {
+        withProgram(theProgram) {
 
             offsetUniform = "offset".location
 
@@ -61,7 +61,7 @@ class AspectRatio_Next : Framework() {
             perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
             perspectiveMatrix[11] = -1.0f
 
-            glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
+            use { glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix) }
         }
     }
 
@@ -69,9 +69,7 @@ class AspectRatio_Next : Framework() {
 
         glGenBuffers(vertexBufferObject)
 
-        withArrayBuffer(vertexBufferObject) {
-            data(vertexData, GL_STATIC_DRAW)
-        }
+        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {

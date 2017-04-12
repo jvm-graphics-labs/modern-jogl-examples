@@ -6,6 +6,7 @@ import com.jogamp.opengl.GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.util.texture.spi.DDSImage
+import glNext.*
 import glm.*
 import glm.mat.Mat4
 import glm.vec._3.Vec3
@@ -72,16 +73,16 @@ class ManyImages_ : Framework() {
         glEnable(GL_DEPTH_CLAMP)
 
         //Setup our Uniform Buffers
-        glGenBuffers(1, projBufferName)
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName[0])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glGenBuffer(projBufferName)
+        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName[0], 0, Mat4.SIZE.L)
+        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName, 0, Mat4.SIZE)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
         // Generate all the texture names
-        glGenTextures(Texture.MAX, textureName)
+        glGenTextures(textureName)
 
         loadCheckerTexture(gl)
         loadMipmapTexture(gl)
@@ -110,16 +111,14 @@ class ManyImages_ : Framework() {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, ddsImage.numMipMaps - 1)
-        glBindTexture(GL_TEXTURE_2D, 0)
+        glBindTexture(GL_TEXTURE_2D)
     }
 
     fun loadMipmapTexture(gl: GL3) = with(gl) {
 
         glBindTexture(GL_TEXTURE_2D, textureName[Texture.MipmapTest])
 
-        val oldAlign = intBufferBig(1)
-
-        glGetIntegerv(GL_UNPACK_ALIGNMENT, oldAlign)
+        val oldAlign =  glGetInteger(GL_UNPACK_ALIGNMENT)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
         for (mipmapLevel in 0..7) {
@@ -135,14 +134,12 @@ class ManyImages_ : Framework() {
             buffer.destroy()
         }
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, oldAlign[0])
+        glPixelStorei(GL_UNPACK_ALIGNMENT, oldAlign)
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 7)
 
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        oldAlign.destroy()
+        glBindTexture(GL_TEXTURE_2D)
     }
 
     val mipmapColors = arrayOf(
@@ -210,8 +207,8 @@ class ManyImages_ : Framework() {
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.75f, 0.75f, 1.0f, 1.0f))
-        glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f))
+        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
+        glClearBufferf(GL_DEPTH)
 
 
         camTimer.update()
@@ -231,7 +228,7 @@ class ManyImages_ : Framework() {
 
             glUseProgram(program.theProgram)
 
-            glUniformMatrix4fv(program.modelToCameraMatrixUL, 1, false, top() to matBuffer)
+            glUniformMatrix4f(program.modelToCameraMatrixUL, top())
 
             glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
             glBindTexture(GL_TEXTURE_2D, textureName[if (useMipmapTexture) Texture.MipmapTest else Texture.Checker])
@@ -242,10 +239,10 @@ class ManyImages_ : Framework() {
             else
                 plane.render(gl, "tex")
 
-            glBindSampler(Semantic.Sampler.DIFFUSE, 0)
-            glBindTexture(GL_TEXTURE_2D, 0)
+            glBindSampler(Semantic.Sampler.DIFFUSE)
+            glBindTexture(GL_TEXTURE_2D)
 
-            glUseProgram(program.theProgram)
+            glUseProgram()
         }
     }
 
@@ -254,11 +251,11 @@ class ManyImages_ : Framework() {
         val persMatrix = MatrixStack()
         persMatrix.perspective(90f, w / h.f, 1f, 1000f)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName[0])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, persMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
+        glBufferSubData(GL_UNIFORM_BUFFER, persMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
@@ -268,9 +265,9 @@ class ManyImages_ : Framework() {
 
         glDeleteProgram(program.theProgram)
 
-        glDeleteBuffers(1, projBufferName)
-        glDeleteTextures(Texture.MAX, textureName)
-        glDeleteSamplers(Sampler.MAX, samplerName)
+        glDeleteBuffer(projBufferName)
+        glDeleteTextures(textureName)
+        glDeleteSamplers(samplerName)
 
         destroyBuffers(projBufferName, textureName, samplerName)
     }
@@ -325,7 +322,7 @@ class ManyImages_ : Framework() {
                 glUniform1i(
                         glGetUniformLocation(theProgram, "colorTexture"),
                         Semantic.Sampler.DIFFUSE)
-                glUseProgram(0)
+                glUseProgram()
             }
         }
     }

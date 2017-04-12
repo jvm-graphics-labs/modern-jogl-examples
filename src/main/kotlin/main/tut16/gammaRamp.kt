@@ -4,6 +4,7 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.util.texture.TextureIO
+import glNext.*
 import glm.L
 import glm.mat.Mat4
 import glm.size
@@ -54,18 +55,18 @@ class GammaRamp_ : Framework() {
 
         initializePrograms(gl)
 
-        glGenBuffers(Buffer.MAX, bufferName)
+        glGenBuffers(bufferName)
         initializeVertexData(gl)
 
         loadTextures(gl)
 
         //Setup our Uniform Buffers
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE.L, null, GL_DYNAMIC_DRAW)
+        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
 
         glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER)
     }
 
     fun initializePrograms(gl: GL3) = with(gl) {
@@ -79,7 +80,7 @@ class GammaRamp_ : Framework() {
         var colorTextureUnif = glGetUniformLocation(noGammaProgram, "colorTexture")
         glUseProgram(noGammaProgram)
         glUniform1i(colorTextureUnif, Semantic.Sampler.DIFFUSE)
-        glUseProgram(0)
+        glUseProgram()
 
         projectionBlock = glGetUniformBlockIndex(gammaProgram, "Projection")
         glUniformBlockBinding(gammaProgram, projectionBlock, Semantic.Uniform.PROJECTION)
@@ -87,25 +88,26 @@ class GammaRamp_ : Framework() {
         colorTextureUnif = glGetUniformLocation(gammaProgram, "colorTexture")
         glUseProgram(gammaProgram)
         glUniform1i(colorTextureUnif, Semantic.Sampler.DIFFUSE)
-        glUseProgram(0)
+        glUseProgram()
     }
 
     fun initializeVertexData(gl: GL3) = with(gl) {
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferName[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexData.size.L, vertexData, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
 
-        glGenVertexArrays(1, vao)
+        glGenVertexArray(vao)
 
-        glBindVertexArray(vao.get(0))
+        glBindVertexArray(vao)
         glBindBuffer(GL_ARRAY_BUFFER, bufferName[Buffer.VERTEX])
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec2s.length, GL_UNSIGNED_SHORT, false, Vec2s.SIZE * 2, 0)
-        glEnableVertexAttribArray(Semantic.Attr.TEX_COORD)
+        glEnableVertexAttribArray(glf.pos2us_tc2us)
+        glVertexAttribPointer(glf.pos2us_tc2us)
+        glEnableVertexAttribArray(glf.pos2us_tc2us[1])
+        // cant use glf.pos2_tc2[1] because of normalized is true
         glVertexAttribPointer(Semantic.Attr.TEX_COORD, Vec2s.length, GL_UNSIGNED_SHORT, true, Vec2s.SIZE * 2, Vec2s.SIZE.L)
 
-        glBindVertexArray(0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray()
+        glBindBuffer(GL_ARRAY_BUFFER)
     }
 
     val vertexData = shortBufferOf(
@@ -138,39 +140,39 @@ class GammaRamp_ : Framework() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0)
 
-        glBindTexture(GL_TEXTURE_2D, 0)
+        glBindTexture(GL_TEXTURE_2D)
 
-        glGenSamplers(1, samplerName)
-        glSamplerParameteri(samplerName[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glSamplerParameteri(samplerName[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glSamplerParameteri(samplerName[0], GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glSamplerParameteri(samplerName[0], GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glGenSampler(samplerName)
+        glSamplerParameteri(samplerName, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glSamplerParameteri(samplerName, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glSamplerParameteri(samplerName, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glSamplerParameteri(samplerName, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferfv(GL_COLOR, 0, clearColor.put(0.0f, 0.5f, 0.3f, 1.0f))
+        glClearBufferf(GL_COLOR, 0.0f, 0.5f, 0.3f, 1.0f)
 
         glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
         glBindTexture(GL_TEXTURE_2D, textureName[if (useGammaCorrect[0]) Texture.GAMMA else Texture.NO_GAMMA])
-        glBindSampler(Semantic.Sampler.DIFFUSE, samplerName[0])
+        glBindSampler(Semantic.Sampler.DIFFUSE, samplerName)
 
-        glBindVertexArray(vao[0])
+        glBindVertexArray(vao)
 
         glUseProgram(noGammaProgram)
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+        glDrawArrays(GL_TRIANGLE_STRIP, 4)
 
         glBindTexture(GL_TEXTURE_2D, textureName[if (useGammaCorrect[1]) Texture.GAMMA else Texture.NO_GAMMA])
 
         glUseProgram(gammaProgram)
         glDrawArrays(GL_TRIANGLE_STRIP, 4, 4)
 
-        glBindVertexArray(0)
-        glUseProgram(0)
+        glBindVertexArray()
+        glUseProgram()
 
         glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
-        glBindTexture(GL_TEXTURE_2D, 0)
-        glBindSampler(Semantic.Sampler.DIFFUSE, 0)
+        glBindTexture(GL_TEXTURE_2D)
+        glBindSampler(Semantic.Sampler.DIFFUSE)
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -181,21 +183,20 @@ class GammaRamp_ : Framework() {
                 .scale(2f / w, -2f / h, 1f)
 
         glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, Mat4.SIZE.L, persMatrix.top() to matBuffer)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, persMatrix.top())
+        glBindBuffer(GL_UNIFORM_BUFFER)
 
-        glViewport(0, 0, w, h)
+        glViewport(w, h)
     }
 
     override fun end(gl: GL3) = with(gl) {
 
-        glDeleteProgram(noGammaProgram)
-        glDeleteProgram(gammaProgram)
+        glDeletePrograms(noGammaProgram, gammaProgram)
 
-        glDeleteBuffers(Buffer.MAX, bufferName)
-        glDeleteVertexArrays(1, vao)
-        glDeleteTextures(Texture.MAX, textureName)
-        glDeleteSamplers(1, samplerName)
+        glDeleteBuffers(bufferName)
+        glDeleteVertexArray(vao)
+        glDeleteTextures(textureName)
+        glDeleteSampler(samplerName)
 
         destroyBuffers(bufferName, vao, textureName, samplerName, vertexData)
     }
@@ -240,7 +241,7 @@ class GammaRamp_ : Framework() {
                 glUniform1i(
                         glGetUniformLocation(theProgram, "colorTexture"),
                         Semantic.Sampler.DIFFUSE)
-                glUseProgram(0)
+                glUseProgram()
             }
         }
     }

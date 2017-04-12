@@ -34,8 +34,42 @@ infix fun GL3.glDeleteVertexArrays(vertexArrays: IntBuffer) = glDeleteVertexArra
 infix fun GL3.glDeleteVertexArray(vertexArray: Int) = glDeleteVertexArrays(1, int.put(0, vertexArray))
 
 
+inline fun GL3.withVertexArray(vertexArray: IntBuffer, block: VertexArray.() -> Unit) {
+    glBindVertexArray(vertexArray[0])
+    VertexArray.block()
+    glBindVertexArray(0)
+}
+
+object VertexArray {
+
+    fun GL3.setArray(array: Int, format: VertexLayout) {
+        glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, array)
+        for (attr in format.attribute) {
+            glEnableVertexAttribArray(attr.index)
+            glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, attr.pointer)
+        }
+        glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
+    }
+
+    fun GL3.setArray(array: Int, format: VertexLayout, vararg offset: Int) {
+        glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, array)
+        for (i in format.attribute.indices) {
+            val attr = format.attribute[i]
+            glEnableVertexAttribArray(attr.index)
+            glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, 0, offset[i].L)
+        }
+        glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
+    }
+
+    fun GL3.setElement(element: Int) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element)
+    fun GL3.setElement(element: IntBuffer) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element[0])
+}
+
+
+
+
 inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, block: () -> Unit) {
-    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer[0])
     for (attr in format.attribute) {
         glEnableVertexAttribArray(attr.index)
         glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, attr.pointer)
@@ -46,30 +80,10 @@ inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, block: 
         glDisableVertexAttribArray(attr.index)
 }
 
-inline fun GL3.withVertexLayout(buffer: IntBuffer,
-                                format0: VertexLayout, index0: Int, offset0: Int,
-                                format1: VertexLayout, index1: Int, offset1: Int, block: () -> Unit) {
-
-    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
-    for (attr in format0.attribute) {
-        glEnableVertexAttribArray(attr.index)
-        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, offset0 + attr.pointer)
-    }
-    for (attr in format1.attribute) {
-        glEnableVertexAttribArray(attr.index)
-        glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.interleavedStride, offset1 + attr.pointer)
-    }
-    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
-    block()
-    for (attr in format0.attribute)
-        glDisableVertexAttribArray(attr.index)
-    for (attr in format1.attribute)
-        glDisableVertexAttribArray(attr.index)
-}
 
 /** For un-interleaved, that is not-interleaved */
 inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, vararg offset: Int, block: () -> Unit) {
-    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer)
+    glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, buffer[0])
     for (i in format.attribute.indices) {
         val attr = format.attribute[i]
         glEnableVertexAttribArray(attr.index)
@@ -97,6 +111,7 @@ fun GL3.glVertexAttribPointer(attribute: VertexAttribute) =
                 attribute.normalized,
                 attribute.interleavedStride,
                 attribute.pointer)
+
 fun GL3.glVertexAttribPointer(layout: VertexLayout, offset: Int) = glVertexAttribPointer(layout[0], offset)
 fun GL3.glVertexAttribPointer(attribute: VertexAttribute, offset: Int) =
         glVertexAttribPointer(
@@ -104,7 +119,7 @@ fun GL3.glVertexAttribPointer(attribute: VertexAttribute, offset: Int) =
                 attribute.size,
                 attribute.type,
                 attribute.normalized,
-                0,  // tightly packed
+                0, // tightly packed
                 offset.L)
 
 fun GL3.glVertexAttribPointer(index: Int, kClass: KClass<*>, offset: Int = 0) = when (kClass) {

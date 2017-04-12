@@ -15,6 +15,7 @@ import main.framework.component.Mesh
 import glm.mat.Mat4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
+import uno.buffer.destroy
 import uno.buffer.intBufferBig
 
 /**
@@ -73,7 +74,7 @@ class WorldWithUBO_ : Framework() {
         objectColor = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-passthrough.frag")
         uniformColorTint = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-mult-uniform.frag")
 
-        glGenBuffers(globalMatricesBufferName)
+        glGenBuffer(globalMatricesBufferName)
         glBindBuffer(GL_UNIFORM_BUFFER, globalMatricesBufferName)
         glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE * 2, GL_STREAM_DRAW)
         glBindBuffer(GL_UNIFORM_BUFFER)
@@ -369,6 +370,8 @@ class WorldWithUBO_ : Framework() {
         glDeletePrograms(uniformColor.theProgram, objectColor.theProgram, uniformColorTint.theProgram)
 
         meshes.forEach { it.dispose(gl) }
+
+        globalMatricesBufferName.destroy()
     }
 
     override fun keyPressed(e: KeyEvent) {

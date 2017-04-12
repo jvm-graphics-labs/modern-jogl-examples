@@ -1,4 +1,4 @@
-package main.tut05
+package glNext.tut05
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
@@ -9,21 +9,22 @@ import glNext.*
 import glm.f
 import glm.size
 import glm.vec._3.Vec3
-import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
-import uno.buffer.*
+import uno.buffer.destroyBuffers
+import uno.buffer.floatBufferOf
+import uno.buffer.intBufferBig
+import uno.buffer.shortBufferOf
 import uno.glsl.programOf
 
 /**
- * Created by GBarbieri on 23.02.2017.
+ * Created by elect on 22/02/17.
  */
 
 fun main(args: Array<String>) {
-    OverlapNoDepth_().setup("Tutorial 05 - Overlap No Depth")
+    DepthBuffer_Next().setup("Tutorial 05 - Depth Buffering")
 }
 
-class OverlapNoDepth_ : Framework() {
+class DepthBuffer_Next : Framework() {
 
     object Buffer {
         val VERTEX = 0
@@ -31,98 +32,62 @@ class OverlapNoDepth_ : Framework() {
         val MAX = 2
     }
 
-    object Vao {
-        val A = 0
-        val B = 1
-        val MAX = 2
-    }
-
     var theProgram = 0
     var offsetUniform = 0
     var perspectiveMatrixUnif = 0
     val numberOfVertices = 36
-
     val perspectiveMatrix = FloatArray(16)
     val frustumScale = 1.0f
-
     val bufferObject = intBufferBig(Buffer.MAX)
-    val vao = intBufferBig(Vao.MAX)
+    val vao = intBufferBig(1)
 
 
     override fun init(gl: GL3) = with(gl) {
 
         initializeProgram(gl)
         initializeBuffers(gl)
-        initializeVertexArrays(gl)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        glGenVertexArray(vao)
+        withVertexArray(vao) {
+            val colorData = Vec3.SIZE * numberOfVertices
+            setArray(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
+            setElement(bufferObject[Buffer.INDEX])
+        }
+
+        faceCulling(true, GL_BACK, GL_CW)
+
+        depth(true, true, GL_LEQUAL, 0.0f, 1.0f)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut05", "standard.vert", "standard.frag")
 
-        offsetUniform = glGetUniformLocation(theProgram, "offset")
+        withProgram(theProgram) {
 
-        perspectiveMatrixUnif = glGetUniformLocation(theProgram, "perspectiveMatrix")
+            offsetUniform = "offset".location
+            perspectiveMatrixUnif = "perspectiveMatrix".location
 
-        val zNear = 1.0f
-        val zFar = 3.0f
+            val zNear = 1.0f
+            val zFar = 3.0f
 
-        perspectiveMatrix[0] = frustumScale
-        perspectiveMatrix[5] = frustumScale
-        perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
-        perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
-        perspectiveMatrix[11] = -1.0f
+            perspectiveMatrix[0] = frustumScale
+            perspectiveMatrix[5] = frustumScale
+            perspectiveMatrix[10] = (zFar + zNear) / (zNear - zFar)
+            perspectiveMatrix[14] = 2f * zFar * zNear / (zNear - zFar)
+            perspectiveMatrix[11] = -1.0f
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
-        glUseProgram()
+            use { glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix) }
+        }
     }
 
     fun initializeBuffers(gl: GL3) = with(gl) {
 
         glGenBuffers(bufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(bufferObject[Buffer.VERTEX]) { data(vertexData, GL_STATIC_DRAW) }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER)
-    }
-
-    fun initializeVertexArrays(gl: GL3) = with(gl) {
-
-        glGenVertexArrays(vao)
-
-        glBindVertexArray(vao[Vao.A])
-
-        var colorDataOffset = Vec3.SIZE * numberOfVertices
-
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glEnableVertexAttribArray(glf.pos3_col4)
-        glEnableVertexAttribArray(glf.pos3_col4[1])
-        glVertexAttribPointer(glf.pos3_col4, 0)
-        glVertexAttribPointer(glf.pos3_col4[1], colorDataOffset)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-
-        glBindVertexArray(vao[Vao.B])
-
-        val positionDataOffset = Vec3.SIZE * (numberOfVertices / 2)
-        colorDataOffset += Vec4.SIZE * (numberOfVertices / 2)
-
-        //Use the same buffer object previously bound to GL_ARRAY_BUFFER.
-        glEnableVertexAttribArray(glf.pos3_col4)
-        glEnableVertexAttribArray(glf.pos3_col4[1])
-        glVertexAttribPointer(glf.pos3_col4, positionDataOffset)
-        glVertexAttribPointer(glf.pos3_col4[1], colorDataOffset)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-
-        glBindVertexArray()
+        withElementBuffer(bufferObject[Buffer.INDEX]) { data(indexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {
@@ -130,18 +95,17 @@ class OverlapNoDepth_ : Framework() {
         glClearBufferf(GL_COLOR, 0)
         glClearBufferf(GL_DEPTH)
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        glBindVertexArray(vao[Vao.A])
-        glUniform3f(offsetUniform)
-        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
+            withVertexArray(vao) {
 
-        glBindVertexArray(vao[Vao.B])
-        glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
-        glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT)
+                glUniform3f(offsetUniform)
+                glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
 
-        glBindVertexArray()
-        glUseProgram()
+                glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
+                glDrawElementsBaseVertex(indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
+            }
+        }
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
@@ -149,9 +113,7 @@ class OverlapNoDepth_ : Framework() {
         perspectiveMatrix[0] = frustumScale * (h / w.f)
         perspectiveMatrix[5] = frustumScale
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix)
-        glUseProgram()
+        usingProgram(theProgram) { glUniformMatrix4f(perspectiveMatrixUnif, perspectiveMatrix) }
 
         glViewport(w, h)
     }
@@ -160,7 +122,7 @@ class OverlapNoDepth_ : Framework() {
 
         glDeleteProgram(theProgram)
         glDeleteBuffers(bufferObject)
-        glDeleteVertexArrays(vao)
+        glDeleteVertexArray(vao)
 
         destroyBuffers(vao, bufferObject, vertexData, indexData)
     }

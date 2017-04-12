@@ -55,10 +55,10 @@ class DepthClamping_ : Framework() {
 
         val colorData = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3::class)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorData)
+        glEnableVertexAttribArray(glf.pos3_col4)
+        glEnableVertexAttribArray(glf.pos3_col4[1])
+        glVertexAttribPointer(glf.pos3_col4, 0)
+        glVertexAttribPointer(glf.pos3_col4[1], colorData)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray()
@@ -103,9 +103,9 @@ class DepthClamping_ : Framework() {
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER)
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {

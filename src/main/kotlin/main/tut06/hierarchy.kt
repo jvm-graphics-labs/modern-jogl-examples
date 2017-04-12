@@ -103,10 +103,10 @@ class Hierarchy_ : Framework() {
 
         val colorDataOffset = Vec3.SIZE * numberOfVertices
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glEnableVertexAttribArray(Semantic.Attr.POSITION)
-        glEnableVertexAttribArray(Semantic.Attr.COLOR)
-        glVertexAttribPointer(Semantic.Attr.POSITION, Vec3::class)
-        glVertexAttribPointer(Semantic.Attr.COLOR, Vec4::class, colorDataOffset)
+        glEnableVertexAttribArray(glf.pos3_col4)
+        glEnableVertexAttribArray(glf.pos3_col4[1])
+        glVertexAttribPointer(glf.pos3_col4, 0)
+        glVertexAttribPointer(glf.pos3_col4[1], colorDataOffset)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
 
         glBindVertexArray()
