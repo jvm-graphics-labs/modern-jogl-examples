@@ -151,9 +151,9 @@ class Translation_ : Framework() {
         glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER)
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER)
     }
 
     override fun display(gl: GL3) = with(gl) {

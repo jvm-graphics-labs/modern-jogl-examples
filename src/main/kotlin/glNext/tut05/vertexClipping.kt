@@ -17,14 +17,14 @@ import uno.buffer.shortBufferOf
 import uno.glsl.programOf
 
 /**
- * Created by elect on 22/02/17.
+ * Created by GBarbieri on 23.02.2017.
  */
 
 fun main(args: Array<String>) {
-    DepthBuffer_Next().setup("Tutorial 05 - Depth Buffering")
+    VertexClipping_Next().setup("Tutorial 05 - Vertex Clipping")
 }
 
-class DepthBuffer_Next : Framework() {
+class VertexClipping_Next : Framework() {
 
     object Buffer {
         val VERTEX = 0
@@ -36,8 +36,10 @@ class DepthBuffer_Next : Framework() {
     var offsetUniform = 0
     var perspectiveMatrixUnif = 0
     val numberOfVertices = 36
+
     val perspectiveMatrix = FloatArray(16)
     val frustumScale = 1.0f
+
     val bufferObject = intBufferBig(Buffer.MAX)
     val vao = intBufferBig(1)
 
@@ -48,15 +50,17 @@ class DepthBuffer_Next : Framework() {
         initializeBuffers(gl)
 
         glGenVertexArray(vao)
+
         withVertexArray(vao) {
-            val colorData = Vec3.SIZE * numberOfVertices
-            array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
+
+            val colorDataOffset = Vec3.SIZE * numberOfVertices
+            array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorDataOffset)
             element(bufferObject[Buffer.INDEX])
         }
 
         faceCulling(true, GL_BACK, GL_CW)
 
-        depth(true, true, GL_LEQUAL, 0.0f, 1.0f)
+        depth(true, true, GL_LESS, 0.0, 1.0)
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -96,14 +100,14 @@ class DepthBuffer_Next : Framework() {
         glClearBufferf(GL_DEPTH)
 
         usingProgram(theProgram) {
-
             withVertexArray(vao) {
 
-                glUniform3f(offsetUniform)
+                glUniform3f(offsetUniform, 0.0f, 0.0f, 0.5f)
                 glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
 
                 glUniform3f(offsetUniform, 0.0f, 0.0f, -1.0f)
                 glDrawElementsBaseVertex(indexData.size, GL_UNSIGNED_SHORT, 0, numberOfVertices / 2)
+
             }
         }
     }

@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL3
 import glm.L
+import glm.d
 import glm.f
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
@@ -88,7 +89,6 @@ object Clear {
 }
 
 
-
 fun GL3.faceCulling(enable: Boolean = false, cullFace: Int = GL.GL_BACK, frontFace: Int = GL.GL_CCW) {
     if (enable)
         glEnable(GL.GL_CULL_FACE)
@@ -98,17 +98,11 @@ fun GL3.faceCulling(enable: Boolean = false, cullFace: Int = GL.GL_BACK, frontFa
     glFrontFace(frontFace)
 }
 
-fun GL3.depth(enable: Boolean = false, mask: Boolean = true, func: Int = GL.GL_LESS, rangeNear: Float = 0f, rangeFar: Float = 1f) {
-    if (enable)
-        glEnable(GL.GL_DEPTH_TEST)
-    else
-        glDisable(GL.GL_DEPTH_TEST)
-    glDepthMask(mask)
-    glDepthFunc(func)
-    glDepthRangef(rangeNear, rangeFar)
-}
+fun GL3.depth(enable: Boolean = false, mask: Boolean = true, func: Int = GL.GL_LESS, rangeNear: Float = 0f,
+              rangeFar: Float = 1f, clamp: Boolean = false) = depth(enable, mask, func, rangeNear.d, rangeFar.d, clamp)
 
-fun GL3.depth(enable: Boolean = false, mask: Boolean = true, func: Int = GL.GL_LESS, rangeNear: Double = 0.0, rangeFar: Double = 1.0) {
+fun GL3.depth(enable: Boolean = false, mask: Boolean = true, func: Int = GL.GL_LESS, rangeNear: Double = 0.0,
+              rangeFar: Double = 1.0, clamp: Boolean = false) {
     if (enable)
         glEnable(GL.GL_DEPTH_TEST)
     else
@@ -116,6 +110,10 @@ fun GL3.depth(enable: Boolean = false, mask: Boolean = true, func: Int = GL.GL_L
     glDepthMask(mask)
     glDepthFunc(func)
     glDepthRange(rangeNear, rangeFar)
+    if (clamp)
+        glEnable(GL3.GL_DEPTH_CLAMP)
+    else
+        glDisable(GL3.GL_DEPTH_CLAMP)
 }
 
 
@@ -124,7 +122,8 @@ fun GL3.glGetInteger(pname: Int): Int {
     return int[0]
 }
 
-
+infix fun GL3.glEnable(cap:Int) = glEnable(cap)
+infix fun GL3.disable(cap:Int) = glDisable(cap)
 
 
 

@@ -1,4 +1,4 @@
-package main.tut06
+package glNext.tut06
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
@@ -8,11 +8,9 @@ import com.jogamp.opengl.GL3
 import glNext.*
 import glm.*
 import glm.mat.Mat4
-import glm.mat.Mat4x4
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
-import main.framework.Semantic
 import uno.buffer.*
 import uno.glsl.programOf
 
@@ -36,7 +34,7 @@ class Scale_ : Framework() {
     var modelToCameraMatrixUnif = 0
     var cameraToClipMatrixUnif = 0
 
-    val cameraToClipMatrix = Mat4x4(0.0f)
+    val cameraToClipMatrix = Mat4(0.0f)
     val frustumScale = calcFrustumScale(45.0f)
 
     fun calcFrustumScale(fovDeg: Float) = 1.0f / glm.tan(fovDeg.rad / 2.0f)
@@ -102,26 +100,16 @@ class Scale_ : Framework() {
         initializeVertexBuffers(gl)
 
         glGenVertexArray(vao)
-        glBindVertexArray(vao)
+        withVertexArray(vao) {
 
-        val colorDataOffset = Vec3.SIZE * numberOfVertices
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glEnableVertexAttribArray(glf.pos3_col4)
-        glEnableVertexAttribArray(glf.pos3_col4[1])
-        glVertexAttribPointer(glf.pos3_col4, 0)
-        glVertexAttribPointer(glf.pos3_col4[1], colorDataOffset)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
+            val colorDataOffset = Vec3.SIZE * numberOfVertices
+            array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorDataOffset)
+            element(bufferObject[Buffer.INDEX])
+        }
 
-        glBindVertexArray()
+        faceCulling(true, GL_BACK, GL_CW)
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
-
-        glEnable(GL_DEPTH_TEST)
-        glDepthMask(true)
-        glDepthFunc(GL_LEQUAL)
-        glDepthRange(0.0, 1.0)
+        depth(true, true, GL_LEQUAL, 0.0, 1.0)
 
         start = System.currentTimeMillis()
     }
@@ -130,56 +118,54 @@ class Scale_ : Framework() {
 
         theProgram = programOf(gl, javaClass, "tut06", "pos-color-local-transform.vert", "color-passthrough.frag")
 
-        modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
-        cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")
+        withProgram(theProgram) {
 
-        val zNear = 1.0f
-        val zFar = 61.0f
+            modelToCameraMatrixUnif = "modelToCameraMatrix".location
+            cameraToClipMatrixUnif = "cameraToClipMatrix".location
 
-        cameraToClipMatrix[0].x = frustumScale
-        cameraToClipMatrix[1].y = frustumScale
-        cameraToClipMatrix[2].z = (zFar + zNear) / (zNear - zFar)
-        cameraToClipMatrix[2].w = -1.0f
-        cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
+            val zNear = 1.0f
+            val zFar = 61.0f
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
-        glUseProgram()
+            cameraToClipMatrix[0].x = frustumScale
+            cameraToClipMatrix[1].y = frustumScale
+            cameraToClipMatrix[2].z = (zFar + zNear) / (zNear - zFar)
+            cameraToClipMatrix[2].w = -1.0f
+            cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
+
+            use { cameraToClipMatrixUnif.mat4 = cameraToClipMatrix }
+        }
     }
 
     fun initializeVertexBuffers(gl: GL3) = with(gl) {
 
         glGenBuffers(bufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(bufferObject[Buffer.VERTEX]) { data(vertexData, GL_STATIC_DRAW) }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER)
+        withElementBuffer(bufferObject[Buffer.INDEX]) { data(indexData, GL_STATIC_DRAW) }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, 0)
-        glClearBufferf(GL_DEPTH)
-
-        glUseProgram(theProgram)
-
-        glBindVertexArray(vao)
-
-        val elapsedTime = (System.currentTimeMillis() - start) / 1_000f
-        instanceList.forEach {
-
-            val transformMatrix = it.constructMatrix(elapsedTime)
-
-            glUniformMatrix4f(modelToCameraMatrixUnif, transformMatrix)
-            glDrawElements(indexData.size, GL_UNSIGNED_SHORT)
+        clear {
+            color(0)
+            depth()
         }
 
-        glBindVertexArray()
-        glUseProgram()
+        usingProgram(theProgram) {
+
+            withVertexArray(vao) {
+
+                val elapsedTime = (System.currentTimeMillis() - start) / 1_000f
+                instanceList.forEach {
+
+                    val transformMatrix = it.constructMatrix(elapsedTime)
+
+                    modelToCameraMatrixUnif.mat4 = transformMatrix
+                    glDrawElements( indexData.size, GL_UNSIGNED_SHORT)
+                }
+            }
+        }
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {

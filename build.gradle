@@ -5,7 +5,7 @@ apply plugin: 'kotlin'
 
 buildscript {
 
-    ext.kotlin_version = '1.1.2-eap-44'
+    ext.kotlin_version = '1.1.2-eap-69'
 
     repositories {
         mavenCentral()

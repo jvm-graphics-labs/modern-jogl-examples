@@ -52,8 +52,8 @@ class DepthClamping_Next : Framework() {
         withVertexArray(vao) {
 
             val colorData = Vec3.SIZE * numberOfVertices
-            setArray(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
-            setElement(bufferObject[Buffer.INDEX])
+            array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
+            element(bufferObject[Buffer.INDEX])
         }
 
         faceCulling(true, GL_BACK, GL_CW)

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.jogamp.gluegen:gluegen-rt:2.3.2:natives-solaris-i586">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jogamp.gluegen/gluegen-rt/2.3.2/a5d9ee96c7a365055fba41e30f9a10f42a3c1a3e/gluegen-rt-2.3.2-natives-solaris-i586.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jogamp.gluegen/gluegen-rt/2.3.2/1e6c7836f978e8c96734b12600f800dff20c628b/gluegen-rt-2.3.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

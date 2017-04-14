@@ -195,9 +195,9 @@ public class Hierarchy extends Framework {
         gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
-        gl.glBufferData(GL_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
-        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(Buffer.INDEX));
+        gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_STATIC_DRAW);
+        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         gl.glGenVertexArrays(1, vao);
         gl.glBindVertexArray(vao.get(0));

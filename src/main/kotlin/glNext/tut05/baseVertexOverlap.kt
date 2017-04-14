@@ -2,10 +2,8 @@ package glNext.tut05
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL3
 import glNext.*
-import glNext.VertexArray.setArray
 import glm.*
 import main.framework.Framework
 import uno.buffer.*
@@ -48,8 +46,8 @@ class BaseVertexOverlap_Next : Framework() {
         withVertexArray(vao) {
 
             val colorData = Vec3.SIZE * numberOfVertices
-            setArray(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
-            setElement(bufferObject[Buffer.INDEX])
+            array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
+            element(bufferObject[Buffer.INDEX])
         }
 
         faceCulling(true, GL_BACK, GL_CW)

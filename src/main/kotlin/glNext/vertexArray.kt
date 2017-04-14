@@ -42,7 +42,7 @@ inline fun GL3.withVertexArray(vertexArray: IntBuffer, block: VertexArray.() -> 
 
 object VertexArray {
 
-    fun GL3.setArray(array: Int, format: VertexLayout) {
+    fun GL3.array(array: Int, format: VertexLayout) {
         glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, array)
         for (attr in format.attribute) {
             glEnableVertexAttribArray(attr.index)
@@ -51,7 +51,7 @@ object VertexArray {
         glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
     }
 
-    fun GL3.setArray(array: Int, format: VertexLayout, vararg offset: Int) {
+    fun GL3.array(array: Int, format: VertexLayout, vararg offset: Int) {
         glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, array)
         for (i in format.attribute.indices) {
             val attr = format.attribute[i]
@@ -61,8 +61,8 @@ object VertexArray {
         glBindBuffer(GL2ES2.GL_ARRAY_BUFFER, 0)
     }
 
-    fun GL3.setElement(element: Int) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element)
-    fun GL3.setElement(element: IntBuffer) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element[0])
+    fun GL3.element(element: Int) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element)
+    fun GL3.element(element: IntBuffer) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element[0])
 }
 
 
