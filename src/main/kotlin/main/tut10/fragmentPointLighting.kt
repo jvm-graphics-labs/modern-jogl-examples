@@ -7,7 +7,6 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
 import glm.Glm
-import glm.L
 import glm.f
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -131,7 +130,7 @@ class FragmentPointLighting_() : Framework() {
         glUseProgram(vertColorProgram.theProgram)
         glUniform4f(vertColorProgram.lightIntensityUnif, 0.8f, 0.8f, 0.8f, 1.0f)
         glUniform4f(vertColorProgram.ambientIntensityUnif, 0.2f, 0.2f, 0.2f, 1.0f)
-        glUseProgram(0)
+        glUseProgram()
 
         modelMatrix run {
 

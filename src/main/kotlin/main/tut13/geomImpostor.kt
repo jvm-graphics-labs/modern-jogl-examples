@@ -22,7 +22,6 @@ import main.framework.component.Mesh
 import uno.buffer.byteBufferBig
 import uno.buffer.destroyBuffers
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.ViewData

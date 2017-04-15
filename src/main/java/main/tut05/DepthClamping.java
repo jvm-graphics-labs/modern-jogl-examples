@@ -73,7 +73,7 @@ public class DepthClamping extends Framework {
 
         gl.glEnable(GL_DEPTH_TEST);
         gl.glDepthMask(true);
-        gl.glDepthFunc(GL_LEQUAL);
+        gl.glDepthFunc(GL_LESS);
         gl.glDepthRange(0.0f, 1.0f);
     }
 

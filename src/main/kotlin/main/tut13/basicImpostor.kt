@@ -11,7 +11,6 @@ import glm.f
 import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
-import glm.set
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
@@ -20,7 +19,6 @@ import main.framework.component.Mesh
 import uno.buffer.byteBufferBig
 import uno.buffer.destroyBuffers
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.gl.UniformBlockArray
 import uno.glm.MatrixStack
 import uno.glsl.programOf
@@ -364,7 +362,7 @@ class BasicImpostor_() : Framework() {
 
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
-        glBindBuffer(GL_UNIFORM_BUFFER, bufferName.get(Buffer.PROJECTION))
+        glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
         glBufferSubData(GL_UNIFORM_BUFFER, proj)
         glBindBuffer(GL_UNIFORM_BUFFER)
 

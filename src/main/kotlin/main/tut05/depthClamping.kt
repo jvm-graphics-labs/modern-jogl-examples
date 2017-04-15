@@ -69,7 +69,7 @@ class DepthClamping_ : Framework() {
 
         glEnable(GL_DEPTH_TEST)
         glDepthMask(true)
-        glDepthFunc(GL_LEQUAL)
+        glDepthFunc(GL_LESS)
         glDepthRange(0.0, 1.0)
     }
 

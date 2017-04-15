@@ -46,12 +46,7 @@ class VertexColor_Next : Framework() {
         theProgram = programOf(gl, javaClass, "tut02", "vertex-colors.vert", "vertex-colors.frag")
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffers(vertexBufferObject)
-
-        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
-    }
+    fun initializeVertexBuffer(gl: GL3) = gl.initArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
 
     override fun display(gl: GL3) = with(gl) {
 

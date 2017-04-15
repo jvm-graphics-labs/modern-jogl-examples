@@ -99,62 +99,59 @@ class BasicLighting_() : Framework() {
         vertexDiffuseColor = ProgramData(gl, "dir-vertex-lighting-PCN.vert", "color-passthrough.frag")
     }
 
-    override fun display(gl: GL3) {
+    override fun display(gl: GL3) = with(gl) {
 
-        with(gl) {
+        glClearBufferf(GL_COLOR, 0)
+        glClearBufferf(GL_DEPTH)
 
-            glClearBufferf(GL_COLOR, 0)
-            glClearBufferf(GL_DEPTH)
+        val modelMatrix = MatrixStack(viewPole.calcMatrix())
 
-            val modelMatrix = MatrixStack(viewPole.calcMatrix())
+        val lightDirCameraSpace = modelMatrix.top() * lightDirection
 
-            val lightDirCameraSpace = modelMatrix.top() * lightDirection
+        glUseProgram(whiteDiffuseColor.theProgram)
+        glUniform3f(whiteDiffuseColor.dirToLightUnif, lightDirCameraSpace)
+        glUseProgram(vertexDiffuseColor.theProgram)
+        glUniform3f(vertexDiffuseColor.dirToLightUnif, lightDirCameraSpace)
+        glUseProgram()
 
-            glUseProgram(whiteDiffuseColor.theProgram)
-            glUniform3f(whiteDiffuseColor.dirToLightUnif, lightDirCameraSpace)
-            glUseProgram(vertexDiffuseColor.theProgram)
-            glUniform3f(vertexDiffuseColor.dirToLightUnif, lightDirCameraSpace)
-            glUseProgram()
+        modelMatrix run {
 
-            modelMatrix run {
+            //  Render the ground plane
+            run {
 
-                //  Render the ground plane
-                run {
+                glUseProgram(whiteDiffuseColor.theProgram)
+                glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
+                val normalMatrix = top().toMat3()
+                glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
+                glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
+                planeMesh.render(gl)
+                glUseProgram()
+            }
+
+            //  Render the Cylinder
+            run {
+
+                applyMatrix(objectPole.calcMatrix())
+
+                if (drawColoredCyl) {
+
+                    glUseProgram(vertexDiffuseColor.theProgram)
+                    glUniformMatrix4f(vertexDiffuseColor.modelToCameraMatrixUnif, top())
+                    val normalMatrix = top().toMat3()
+                    glUniformMatrix3f(vertexDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
+                    glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f)
+                    cylinderMesh.render(gl, "lit-color")
+
+                } else {
 
                     glUseProgram(whiteDiffuseColor.theProgram)
                     glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
                     val normalMatrix = top().toMat3()
                     glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
                     glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
-                    planeMesh.render(gl)
-                    glUseProgram()
+                    cylinderMesh.render(gl, "lit")
                 }
-
-                //  Render the Cylinder
-                run {
-
-                    applyMatrix(objectPole.calcMatrix())
-
-                    if (drawColoredCyl) {
-
-                        glUseProgram(vertexDiffuseColor.theProgram)
-                        glUniformMatrix4f(vertexDiffuseColor.modelToCameraMatrixUnif, top())
-                        val normalMatrix = top().toMat3()
-                        glUniformMatrix3f(vertexDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
-                        glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f)
-                        cylinderMesh.render(gl, "lit-color")
-
-                    } else {
-
-                        glUseProgram(whiteDiffuseColor.theProgram)
-                        glUniformMatrix4f(whiteDiffuseColor.modelToCameraMatrixUnif, top())
-                        val normalMatrix = top().toMat3()
-                        glUniformMatrix3f(whiteDiffuseColor.normalModelToCameraMatrixUnif, normalMatrix)
-                        glUniform4f(whiteDiffuseColor.lightIntensityUnif, 1.0f)
-                        cylinderMesh.render(gl, "lit")
-                    }
-                    glUseProgram()
-                }
+                glUseProgram()
             }
         }
     }

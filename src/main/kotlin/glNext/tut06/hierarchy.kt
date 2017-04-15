@@ -52,9 +52,18 @@ class Hierarchy_Next : Framework() {
         initializeProgram(gl)
         initializeVAO(gl)
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        depth(true, true, GL_LEQUAL, 0.0, 1.0)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            range = 0.0 .. 1.0
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -87,8 +96,7 @@ class Hierarchy_Next : Framework() {
 
         withElementBuffer(bufferObject[Buffer.INDEX]) { data(indexData, GL_STATIC_DRAW) }
 
-        glGenVertexArray(vao)
-        withVertexArray(vao) {
+        initVertexArray(vao) {
 
             val colorDataOffset = Vec3.SIZE * numberOfVertices
             array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorDataOffset)

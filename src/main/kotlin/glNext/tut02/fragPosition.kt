@@ -69,12 +69,7 @@ class FragPosition_Next : Framework() {
         return shaderProgram.program()
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffers(vertexBufferObject)
-
-        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
-    }
+    fun initializeVertexBuffer(gl: GL3) = gl.initArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
 
     override fun display(gl: GL3) = with(gl) {
 

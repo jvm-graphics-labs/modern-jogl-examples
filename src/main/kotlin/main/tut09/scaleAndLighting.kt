@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
-import glm.L
 import glm.f
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -17,7 +16,6 @@ import main.framework.Semantic
 import main.framework.component.Mesh
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*
@@ -138,7 +136,7 @@ class ScaleAndLighting_() : Framework() {
 
                 val normMatrix = top().toMat3()
                 if (doInverseTranspose)
-                    normMatrix.inverse().transpose()
+                    normMatrix.inverse_().transpose_()
 
                 glUniformMatrix3f(vertexDiffuseColor.normalModelToCameraMatrixUnif, normMatrix)
                 glUniform4f(vertexDiffuseColor.lightIntensityUnif, 1.0f)

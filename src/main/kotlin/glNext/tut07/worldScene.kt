@@ -48,11 +48,21 @@ class WorldScene_Next : Framework() {
 
         initializeProgram(gl)
 
-        meshes = Array<Mesh>(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
+        meshes = Array(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        depth(true, true, GL_LEQUAL, 0.0f, 1.0f, true)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            range = 0.0 .. 1.0
+            clamp = true
+        }
     }
 
     fun initializeProgram(gl: GL3) {
@@ -73,13 +83,13 @@ class WorldScene_Next : Framework() {
 
         val camMat = calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f))
 
-        glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4f(uniformColor.worldToCameraMatrixUnif, camMat)
-        glUseProgram(objectColor.theProgram)
-        glUniformMatrix4f(objectColor.worldToCameraMatrixUnif, camMat)
-        glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4f(uniformColorTint.worldToCameraMatrixUnif, camMat)
-        glUseProgram()
+        usingProgram(uniformColor.theProgram) {
+            uniformColor.worldToCameraMatrixUnif.mat4 = camMat
+            name = objectColor.theProgram
+            objectColor.worldToCameraMatrixUnif.mat4 = camMat
+            name = uniformColorTint.theProgram
+            uniformColorTint.worldToCameraMatrixUnif.mat4 = camMat
+        }
 
         val modelMatrix = MatrixStack()
 
@@ -348,13 +358,13 @@ class WorldScene_Next : Framework() {
         val persMatrix = MatrixStack()
         persMatrix.perspective(45.0f, w / h.f, zNear, zFar)
 
-        glUseProgram(uniformColor.theProgram)
-        glUniformMatrix4f(uniformColor.cameraToClipMatrixUnif, persMatrix.top())
-        glUseProgram(objectColor.theProgram)
-        glUniformMatrix4f(objectColor.cameraToClipMatrixUnif, persMatrix.top())
-        glUseProgram(uniformColorTint.theProgram)
-        glUniformMatrix4f(uniformColorTint.cameraToClipMatrixUnif, persMatrix.top())
-        glUseProgram()
+        usingProgram(uniformColor.theProgram) {
+            uniformColor.cameraToClipMatrixUnif.mat4 = persMatrix.top()
+            name = objectColor.theProgram
+            objectColor.cameraToClipMatrixUnif.mat4 = persMatrix.top()
+            name = uniformColorTint.theProgram
+            uniformColorTint.cameraToClipMatrixUnif.mat4 = persMatrix.top()
+        }
 
         glViewport(w, h)
     }

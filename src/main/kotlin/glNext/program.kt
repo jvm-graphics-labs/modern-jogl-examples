@@ -35,12 +35,29 @@ fun GL3.glGetProgramInfoLog(program: Int): String {
     return String(bytes)
 }
 
+inline fun GL3.usingProgram(program: Int = 0, block: ProgramA.(GL3) -> Unit) {
+    ProgramA.gl = this
+    ProgramA.name = program //glUse
+    ProgramA.block(this)
+    glUseProgram(0)
+}
+
+inline fun GL3.withProgram(program: Int = 0, block: ProgramB.() -> Unit) {
+    ProgramB.gl = this
+    ProgramB.name = program
+    ProgramB.block()
+}
+
 object ProgramA {
 
-    var name = 0
     lateinit var gl: GL3
+    var name = 0
+        set(value) {
+            gl.glUseProgram(value)
+            field = value
+        }
 
-    val String.location
+    val String.location: Int
         get() = gl.glGetUniformLocation(name, this)
 
     var Int.float: Float
@@ -49,9 +66,18 @@ object ProgramA {
     var Int.vec2: Vec2
         get() = Vec2()
         set(value) = gl.glUniform2f(this, value.x, value.y)
+    var Int.vec3: Vec3
+        get() = Vec3()
+        set(value) = gl.glUniform3f(this, value.x, value.y, value.z)
+    var Int.vec4: Vec4
+        get() = Vec4()
+        set(value) = gl.glUniform4f(this, value.x, value.y, value.z, value.w)
     var Int.mat4: Mat4
         get() = Mat4()
         set(value) = gl.glUniformMatrix4fv(this, 1, false, value to matBuffer)
+    var Int.mat3: Mat3
+        get() = Mat3()
+        set(value) = gl.glUniformMatrix3fv(this, 1, false, value to matBuffer)
 
 
     fun GL3.link() = glLinkProgram(name)
@@ -62,14 +88,13 @@ object ProgramA {
 
 object ProgramB {
 
-    var name = 0
     lateinit var gl: GL3
+    var name = 0
 
     val String.location
         get() = gl.glGetUniformLocation(name, this)
 
     inline fun use(block: ProgramA.(GL3) -> Unit) {
-        gl.glUseProgram(name)
         ProgramA.gl = gl
         ProgramA.name = name
         ProgramA.block(gl)
@@ -85,6 +110,7 @@ fun GL3.glUniform2f(location: Int) = glUniform2f(location, 0f, 0f)
 fun GL3.glUniform2f(location: Int, f: Float) = glUniform2f(location, f, f)
 // TODO vec1
 fun GL3.glUniform2f(location: Int, vec2: Vec2) = glUniform2f(location, vec2.x, vec2.y)
+
 fun GL3.glUniform2f(location: Int, vec3: Vec3) = glUniform2f(location, vec3.x, vec3.y)
 fun GL3.glUniform2f(location: Int, vec4: Vec4) = glUniform2f(location, vec4.x, vec4.y)
 
@@ -121,18 +147,5 @@ fun GL3.glUniformMatrix3f(location: Int, value: Mat4) {
     glUniformMatrix3fv(location, 1, false, value to matBuffer)
 }
 
-inline fun GL3.usingProgram(program: Int, block: ProgramA.(GL3) -> Unit) {
-    ProgramA.gl = this
-    ProgramA.name = program
-    glUseProgram(program)
-    ProgramA.block(this)
-    glUseProgram(0)
-}
-
-inline fun GL3.withProgram(program: Int, block: ProgramB.() -> Unit) {
-    ProgramB.gl = this
-    ProgramB.name = program
-    return ProgramB.block()
-}
 
 fun GL3.glDeletePrograms(vararg programs: Int) = programs.forEach { glDeleteProgram(it) }

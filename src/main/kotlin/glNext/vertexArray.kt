@@ -33,9 +33,16 @@ infix fun GL3.glDeleteVertexArray(vertexArray: IntBuffer) = glDeleteVertexArrays
 infix fun GL3.glDeleteVertexArrays(vertexArrays: IntBuffer) = glDeleteVertexArrays(vertexArrays.capacity(), vertexArrays)
 infix fun GL3.glDeleteVertexArray(vertexArray: Int) = glDeleteVertexArrays(1, int.put(0, vertexArray))
 
-
-inline fun GL3.withVertexArray(vertexArray: IntBuffer, block: VertexArray.() -> Unit) {
+inline fun GL3.initVertexArray(vertexArray: IntBuffer, block: VertexArray.() -> Unit) {
+    glGenVertexArrays(1, vertexArray)
     glBindVertexArray(vertexArray[0])
+    VertexArray.block()
+    glBindVertexArray(0)
+}
+
+inline fun GL3.withVertexArray(vertexArray: IntBuffer, block: VertexArray.() -> Unit) = withVertexArray(vertexArray[0], block)
+inline fun GL3.withVertexArray(vertexArray: Int, block: VertexArray.() -> Unit) {
+    glBindVertexArray(vertexArray)
     VertexArray.block()
     glBindVertexArray(0)
 }
@@ -64,8 +71,6 @@ object VertexArray {
     fun GL3.element(element: Int) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element)
     fun GL3.element(element: IntBuffer) = glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, element[0])
 }
-
-
 
 
 inline fun GL3.withVertexLayout(buffer: IntBuffer, format: VertexLayout, block: () -> Unit) {

@@ -47,16 +47,24 @@ class DepthBuffer_Next : Framework() {
         initializeProgram(gl)
         initializeBuffers(gl)
 
-        glGenVertexArray(vao)
-        withVertexArray(vao) {
+        initVertexArray(vao) {
             val colorData = Vec3.SIZE * numberOfVertices
             array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorData)
             element(bufferObject[Buffer.INDEX])
         }
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        depth(true, true, GL_LEQUAL, 0.0f, 1.0f)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            range = 0.0 .. 1.0
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {

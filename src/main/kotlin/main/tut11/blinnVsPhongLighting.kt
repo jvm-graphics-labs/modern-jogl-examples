@@ -6,7 +6,7 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
-import glm.L
+import glNext.tut11.BlinnVsPhongLighting_
 import glm.f
 import glm.glm
 import glm.mat.Mat4
@@ -16,12 +16,11 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
-import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
-import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
+import glNext.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
+import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
+import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*

@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
-import glm.L
 import glm.f
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -16,7 +15,6 @@ import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.mousePole.*
 import uno.time.Timer
@@ -90,6 +88,8 @@ class PhongLighting_() : Framework() {
         plane = Mesh(gl, javaClass, "tut11/LargePlane.xml")
         cube = Mesh(gl, javaClass, "tut11/UnitCube.xml")
 
+        val (depthZNear, depthZFar) = 0.0 to 1.0
+
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glFrontFace(GL_CW)
@@ -97,7 +97,7 @@ class PhongLighting_() : Framework() {
         glEnable(GL_DEPTH_TEST)
         glDepthMask(true)
         glDepthFunc(GL_LEQUAL)
-        glDepthRangef(0.0f, 1.0f)
+        glDepthRange(depthZNear, depthZFar)
         glEnable(GL_DEPTH_CLAMP)
 
         glGenBuffer(projectionUniformBuffer)

@@ -4,7 +4,6 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES2.GL_STREAM_DRAW
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
 import uno.glm.MatrixStack
 import uno.glsl.Program
@@ -57,9 +56,19 @@ class WorldWithUBO_Next : Framework() {
 
         meshes = Array<Mesh>(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        depth(true, true, GL_LEQUAL, 0.0f, 1.0f, true)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            range = 0.0 .. 1.0
+            clamp = true
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -68,10 +77,10 @@ class WorldWithUBO_Next : Framework() {
         objectColor = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-passthrough.frag")
         uniformColorTint = ProgramData(gl, "pos-color-world-transform-ubo.vert", "color-mult-uniform.frag")
 
-        glGenBuffer(globalMatricesBufferName)
-        withUniformBuffer(globalMatricesBufferName) { data(Mat4.SIZE * 2, GL_STREAM_DRAW) }
-
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.GLOBAL_MATRICES, globalMatricesBufferName, 0, Mat4.SIZE * 2)
+        initUniformBuffer(globalMatricesBufferName) {
+            data(Mat4.SIZE * 2, GL_STREAM_DRAW)
+            range(Semantic.Uniform.GLOBAL_MATRICES, 0, Mat4.SIZE * 2)
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {

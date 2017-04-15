@@ -1,30 +1,27 @@
-package main.tut08
+package glNext.tut08
 
 import com.jogamp.newt.event.KeyEvent
-import com.jogamp.opengl.GL.*
-import com.jogamp.opengl.GL2ES3.GL_COLOR
-import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glNext.*
 import glm.*
 import glm.mat.Mat4
-import glm.quat.Quat
 import glm.vec._3.Vec3
 import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.component.Mesh
 import uno.glm.MatrixStack
 import uno.glsl.programOf
+import glm.quat.Quat
 
 /**
  * Created by GBarbieri on 10.03.2017.
  */
 
 fun main(args: Array<String>) {
-    CameraRelative_().setup("Tutorial 08 - Camera Relative")
+    CameraRelative_Next().setup("Tutorial 08 - Camera Relative")
 }
 
-class CameraRelative_ : Framework() {
+class CameraRelative_Next : Framework() {
 
     object OffsetRelative {
         val MODEL = 0
@@ -62,42 +59,49 @@ class CameraRelative_ : Framework() {
         ship = Mesh(gl, javaClass, "tut08/Ship.xml")
         plane = Mesh(gl, javaClass, "tut08/UnitPlane.xml")
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        glEnable(GL_DEPTH_TEST)
-        glDepthMask(true)
-        glDepthFunc(GL_LEQUAL)
-        glDepthRangef(0.0f, 1.0f)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            range = 0.0 .. 1.0
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
 
         theProgram = programOf(gl, javaClass, "tut08", "pos-color-local-transform.vert", "color-mult-uniform.frag")
 
-        modelToCameraMatrixUnif = glGetUniformLocation(theProgram, "modelToCameraMatrix")
-        cameraToClipMatrixUnif = glGetUniformLocation(theProgram, "cameraToClipMatrix")
-        baseColorUnif = glGetUniformLocation(theProgram, "baseColor")
+        withProgram(theProgram) {
 
-        val zNear = 1.0f
-        val zFar = 600.0f
+            modelToCameraMatrixUnif = "modelToCameraMatrix".location
+            cameraToClipMatrixUnif = "cameraToClipMatrix".location
+            baseColorUnif = "baseColor".location
 
-        cameraToClipMatrix[0].x = frustumScale
-        cameraToClipMatrix[1].y = frustumScale
-        cameraToClipMatrix[2].z = (zFar + zNear) / (zNear - zFar)
-        cameraToClipMatrix[2].w = -1.0f
-        cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
+            val zNear = 1.0f
+            val zFar = 600.0f
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
-        glUseProgram()
+            cameraToClipMatrix[0].x = frustumScale
+            cameraToClipMatrix[1].y = frustumScale
+            cameraToClipMatrix[2].z = (zFar + zNear) / (zNear - zFar)
+            cameraToClipMatrix[2].w = -1.0f
+            cameraToClipMatrix[3].z = 2f * zFar * zNear / (zNear - zFar)
+
+            use { cameraToClipMatrixUnif.mat4 = cameraToClipMatrix }
+        }
     }
 
     public override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, 0)
-        glClearBufferf(GL_DEPTH)
+        clear {
+            color(0)
+            depth()
+        }
 
         val currMatrix = MatrixStack()
 
@@ -105,29 +109,29 @@ class CameraRelative_ : Framework() {
 
         currMatrix setMatrix calcLookAtMatrix(camPos, camTarget, Vec3(0.0f, 1.0f, 0.0f))
 
-        glUseProgram(theProgram)
+        usingProgram(theProgram) {
 
-        currMatrix.apply {
+            currMatrix.apply {
 
-            scale(100.0f, 1.0f, 100.0f)
+                scale(100.0f, 1.0f, 100.0f)
 
-            glUniform4f(baseColorUnif, 0.2f, 0.5f, 0.2f, 1.0f)
-            glUniformMatrix4f(modelToCameraMatrixUnif, top())
+                glUniform4f(baseColorUnif, 0.2f, 0.5f, 0.2f, 1.0f)
+                modelToCameraMatrixUnif.mat4 = top()
 
-            plane.render(gl)
+                plane.render(gl)
 
-        } run {
+            } run {
 
-            translate(camTarget)
-            applyMatrix(orientation.toMat4())
-            rotateX(-90.0f)
+                translate(camTarget)
+                applyMatrix(orientation.toMat4())
+                rotateX(-90.0f)
 
-            glUniform4f(baseColorUnif, 1.0f)
-            glUniformMatrix4f(modelToCameraMatrixUnif, top())
+                glUniform4f(baseColorUnif, 1.0f)
+                modelToCameraMatrixUnif.mat4 = top()
 
-            ship.render(gl, "tint")
+                ship.render(gl, "tint")
+            }
         }
-        glUseProgram(theProgram)
     }
 
     fun resolveCamPosition(): Vec3 {
@@ -166,9 +170,7 @@ class CameraRelative_ : Framework() {
         cameraToClipMatrix[0].x = frustumScale * (h / w.f)
         cameraToClipMatrix[1].y = frustumScale
 
-        glUseProgram(theProgram)
-        glUniformMatrix4f(cameraToClipMatrixUnif, cameraToClipMatrix)
-        glUseProgram()
+        usingProgram(theProgram) {cameraToClipMatrixUnif.mat4 = cameraToClipMatrix}
 
         glViewport(w, h)
     }

@@ -49,18 +49,25 @@ class VertexClipping_Next : Framework() {
         initializeProgram(gl)
         initializeBuffers(gl)
 
-        glGenVertexArray(vao)
-
-        withVertexArray(vao) {
+        initVertexArray(vao) {
 
             val colorDataOffset = Vec3.SIZE * numberOfVertices
             array(bufferObject[Buffer.VERTEX], glf.pos3_col4, 0, colorDataOffset)
             element(bufferObject[Buffer.INDEX])
         }
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
-        depth(true, true, GL_LESS, 0.0, 1.0)
+        depth {
+            test = true
+            mask = true
+            func = less
+            range = 0.0 .. 1.0
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {

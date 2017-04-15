@@ -32,7 +32,11 @@ class ShaderPerspective_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {

@@ -118,12 +118,7 @@ class HelloTriangle_Next : Framework() {
         return program
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffer(positionBufferObject)
-
-        withArrayBuffer(positionBufferObject) { data(vertexPositions, GL_STATIC_DRAW) }
-    }
+    fun initializeVertexBuffer(gl: GL3) = gl.initArrayBuffer(positionBufferObject) { data(vertexPositions, GL_STATIC_DRAW) }
 
     /**
      * Called to update the display. You don't need to swap the buffers after all of your rendering to display what you rendered,

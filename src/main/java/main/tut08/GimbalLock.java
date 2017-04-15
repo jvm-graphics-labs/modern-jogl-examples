@@ -130,7 +130,7 @@ public class GimbalLock extends Framework {
         gl.glClearBufferfv(GL_DEPTH, 0, clearDepth.put(0, 1.0f));
 
         MatrixStack currMatrix = new MatrixStack()
-                .translate(new Vec3(0.0f, 0.0f, -200.0f))
+                .translate(0.0f, 0.0f, -200.0f)
                 .rotateX(angles.angleX);
         drawGimbal(gl, currMatrix, GimbalAxis.X, new Vec4(0.4f, 0.4f, 1.0f, 1.0f));
 
@@ -142,7 +142,7 @@ public class GimbalLock extends Framework {
 
         gl.glUseProgram(theProgram);
         currMatrix
-                .scale(new Vec3(3.0f))
+                .scale(3.0f)
                 .rotateX(-90);
         //Set the base color for this object.
         gl.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);

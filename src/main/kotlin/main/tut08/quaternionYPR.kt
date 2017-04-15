@@ -6,13 +6,13 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glNext.*
+import glNext.tut08.QuaternionYPR_
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._3.Vec3
 import main.framework.Framework
 import main.framework.component.Mesh
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 
@@ -94,7 +94,7 @@ class QuaternionYPR_() : Framework() {
         glClearBufferf(GL_DEPTH)
 
         val matrixStack = MatrixStack()
-                .translate(Vec3(0.0f, 0.0f, -200.0f))
+                .translate(0.0f, 0.0f, -200.0f)
                 .applyMatrix(orientation.toMat4())
 
         glUseProgram(theProgram)

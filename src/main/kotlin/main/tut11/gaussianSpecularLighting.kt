@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
-import glm.L
 import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -22,7 +21,6 @@ import main.tut11.GaussianSpecularLighting_.LightingModel.PhongOnly
 import main.tut11.GaussianSpecularLighting_.LightingModel.PhongSpecular
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.mousePole.*

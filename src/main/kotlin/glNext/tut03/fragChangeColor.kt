@@ -56,14 +56,8 @@ class FragChangeColor_ : Framework() {
         }
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffers(positionBufferObject)
-
-        withArrayBuffer(positionBufferObject) {
-            data(vertexPositions, GL_STATIC_DRAW)
-        }
-    }
+    fun initializeVertexBuffer(gl: GL3) =
+            gl.initArrayBuffer(positionBufferObject) { data(vertexPositions, GL_STATIC_DRAW) }
 
     override fun display(gl: GL3) = with(gl) {
 

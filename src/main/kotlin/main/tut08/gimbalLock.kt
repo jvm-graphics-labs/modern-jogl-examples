@@ -107,7 +107,7 @@ class GimbalLock_ : Framework() {
         glClearBufferf(GL_DEPTH)
 
         val currMatrix = MatrixStack()
-                .translate(Vec3(0.0f, 0.0f, -200.0f))
+                .translate(0.0f, 0.0f, -200.0f)
                 .rotateX(angles.angleX)
         drawGimbal(gl, currMatrix, GimbalAxis.X, Vec4(0.4f, 0.4f, 1.0f, 1.0f))
 
@@ -119,7 +119,7 @@ class GimbalLock_ : Framework() {
 
         glUseProgram(theProgram)
         currMatrix
-                .scale(Vec3(3.0f))
+                .scale(3.0f)
                 .rotateX(-90f)
         //Set the base color for this object.
         glUniform4f(baseColorUnif, 1.0f)
@@ -127,7 +127,7 @@ class GimbalLock_ : Framework() {
 
         `object`.render(gl, "tint")
 
-        glUseProgram(0)
+        glUseProgram()
     }
 
     fun drawGimbal(gl: GL3, matrixStack: MatrixStack, axis: GimbalAxis, baseColor: Vec4) = with(gl) {
@@ -175,7 +175,7 @@ class GimbalLock_ : Framework() {
         glViewport(0, 0, w, h)
     }
 
-    public override fun end(gl: GL3) = with(gl){
+    public override fun end(gl: GL3) = with(gl) {
 
         glDeleteProgram(theProgram)
 

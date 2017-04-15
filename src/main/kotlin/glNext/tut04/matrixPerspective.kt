@@ -36,7 +36,11 @@ class MatrixPerspective_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -62,14 +66,7 @@ class MatrixPerspective_Next : Framework() {
         }
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffer(vertexBufferObject)
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
-    }
+    fun initializeVertexBuffer(gl: GL3) = gl.initArrayBuffer(vertexBufferObject){data(vertexData, GL_STATIC_DRAW)}
 
     override fun display(gl: GL3) = with(gl) {
 

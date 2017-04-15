@@ -127,7 +127,7 @@ class CameraRelative_ : Framework() {
 
             ship.render(gl, "tint")
         }
-        glUseProgram(theProgram)
+        glUseProgram()
     }
 
     fun resolveCamPosition(): Vec3 {

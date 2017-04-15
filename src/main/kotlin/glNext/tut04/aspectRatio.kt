@@ -39,7 +39,11 @@ class AspectRatio_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -65,12 +69,7 @@ class AspectRatio_Next : Framework() {
         }
     }
 
-    fun initializeVertexBuffer(gl: GL3) = with(gl) {
-
-        glGenBuffers(vertexBufferObject)
-
-        withArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
-    }
+    fun initializeVertexBuffer(gl: GL3) = gl.initArrayBuffer(vertexBufferObject) { data(vertexData, GL_STATIC_DRAW) }
 
     override fun display(gl: GL3) = with(gl) {
 

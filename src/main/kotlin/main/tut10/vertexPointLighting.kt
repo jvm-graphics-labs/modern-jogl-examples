@@ -7,8 +7,8 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
 import glm.Glm
-import glm.L
 import glm.f
+import glm.glm
 import glm.mat.Mat4
 import glm.quat.Quat
 import glm.vec._3.Vec3
@@ -16,14 +16,12 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
+import uno.buffer.destroy
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
+import uno.glsl.programOf
 import uno.mousePole.*
 import uno.time.Timer
-import glm.glm
-import uno.buffer.destroy
-import uno.glsl.programOf
 
 /**
  * Created by GBarbieri on 23.03.2017.

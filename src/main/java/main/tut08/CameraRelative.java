@@ -147,7 +147,7 @@ public class CameraRelative extends Framework {
 
             currMatrix.pop();
         }
-        gl.glUseProgram(theProgram);
+        gl.glUseProgram(0);
     }
 
     private Vec3 resolveCamPosition() {

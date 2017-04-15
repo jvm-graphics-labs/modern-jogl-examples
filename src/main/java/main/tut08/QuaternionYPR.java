@@ -125,7 +125,7 @@ public class QuaternionYPR extends Framework {
         gl.glUseProgram(theProgram);
 
         matrixStack
-                .scale(new Vec3(3.0f, 3.0f, 3.0f))
+                .scale(3.0f, 3.0f, 3.0f)
                 .rotateX(-90.0f);
 
         gl.glUniform4f(baseColorUnif, 1.0f, 1.0f, 1.0f, 1.0f);

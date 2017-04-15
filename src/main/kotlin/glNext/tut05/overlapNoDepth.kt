@@ -54,7 +54,11 @@ class OverlapNoDepth_Next : Framework() {
         initializeBuffers(gl)
         initializeVertexArrays(gl)
 
-        faceCulling(true, GL_BACK, GL_CW)
+        faceCull {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
     }
 
     fun initializeProgram(gl: GL3) = with(gl) {
@@ -84,13 +88,9 @@ class OverlapNoDepth_Next : Framework() {
 
         glGenBuffers(bufferObject)
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject[Buffer.VERTEX])
-        glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER)
+        withArrayBuffer(bufferObject[Buffer.VERTEX]) { data(vertexData, GL_STATIC_DRAW) }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[Buffer.INDEX])
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER)
+        withElementBuffer(bufferObject[Buffer.INDEX]) { data(indexData, GL_STATIC_DRAW) }
     }
 
     fun initializeVertexArrays(gl: GL3) = with(gl) {
