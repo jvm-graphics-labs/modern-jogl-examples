@@ -8,7 +8,7 @@ import com.jogamp.opengl.GL3
  */
 
 
-fun GL3.faceCull(block: ObjectCullFace.() -> Unit) {
+fun GL3.cullFace(block: ObjectCullFace.() -> Unit) {
     ObjectCullFace.gl = this
     ObjectCullFace.block()
 }
@@ -42,7 +42,7 @@ object ObjectCullFace {
     enum class FrontFace(val i: Int) {cw(GL.GL_CW), ccw(GL.GL_CCW) }
 }
 
-fun GL3.faceCull(enable: Boolean = false, cullFace: Int = GL.GL_BACK, frontFace: Int = GL.GL_CCW) {
+fun GL3.cullFace(enable: Boolean = false, cullFace: Int = GL.GL_BACK, frontFace: Int = GL.GL_CCW) {
     if (enable)
         glEnable(GL.GL_CULL_FACE)
     else

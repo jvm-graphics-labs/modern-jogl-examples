@@ -104,7 +104,7 @@ class Scale_ : Framework() {
             element(bufferObject[Buffer.INDEX])
         }
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

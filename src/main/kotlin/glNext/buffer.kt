@@ -83,6 +83,7 @@ fun GL3.initUniformBuffers(buffers: IntBuffer, block: BufferB.() -> Unit) {
     BufferB.block()
     glBindBuffer(GL_UNIFORM_BUFFER, 0)
 }
+
 fun GL3.initBuffers(buffers: IntBuffer, block: BufferB.() -> Unit) {
     BufferB.gl = this
     glGenBuffers(buffers.capacity(), buffers)
@@ -96,35 +97,37 @@ fun GL3.initBuffer(target: Int, block: BufferA.() -> Unit): Int {
     BufferA.target = target
     glGenBuffers(1, int)
     val name = int[0]
-    BufferA.name = name
-    glBindBuffer(target, name)
+    BufferA.name = name // bind
     BufferA.block()
     glBindBuffer(target, 0)
     return name
 }
 
-fun GL3.withBuffer(target: Int, buffer: IntBuffer, block: BufferA.(GL3) -> Unit) = withBuffer(target, buffer[0], block)
-fun GL3.withBuffer(target: Int, buffer: Int, block: BufferA.(gl: GL3) -> Unit) {
-    BufferA.target = target
+fun GL3.withBuffer(target: Int, buffer: IntBuffer, block: BufferA.() -> Unit) = withBuffer(target, buffer[0], block)
+fun GL3.withBuffer(target: Int, buffer: Int, block: BufferA.() -> Unit) {
     BufferA.gl = this
-    BufferA.name = buffer
-    glBindBuffer(target, buffer)
-    BufferA.block(this)
+    BufferA.target = target
+    BufferA.name = buffer   // bind
+    BufferA.block()
     glBindBuffer(target, 0)
 }
 
-fun GL3.withArrayBuffer(buffer: IntBuffer, block: BufferA.(GL3) -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer[0], block)
-fun GL3.withArrayBuffer(buffer: Int, block: BufferA.(gl: GL3) -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer, block)
-fun GL3.withElementBuffer(buffer: IntBuffer, block: BufferA.(gl: GL3) -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer[0], block)
-fun GL3.withElementBuffer(buffer: Int, block: BufferA.(gl: GL3) -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer, block)
-fun GL3.withUniformBuffer(buffer: IntBuffer, block: BufferA.(gl: GL3) -> Unit) = withBuffer(GL3.GL_UNIFORM_BUFFER, buffer[0], block)
-fun GL3.withUniformBuffer(buffer: Int, block: BufferA.(gl: GL3) -> Unit) = withBuffer(GL3.GL_UNIFORM_BUFFER, buffer, block)
+fun GL3.withArrayBuffer(buffer: IntBuffer, block: BufferA.() -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer[0], block)
+fun GL3.withArrayBuffer(buffer: Int, block: BufferA.() -> Unit) = withBuffer(GL.GL_ARRAY_BUFFER, buffer, block)
+fun GL3.withElementBuffer(buffer: IntBuffer, block: BufferA.() -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer[0], block)
+fun GL3.withElementBuffer(buffer: Int, block: BufferA.() -> Unit) = withBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffer, block)
+fun GL3.withUniformBuffer(buffer: IntBuffer, block: BufferA.() -> Unit) = withBuffer(GL3.GL_UNIFORM_BUFFER, buffer[0], block)
+fun GL3.withUniformBuffer(buffer: Int, block: BufferA.() -> Unit) = withBuffer(GL3.GL_UNIFORM_BUFFER, buffer, block)
 
 object BufferA {
 
     lateinit var gl: GL3
     var target = 0
     var name = 0
+        set(value) {
+            gl.glBindBuffer(target, value)
+            field = value
+        }
 
     fun data(data: ByteBuffer, usage: Int) = gl.glBufferData(target, data.size.L, data, usage)
     fun data(data: ShortBuffer, usage: Int) = gl.glBufferData(target, data.size.L, data, usage)
@@ -207,9 +210,8 @@ object BufferB {
 
     fun at(bufferIndex: Int, block: BufferA.() -> Unit) {
         BufferA.gl = gl
-        BufferA.name = buffers[bufferIndex]
         BufferA.target = target
-        gl.glBindBuffer(target, buffers[bufferIndex])
+        BufferA.name = buffers[bufferIndex] // bind
         BufferA.block()
     }
 }

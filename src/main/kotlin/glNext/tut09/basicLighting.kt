@@ -72,7 +72,7 @@ class BasicLighting_Next() : Framework() {
         cylinderMesh = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
         planeMesh = Mesh(gl, javaClass, "tut09/LargePlane.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

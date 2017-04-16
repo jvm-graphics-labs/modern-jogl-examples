@@ -54,7 +54,7 @@ class OverlapNoDepth_Next : Framework() {
         initializeBuffers(gl)
         initializeVertexArrays(gl)
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

@@ -87,7 +87,7 @@ class BlinnVsPhongLighting_() : Framework() {
         val depthZNear = 0.0f
         val depthZFar = 1.0f
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw
@@ -97,7 +97,7 @@ class BlinnVsPhongLighting_() : Framework() {
             test = true
             mask = true
             func = lEqual
-            range = 0.0 .. 1.0
+            rangef = depthZNear .. depthZFar
             clamp = true
         }
 

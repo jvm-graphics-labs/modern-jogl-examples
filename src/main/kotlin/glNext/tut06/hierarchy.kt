@@ -52,7 +52,7 @@ class Hierarchy_Next : Framework() {
         initializeProgram(gl)
         initializeVAO(gl)
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

@@ -53,7 +53,7 @@ class DepthBuffer_Next : Framework() {
             element(bufferObject[Buffer.INDEX])
         }
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

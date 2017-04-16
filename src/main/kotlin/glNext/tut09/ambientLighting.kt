@@ -71,7 +71,7 @@ class AmbientLighting_Next() : Framework() {
         cylinder = Mesh(gl, javaClass, "tut09/UnitCylinder.xml")
         plane = Mesh(gl, javaClass, "tut09/LargePlane.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

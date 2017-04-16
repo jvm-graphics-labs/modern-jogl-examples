@@ -39,7 +39,7 @@ class AspectRatio_Next : Framework() {
         glGenVertexArray(vao)
         glBindVertexArray(vao)
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

@@ -98,7 +98,7 @@ class BasicImpostor_Next() : Framework() {
         val depthZNear = 0.0f
         val depthZFar = 1.0f
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

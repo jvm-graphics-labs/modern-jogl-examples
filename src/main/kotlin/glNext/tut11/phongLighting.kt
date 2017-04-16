@@ -87,7 +87,7 @@ class PhongLighting_Next() : Framework() {
         plane = Mesh(gl, javaClass, "tut11/LargePlane.xml")
         cube = Mesh(gl, javaClass, "tut11/UnitCube.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

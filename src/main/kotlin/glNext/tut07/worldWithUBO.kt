@@ -56,7 +56,7 @@ class WorldWithUBO_Next : Framework() {
 
         meshes = Array<Mesh>(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

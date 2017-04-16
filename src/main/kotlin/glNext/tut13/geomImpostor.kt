@@ -99,7 +99,7 @@ class GeomImpostor_Next() : Framework() {
         val depthZNear = 0.0f
         val depthZFar = 1.0f
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw
@@ -220,16 +220,16 @@ class GeomImpostor_Next() : Framework() {
 
         val lightData = LightBlock
 
-        LightBlock.ambientIntensity = Vec4(0.2f, 0.2f, 0.2f, 1.0f)
-        LightBlock.lightAttenuation = lightAttenuation
+        lightData.ambientIntensity = Vec4(0.2f, 0.2f, 0.2f, 1.0f)
+        lightData.lightAttenuation = lightAttenuation
 
-        LightBlock.lights[0].cameraSpaceLightPos = worldToCamMat * Vec4(0.707f, 0.707f, 0.0f, 0.0f)
-        LightBlock.lights[0].lightIntensity = Vec4(0.6f, 0.6f, 0.6f, 1.0f)
+        lightData.lights[0].cameraSpaceLightPos = worldToCamMat * Vec4(0.707f, 0.707f, 0.0f, 0.0f)
+        lightData.lights[0].lightIntensity = Vec4(0.6f, 0.6f, 0.6f, 1.0f)
 
-        LightBlock.lights[1].cameraSpaceLightPos = worldToCamMat * calcLightPosition()
-        LightBlock.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
+        lightData.lights[1].cameraSpaceLightPos = worldToCamMat * calcLightPosition()
+        lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
-        withUniformBuffer(bufferName[Buffer.LIGHT]) { subData(LightBlock.toBuffer()) }
+        withUniformBuffer(bufferName[Buffer.LIGHT]) { subData(lightData.toBuffer()) }
 
         run {
             glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL_TERRAIN], 0, MaterialEntry.SIZE.L)

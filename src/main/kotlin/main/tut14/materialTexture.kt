@@ -9,7 +9,6 @@ import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.util.texture.spi.DDSImage
 import glNext.*
-import glNext.tut14.MaterialTexture_
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat

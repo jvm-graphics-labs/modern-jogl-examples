@@ -5,9 +5,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2.GL_RED
 import com.jogamp.opengl.GL2ES3.*
-import com.jogamp.opengl.GL2GL3.GL_TEXTURE_1D
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
 import glm.*
 import glm.vec._3.Vec3
@@ -99,7 +97,7 @@ class BasicTexture_Next() : Framework() {
         val depthZNear = 0.0f
         val depthZFar = 1.0f
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

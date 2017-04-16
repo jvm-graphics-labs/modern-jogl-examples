@@ -65,7 +65,7 @@ class GimbalLock_Next : Framework() {
         gimbals = Array(Gimbal.MAX, { Mesh(gl, javaClass, "tut08/${GIMBALS_SCR[it]}") })
         `object` = Mesh(gl, javaClass, "tut08/Ship.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

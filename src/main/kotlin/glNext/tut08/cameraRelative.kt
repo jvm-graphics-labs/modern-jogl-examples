@@ -59,7 +59,7 @@ class CameraRelative_Next : Framework() {
         ship = Mesh(gl, javaClass, "tut08/Ship.xml")
         plane = Mesh(gl, javaClass, "tut08/UnitPlane.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

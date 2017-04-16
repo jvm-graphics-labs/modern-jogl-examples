@@ -50,7 +50,7 @@ class WorldScene_Next : Framework() {
 
         meshes = Array(MESH.MAX, { Mesh(gl, javaClass, "tut07/${MESHES_SOURCE[it]}") })
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw

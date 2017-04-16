@@ -52,7 +52,7 @@ class QuaternionYPR_() : Framework() {
 
         ship = Mesh(gl, javaClass, "tut08/Ship.xml")
 
-        faceCull {
+        cullFace {
             enable()
             cullFace = back
             frontFace = cw
