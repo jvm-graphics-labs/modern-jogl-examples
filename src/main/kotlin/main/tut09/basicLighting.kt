@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
     BasicLighting_().setup("Tutorial 09 - Basic Lighting")
 }
 
-class BasicLighting_() : Framework() {
+class BasicLighting_ : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

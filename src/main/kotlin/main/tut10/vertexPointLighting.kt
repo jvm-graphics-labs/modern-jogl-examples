@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
     VertexPointLighting_().setup("Tutorial 10 - Vertex Point Lighting")
 }
 
-class VertexPointLighting_() : Framework() {
+class VertexPointLighting_ : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

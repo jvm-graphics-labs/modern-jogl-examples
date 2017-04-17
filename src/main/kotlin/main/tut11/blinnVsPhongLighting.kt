@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL3
 import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import glNext.*
-import glNext.tut11.BlinnVsPhongLighting_
 import glm.f
 import glm.glm
 import glm.mat.Mat4
@@ -16,9 +15,10 @@ import glm.vec._4.Vec4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
+import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
+import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnOnly
+import main.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
+import main.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.glm.MatrixStack
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     BlinnVsPhongLighting_().setup("Tutorial 11 - Blinn vs Phong Lighting")
 }
 
-class BlinnVsPhongLighting_() : Framework() {
+class BlinnVsPhongLighting_ : Framework() {
 
     lateinit var programs: Array<ProgramPairs>
 

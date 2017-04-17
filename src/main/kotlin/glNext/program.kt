@@ -60,6 +60,9 @@ object ProgramA {
     val String.location: Int
         get() = gl.glGetUniformLocation(name, this)
 
+    var Int.int: Int
+        get() = 0
+        set(value) = gl.glUniform1i(this, value)
     var Int.float: Float
         get() = 0f
         set(value) = gl.glUniform1f(this, value)
@@ -93,6 +96,8 @@ object ProgramB {
 
     val String.location
         get() = gl.glGetUniformLocation(name, this)
+    val String.blockIndex
+        get() = gl.glGetUniformBlockIndex(name, this)
 
     inline fun use(block: ProgramA.(GL3) -> Unit) {
         ProgramA.gl = gl
@@ -100,6 +105,8 @@ object ProgramB {
         ProgramA.block(gl)
         gl.glUseProgram(0)
     }
+
+    infix fun Int.blockBinding(uniformBlockBinding: Int) = gl.glUniformBlockBinding(name, this, uniformBlockBinding)
 }
 
 

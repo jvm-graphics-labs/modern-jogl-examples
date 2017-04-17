@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
     QuaternionYPR_().setup("Tutorial 08 - Quaternion YPR")
 }
 
-class QuaternionYPR_() : Framework() {
+class QuaternionYPR_ : Framework() {
 
     class GimbalAngles(
             var angleX: Float = 0f,

@@ -53,11 +53,6 @@ fun GL3.glClearBufferf(buffer: Int, r: Number, g: Number, b: Number, a: Number) 
 fun GL3.glViewport(width: Int, height: Int) = glViewport(0, 0, width, height)
 
 
-infix fun Int.bind(buffer: IntBuffer): BufferA {
-
-    return BufferA
-}
-
 
 inline fun GL3.clear(block: Clear.() -> Unit) {
     Clear.gl = this

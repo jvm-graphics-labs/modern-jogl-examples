@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     ScaleAndLighting_Next().setup("Tutorial 09 - Scale and Lighting")
 }
 
-class ScaleAndLighting_Next() : Framework() {
+class ScaleAndLighting_Next : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

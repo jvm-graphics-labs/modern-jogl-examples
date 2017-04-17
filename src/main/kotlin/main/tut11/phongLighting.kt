@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
     PhongLighting_().setup("Tutorial 11 - Fragment Attenuation")
 }
 
-class PhongLighting_() : Framework() {
+class PhongLighting_ : Framework() {
 
     lateinit var whiteNoPhong: ProgramData
     lateinit var colorNoPhong: ProgramData

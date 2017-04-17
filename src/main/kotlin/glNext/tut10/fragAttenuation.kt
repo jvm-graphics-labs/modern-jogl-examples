@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     FragmentAttenuation_Next().setup("Tutorial 10 - Fragment Attenuation")
 }
 
-class FragmentAttenuation_Next() : Framework() {
+class FragmentAttenuation_Next : Framework() {
 
     lateinit var fragWhiteDiffuseColor: ProgramData
     lateinit var fragVertexDiffuseColor: ProgramData

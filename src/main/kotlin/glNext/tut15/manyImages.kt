@@ -1,15 +1,12 @@
-package main.tut15
+package glNext.tut15
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.util.texture.spi.DDSImage
 import glNext.*
 import glm.*
-import glm.mat.Mat4
-import glm.vec._3.Vec3
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
@@ -19,16 +16,18 @@ import uno.glsl.programOf
 import uno.time.Timer
 import java.io.File
 import java.nio.ByteBuffer
+import glm.mat.Mat4
+import glm.vec._3.Vec3
 
 /**
  * Created by GBarbieri on 31.03.2017.
  */
 
 fun main(args: Array<String>) {
-    ManyImages_().setup("Tutorial 15 - Many Images")
+    ManyImages_Next().setup("Tutorial 15 - Many Images")
 }
 
-class ManyImages_ : Framework() {
+class ManyImages_Next : Framework() {
 
     lateinit var program: ProgramData
 
@@ -58,27 +57,30 @@ class ManyImages_ : Framework() {
         plane = Mesh(gl, javaClass, "tut15/BigPlane.xml")
         corridor = Mesh(gl, javaClass, "tut15/Corridor.xml")
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        cullFace {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
         val depthZNear = 0f
         val depthZFar = 1f
 
-        glEnable(GL_DEPTH_TEST)
-        glDepthMask(true)
-        glDepthFunc(GL_LEQUAL)
-        glDepthRangef(depthZNear, depthZFar)
-        glEnable(GL_DEPTH_CLAMP)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            rangef = depthZNear..depthZFar
+            clamp = true
+        }
 
         //Setup our Uniform Buffers
-        glGenBuffer(projBufferName)
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
+        initUniformBuffer(projBufferName) {
 
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName, 0, Mat4.SIZE)
+            data(Mat4.SIZE, GL_DYNAMIC_DRAW)
 
-        glBindBuffer(GL_UNIFORM_BUFFER)
+            range(Semantic.Uniform.PROJECTION, 0, Mat4.SIZE)
+        }
 
         // Generate all the texture names
         glGenTextures(textureName)
@@ -98,47 +100,40 @@ class ManyImages_ : Framework() {
 
         val ddsImage = DDSImage.read(file)
 
-        glBindTexture(GL_TEXTURE_2D, textureName[Texture.Checker])
+        withTexture2d(textureName[Texture.Checker]) {
 
-        repeat(ddsImage.numMipMaps) { mipmapLevel ->
+            repeat(ddsImage.numMipMaps) { mipmapLevel ->
 
-            val mipmap = ddsImage.getMipMap(mipmapLevel)
+                val mipmap = ddsImage.getMipMap(mipmapLevel)
 
-            glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RGB8, mipmap.width, mipmap.height, 0,
-                    GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
+                image(mipmapLevel, GL_RGB8, mipmap.width, mipmap.height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
+            }
+            levels = 0 until ddsImage.numMipMaps
         }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, ddsImage.numMipMaps - 1)
-        glBindTexture(GL_TEXTURE_2D)
     }
 
     fun loadMipmapTexture(gl: GL3) = with(gl) {
 
-        glBindTexture(GL_TEXTURE_2D, textureName[Texture.MipmapTest])
+        withTexture2d(textureName[Texture.MipmapTest]) {
 
-        val oldAlign =  glGetInteger(GL_UNPACK_ALIGNMENT)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+            val oldAlign = glGetInteger(GL_UNPACK_ALIGNMENT)
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
-        for (mipmapLevel in 0..7) {
+            for (mipmapLevel in 0..7) {
 
-            val width = 128 shr mipmapLevel
-            val height = 128 shr mipmapLevel
+                val width = 128 shr mipmapLevel
+                val height = 128 shr mipmapLevel
 
-            val currColor = mipmapColors[mipmapLevel]
-            val buffer = fillWithColors(currColor, width, height)
+                val currColor = mipmapColors[mipmapLevel]
+                val buffer = fillWithColors(currColor, width, height)
 
-            glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer)
+                image(mipmapLevel, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer)
 
-            buffer.destroy()
+                buffer.destroy()
+            }
+            glPixelStorei(GL_UNPACK_ALIGNMENT, oldAlign)
+            levels = 0..7
         }
-
-        glPixelStorei(GL_UNPACK_ALIGNMENT, oldAlign)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 7)
-
-        glBindTexture(GL_TEXTURE_2D)
     }
 
     val mipmapColors = arrayOf(
@@ -170,45 +165,52 @@ class ManyImages_ : Framework() {
 
     fun createSamplers(gl: GL3) = with(gl) {
 
-        glGenSamplers(Sampler.MAX, samplerName)
+        initSamplers(samplerName) {
 
-        repeat(Sampler.MAX) {
+            for (i in 0 until Sampler.MAX)
+                at(i) {
+                    wrapS = repeat
+                    wrapT = repeat
+                }
+            at(Sampler.Nearest) {
+                magFilter = nearest
+                minFilter = nearest
+            }
+            at(Sampler.Linear) {
+                magFilter = linear
+                minFilter = linear
+            }
+            at(Sampler.Linear_MipMap_Nearest) {
+                magFilter = linear_mmNearest
+                minFilter = linear_mmNearest
+            }
+            at(Sampler.Linear_MipMap_Linear) {
+                magFilter = linear_mmLinear
+                minFilter = linear_mmLinear
+            }
+            at(Sampler.LowAnisotropy) {
+                magFilter = linear
+                minFilter = linear_mmLinear
+                maxAnisotropy = 4.0f
+            }
 
-            glSamplerParameteri(samplerName[it], GL_TEXTURE_WRAP_S, GL_REPEAT)
-            glSamplerParameteri(samplerName[it], GL_TEXTURE_WRAP_T, GL_REPEAT)
+            val maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT // TODO float?
+            println("Maximum anisotropy: " + maxAniso)
+
+            at(Sampler.MaxAnisotropy) {
+                magFilter = linear
+                minFilter = linear_mmLinear
+                maxAnisotropy = maxAniso.f
+            }
         }
-
-        glSamplerParameteri(samplerName[Sampler.Nearest], GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glSamplerParameteri(samplerName[Sampler.Nearest], GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-
-        glSamplerParameteri(samplerName[Sampler.Linear], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.Linear], GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-
-        glSamplerParameteri(samplerName[Sampler.Linear_MipMap_Nearest], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.Linear_MipMap_Nearest], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST)
-
-        glSamplerParameteri(samplerName[Sampler.Linear_MipMap_Linear], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.Linear_MipMap_Linear], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-
-        glSamplerParameteri(samplerName[Sampler.LowAnysotropic], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.LowAnysotropic], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glSamplerParameterf(samplerName[Sampler.LowAnysotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f)
-
-
-        val maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT
-
-        println("Maximum anisotropy: " + maxAniso)
-
-        glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glSamplerParameteri(samplerName[Sampler.MaxAnysotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
-        glClearBufferf(GL_DEPTH)
-
+        clear {
+            color(0.75f, 0.75f, 1.0f, 1.0f)
+            depth()
+        }
 
         camTimer.update()
 
@@ -225,23 +227,19 @@ class ManyImages_ : Framework() {
 
         modelMatrix.applyMatrix(worldToCamMat) run {
 
-            glUseProgram(program.theProgram)
+            usingProgram(program.theProgram) {
 
-            glUniformMatrix4f(program.modelToCameraMatrixUL, top())
+                program.modelToCameraMatrixUL.mat4 = top()
 
-            glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
-            glBindTexture(GL_TEXTURE_2D, textureName[if (useMipmapTexture) Texture.MipmapTest else Texture.Checker])
-            glBindSampler(Semantic.Sampler.DIFFUSE, samplerName[currSampler])
+                val texture = textureName[if (useMipmapTexture) Texture.MipmapTest else Texture.Checker]
+                withTexture2d(Semantic.Sampler.DIFFUSE, texture, samplerName[currSampler]) {
 
-            if (drawCorridor)
-                corridor.render(gl, "tex")
-            else
-                plane.render(gl, "tex")
-
-            glBindSampler(Semantic.Sampler.DIFFUSE)
-            glBindTexture(GL_TEXTURE_2D)
-
-            glUseProgram()
+                    if (drawCorridor)
+                        corridor.render(gl, "tex")
+                    else
+                        plane.render(gl, "tex")
+                }
+            }
         }
     }
 
@@ -250,9 +248,7 @@ class ManyImages_ : Framework() {
         val persMatrix = MatrixStack()
         persMatrix.perspective(90f, w / h.f, 1f, 1000f)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
-        glBufferSubData(GL_UNIFORM_BUFFER, persMatrix.top())
-        glBindBuffer(GL_UNIFORM_BUFFER)
+        withUniformBuffer(projBufferName) { subData(persMatrix.top()) }
 
         glViewport(w, h)
     }
@@ -284,7 +280,7 @@ class ManyImages_ : Framework() {
             KeyEvent.VK_P -> camTimer.togglePause()
         }
 
-        if (ke.keyCode in KeyEvent.VK_1 .. KeyEvent.VK_9) {
+        if (ke.keyCode in KeyEvent.VK_1..KeyEvent.VK_9) {
             val number = ke.keyCode - KeyEvent.VK_1
             if (number < Sampler.MAX) {
                 println("Sampler: " + samplerNames[number])
@@ -298,8 +294,8 @@ class ManyImages_ : Framework() {
         val Linear = 1
         val Linear_MipMap_Nearest = 2
         val Linear_MipMap_Linear = 3
-        val LowAnysotropic = 4
-        val MaxAnysotropic = 5
+        val LowAnisotropy = 4
+        val MaxAnisotropy = 5
         val MAX = 6
     }
 

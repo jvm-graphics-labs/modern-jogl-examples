@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
     BasicTexture_().setup("Tutorial 14 - Basic Texture")
 }
 
-class BasicTexture_() : Framework() {
+class BasicTexture_ : Framework() {
 
     lateinit var litShaderProg: ProgramData
     lateinit var litTextureProg: ProgramData

@@ -6,7 +6,6 @@ import com.jogamp.opengl.GL2ES3.GL_COLOR
 import com.jogamp.opengl.GL2ES3.GL_DEPTH
 import com.jogamp.opengl.GL3
 import glNext.*
-import glNext.tut08.QuaternionYPR_
 import glm.*
 import glm.mat.Mat4
 import glm.quat.Quat
@@ -24,7 +23,7 @@ fun main(args: Array<String>) {
     QuaternionYPR_().setup("Tutorial 08 - Quaternion YPR")
 }
 
-class QuaternionYPR_() : Framework() {
+class QuaternionYPR_ : Framework() {
 
     class GimbalAngles(
             var angleX: Float = 0f,

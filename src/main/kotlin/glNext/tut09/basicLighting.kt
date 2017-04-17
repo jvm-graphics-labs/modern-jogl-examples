@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     BasicLighting_Next().setup("Tutorial 09 - Basic Lighting")
 }
 
-class BasicLighting_Next() : Framework() {
+class BasicLighting_Next : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

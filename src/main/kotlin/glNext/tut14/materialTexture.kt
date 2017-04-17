@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     MaterialTexture_Next().setup("Tutorial 14 - Material Texture")
 }
 
-class MaterialTexture_Next() : Framework() {
+class MaterialTexture_Next : Framework() {
 
     lateinit var programs: Array<ProgramData>
     lateinit var unlit: UnlitProgData
@@ -130,11 +130,11 @@ class MaterialTexture_Next() : Framework() {
 
             name = bufferName[Buffer.PROJECTION]
             data(Mat4.SIZE, GL_DYNAMIC_DRAW)
-        }
+            range(Semantic.Uniform.PROJECTION, 0, Mat4.SIZE)
 
-        //Bind the static buffers.
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, bufferName[Buffer.PROJECTION], 0, Mat4.SIZE.L)
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL, bufferName[Buffer.MATERIAL], 0, MaterialBlock.SIZE.L)
+            name = bufferName[Buffer.MATERIAL]
+            range(Semantic.Uniform.MATERIAL, 0, MaterialBlock.SIZE)
+        }
 
         glBindBuffer(GL_UNIFORM_BUFFER)
 
@@ -177,11 +177,12 @@ class MaterialTexture_Next() : Framework() {
             val cosAngleResolution = calcCosAngleResolution(it)
             createGaussianTexture(gl, it, cosAngleResolution, 128)
         }
-        glGenSampler(samplerName)
-        glSamplerParameteri(samplerName, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glSamplerParameteri(samplerName, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glSamplerParameteri(samplerName, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glSamplerParameteri(samplerName, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        initSampler(samplerName) {
+            magFilter = nearest
+            minFilter = nearest
+            wrapS = clampToEdge
+            wrapT = clampToEdge
+        }
     }
 
     fun calcCosAngleResolution(level: Int): Int {
@@ -193,12 +194,10 @@ class MaterialTexture_Next() : Framework() {
 
         val textureData = buildGaussianData(cosAngleResolution, shininessResolution)
 
-        glBindTexture(GL_TEXTURE_1D, textureName[index])
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_R8, cosAngleResolution, 0, GL_RED, GL_UNSIGNED_BYTE, textureData)
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0)
-        glBindTexture(GL_TEXTURE_1D)
-
+        withTexture1d(textureName[index]) {
+            image(GL_R8, cosAngleResolution, GL_RED, GL_UNSIGNED_BYTE, textureData)
+            levels = 0..0
+        }
         textureData.destroy()
     }
 
@@ -230,22 +229,20 @@ class MaterialTexture_Next() : Framework() {
 
         val image = DDSImage.read(file)
 
-        glBindTexture(GL_TEXTURE_2D, textureName[Texture.SHINE])
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, image.width, image.height, 0, GL_RED, GL_UNSIGNED_BYTE, image.getMipMap(0).data)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0)
-
-        glBindTexture(GL_TEXTURE_2D)
+        withTexture2d(textureName[Texture.SHINE]) {
+            image(GL_R8, image.width, image.height, GL_RED, GL_UNSIGNED_BYTE, image.getMipMap(0).data)
+            levels = 0..0
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
         lightTimer.update()
 
-        glClearBufferf(GL_COLOR, 0.75f, 0.75f, 1.0f, 1.0f)
-        glClearBufferf(GL_DEPTH)
+        clear {
+            color(0.75f, 0.75f, 1.0f, 1.0f)
+            depth()
+        }
 
         val modelMatrix = MatrixStack(viewPole.calcMatrix())
         val worldToCamMat = modelMatrix.top()
@@ -263,9 +260,7 @@ class MaterialTexture_Next() : Framework() {
         lightData.lights[1].cameraSpaceLightPos = worldToCamMat * calcLightPosition()
         lightData.lights[1].lightIntensity = Vec4(0.4f, 0.4f, 0.4f, 1.0f)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.LIGHT])
-        glBufferSubData(GL_UNIFORM_BUFFER, lightData.toBuffer())
-        glBindBuffer(GL_UNIFORM_BUFFER)
+        withUniformBuffer(bufferName[Buffer.LIGHT]) { subData(lightData.toBuffer()) }
 
         run {
 
@@ -284,28 +279,22 @@ class MaterialTexture_Next() : Framework() {
 
                 val prog = programs[mode]
 
-                glUseProgram(prog.theProgram)
-                glUniformMatrix4f(prog.modelToCameraMatrixUnif, top())
-                glUniformMatrix3f(prog.normalModelToCameraMatrixUnif, normMatrix)
+                usingProgram(prog.theProgram) {
 
-                glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.GAUSSIAN_TEXTURE)
-                glBindTexture(GL_TEXTURE_2D, textureName[currTexture])
-                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE, samplerName)
+                    prog.modelToCameraMatrixUnif.mat4 = top()
+                    prog.normalModelToCameraMatrixUnif.mat3 = normMatrix
 
-                glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.SHININESS_TEXTURE)
-                glBindTexture(GL_TEXTURE_2D, textureName[Texture.SHINE])
-                glBindSampler(Semantic.Sampler.SHININESS_TEXTURE, samplerName)
+                    withTexture2d(Semantic.Sampler.GAUSSIAN_TEXTURE, textureName[currTexture], samplerName) {
 
-                if (mode != ShaderMode.FIXED)
-                    mesh.render(gl, "lit-tex")
-                else
-                    mesh.render(gl, "lit")
+                        withTexture2d(Semantic.Sampler.SHININESS_TEXTURE, textureName[Texture.SHINE], samplerName) {
 
-                glBindSampler(Semantic.Sampler.GAUSSIAN_TEXTURE)
-                glBindSampler(Semantic.Sampler.SHININESS_TEXTURE)
-                glBindTexture(GL_TEXTURE_2D)
-
-                glUseProgram()
+                            if (mode != ShaderMode.FIXED)
+                                mesh.render(gl, "lit-tex")
+                            else
+                                mesh.render(gl, "lit")
+                        }
+                    }
+                }
                 glBindBufferBase(GL_UNIFORM_BUFFER, Semantic.Uniform.MATERIAL)
             }
         }
@@ -317,21 +306,21 @@ class MaterialTexture_Next() : Framework() {
                 translate(calcLightPosition())
                 scale(0.25f)
 
-                glUseProgram(unlit.theProgram)
-                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
+                usingProgram(unlit.theProgram) {
 
-                val lightColor = Vec4(1.0f)
-                glUniform4f(unlit.objectColorUnif, lightColor)
-                cube.render(gl, "flat")
+                    unlit.modelToCameraMatrixUnif.mat4 = top()
 
-                reset()
-                translate(globalLightDirection * 100.0f)
-                scale(5.0f)
+                    val lightColor = Vec4(1.0f)
+                    unlit.objectColorUnif.vec4 = lightColor
+                    cube.render(gl, "flat")
 
-                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
-                cube.render(gl, "flat")
+                    reset()
+                    translate(globalLightDirection * 100.0f)
+                    scale(5.0f)
 
-                glUseProgram(0)
+                    unlit.modelToCameraMatrixUnif.mat4 = top()
+                    cube.render(gl, "flat")
+                }
             }
 
         if (drawCameraPos)
@@ -342,17 +331,22 @@ class MaterialTexture_Next() : Framework() {
                 translate(Vec3(0.0f, 0.0f, -viewPole.getView().radius))
                 scale(0.25f)
 
-                glDisable(GL_DEPTH_TEST)
-                glDepthMask(false)
-                glUseProgram(unlit.theProgram)
-                glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
-                glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f)
-                cube.render(gl, "flat")
+                depth {
+                    test = false
+                    mask = false
+                }
+                usingProgram(unlit.theProgram) {
+                    unlit.modelToCameraMatrixUnif.mat4 = top()
+                    glUniform4f(unlit.objectColorUnif, 0.25f, 0.25f, 0.25f, 1.0f)
+                    cube.render(gl, "flat")
 
-                glDepthMask(true)
-                glEnable(GL_DEPTH_TEST)
-                glUniform4f(unlit.objectColorUnif, 1.0f)
-                cube.render(gl, "flat")
+                    depth {
+                        mask = true
+                        test = true
+                    }
+                    glUniform4f(unlit.objectColorUnif, 1.0f)
+                    cube.render(gl, "flat")
+                }
             }
     }
 
@@ -377,9 +371,7 @@ class MaterialTexture_Next() : Framework() {
 
         val proj = perspMatrix.perspective(45.0f, w.f / h, zNear, zFar).top()
 
-        glBindBuffer(GL_UNIFORM_BUFFER, bufferName[Buffer.PROJECTION])
-        glBufferSubData(GL_UNIFORM_BUFFER, proj)
-        glBindBuffer(GL_UNIFORM_BUFFER)
+        withUniformBuffer(bufferName[Buffer.PROJECTION]) { subData(proj) }
 
         glViewport(w, h)
     }

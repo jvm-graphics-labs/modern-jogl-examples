@@ -1,4 +1,4 @@
-package main.tut14
+package glNext.tut14
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES3.GL_COLOR
@@ -16,10 +16,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    PerspectiveInterpolation_().setup("Tutorial 14 - Perspective Interpolation")
+    PerspectiveInterpolation_Next().setup("Tutorial 14 - Perspective Interpolation")
 }
 
-class PerspectiveInterpolation_ : Framework() {
+class PerspectiveInterpolation_Next : Framework() {
 
     lateinit var smoothInterp: ProgramData
     lateinit var linearInterp: ProgramData
@@ -48,17 +48,19 @@ class PerspectiveInterpolation_ : Framework() {
         val persMatrix = MatrixStack()
         persMatrix.perspective(60.0f, 1.0f, zNear, zFar)
 
-        glUseProgram(smoothInterp.theProgram)
-        glUniformMatrix4f(smoothInterp.cameraToClipMatrixUnif, persMatrix.top())
-        glUseProgram(linearInterp.theProgram)
-        glUniformMatrix4f(linearInterp.cameraToClipMatrixUnif, persMatrix.top())
-        glUseProgram()
+        usingProgram(smoothInterp.theProgram) {
+            smoothInterp.cameraToClipMatrixUnif.mat4 = persMatrix.top()
+            name = linearInterp.theProgram
+            linearInterp.cameraToClipMatrixUnif.mat4 = persMatrix.top()
+        }
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, 0.0f)
-        glClearBufferf(GL_DEPTH)
+        clear {
+            color(0)
+            depth()
+        }
 
         if (useSmoothInterpolation)
             glUseProgram(smoothInterp.theProgram)

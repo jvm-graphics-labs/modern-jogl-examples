@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
     GaussianSpecularLighting_Next().setup("Tutorial 11 - Gaussian Specular Lighting")
 }
 
-class GaussianSpecularLighting_Next() : Framework() {
+class GaussianSpecularLighting_Next : Framework() {
 
     lateinit var programs: Array<ProgramPairs>
     lateinit var unlit: UnlitProgData

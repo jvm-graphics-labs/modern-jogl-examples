@@ -15,10 +15,10 @@ import uno.glsl.programOf
  */
 
 fun main(args: Array<String>) {
-    FragChangeColor_().setup("Tutorial 03 - Frag Change Color")
+    FragChangeColor_Next().setup("Tutorial 03 - Frag Change Color")
 }
 
-class FragChangeColor_ : Framework() {
+class FragChangeColor_Next : Framework() {
 
     var theProgram = 0
     var elapsedTimeUniform = 0

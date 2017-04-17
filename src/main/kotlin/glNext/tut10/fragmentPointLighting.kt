@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
     FragmentPointLighting_Next().setup("Tutorial 10 - Fragment Point Lighting")
 }
 
-class FragmentPointLighting_Next() : Framework() {
+class FragmentPointLighting_Next : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

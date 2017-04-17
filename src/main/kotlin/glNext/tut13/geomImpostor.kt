@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
     GeomImpostor_Next().setup("Tutorial 13 - Geometry Impostor")
 }
 
-class GeomImpostor_Next() : Framework() {
+class GeomImpostor_Next : Framework() {
 
     lateinit var litMeshProg: ProgramMeshData
     lateinit var litImpProg: ProgramImposData

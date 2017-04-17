@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     GaussianSpecularLighting_().setup("Tutorial 11 - Gaussian Specular Lighting")
 }
 
-class GaussianSpecularLighting_() : Framework() {
+class GaussianSpecularLighting_ : Framework() {
 
     lateinit var programs: Array<ProgramPairs>
     lateinit var unlit: UnlitProgData

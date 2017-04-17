@@ -24,7 +24,9 @@ fun GL3.glBindSampler(unit: Int) = glBindSampler(unit, 0)
 
 fun GL3.initSampler(sampler: IntBuffer, block: Sampler.() -> Unit) {
     glGenSamplers(1, sampler)
-
+    Sampler.gl = this
+    Sampler.name = sampler[0]
+    Sampler.block()
 }
 
 object Sampler {
@@ -54,6 +56,11 @@ object Sampler {
             gl.glSamplerParameteri(name, GL2ES3.GL_TEXTURE_MIN_FILTER, value.i)
             field = value
         }
+    var maxAnisotropy = 1.0f
+        set(value) {
+            gl.glSamplerParameterf(name, GL2ES3.GL_TEXTURE_MAX_ANISOTROPY_EXT, value)
+            field = value
+        }
     var wrapS = repeat
         set(value) {
             gl.glSamplerParameteri(name, GL.GL_TEXTURE_WRAP_S, value.i)
@@ -71,5 +78,23 @@ object Sampler {
     }
 
     enum class Wrap(val i: Int) {clampToEdge(GL.GL_CLAMP_TO_EDGE), mirroredRepeat(GL.GL_MIRRORED_REPEAT), repeat(GL.GL_REPEAT) }
+}
 
+fun GL3.initSamplers(samplers: IntBuffer, block: Samplers.() -> Unit) {
+    glGenSamplers(samplers.capacity(), samplers)
+    Samplers.gl = this
+    Samplers.names = samplers
+    Samplers.block()
+}
+
+object Samplers {
+
+    lateinit var gl: GL3
+    lateinit var names: IntBuffer
+
+    fun at(index: Int, block: Sampler.() -> Unit) {
+        Sampler.gl = gl
+        Sampler.name = names[index] // bind
+        Sampler.block()
+    }
 }

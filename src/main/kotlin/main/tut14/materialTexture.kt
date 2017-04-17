@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     MaterialTexture_().setup("Tutorial 14 - Material Texture")
 }
 
-class MaterialTexture_() : Framework() {
+class MaterialTexture_ : Framework() {
 
     lateinit var programs: Array<ProgramData>
     lateinit var unlit: UnlitProgData
@@ -326,7 +326,7 @@ class MaterialTexture_() : Framework() {
                 glUniformMatrix4f(unlit.modelToCameraMatrixUnif, top())
                 cube.render(gl, "flat")
 
-                glUseProgram(0)
+                glUseProgram()
             }
 
         if (drawCameraPos)

@@ -14,9 +14,9 @@ import glm.mat.Mat4
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.BlinnSpecular
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongOnly
-import glNext.tut11.BlinnVsPhongLighting_.LightingModel.PhongSpecular
+import glNext.tut11.BlinnVsPhongLighting_Next.LightingModel.BlinnSpecular
+import glNext.tut11.BlinnVsPhongLighting_Next.LightingModel.PhongOnly
+import glNext.tut11.BlinnVsPhongLighting_Next.LightingModel.PhongSpecular
 import uno.buffer.destroy
 import uno.buffer.intBufferBig
 import uno.glm.MatrixStack
@@ -29,10 +29,10 @@ import uno.time.Timer
  */
 
 fun main(args: Array<String>) {
-    BlinnVsPhongLighting_().setup("Tutorial 11 - Blinn vs Phong Lighting")
+    BlinnVsPhongLighting_Next().setup("Tutorial 11 - Blinn vs Phong Lighting")
 }
 
-class BlinnVsPhongLighting_() : Framework() {
+class BlinnVsPhongLighting_Next : Framework() {
 
     lateinit var programs: Array<ProgramPairs>
 

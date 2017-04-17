@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
     BasicTexture_Next().setup("Tutorial 14 - Basic Texture")
 }
 
-class BasicTexture_Next() : Framework() {
+class BasicTexture_Next : Framework() {
 
     lateinit var litShaderProg: ProgramData
     lateinit var litTextureProg: ProgramData
@@ -170,9 +170,8 @@ class BasicTexture_Next() : Framework() {
         val textureData = buildGaussianData(cosAngleResolution)
 
         withTexture1d(gaussTextures[index]) {
-            image(0, GL_R8, cosAngleResolution, GL_RED, GL_UNSIGNED_BYTE, textureData)
-            baseLevel = 0
-            maxLevel = 0
+            image(GL_R8, cosAngleResolution, GL_RED, GL_UNSIGNED_BYTE, textureData)
+            levels = 0..0
         }
 
         textureData.destroy()

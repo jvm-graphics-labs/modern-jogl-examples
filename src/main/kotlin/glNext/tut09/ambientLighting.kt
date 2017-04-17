@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     AmbientLighting_Next().setup("Tutorial 09 - Ambient Lighting")
 }
 
-class AmbientLighting_Next() : Framework() {
+class AmbientLighting_Next : Framework() {
 
     lateinit var whiteDiffuseColor: ProgramData
     lateinit var vertexDiffuseColor: ProgramData

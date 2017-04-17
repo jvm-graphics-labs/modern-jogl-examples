@@ -1,38 +1,35 @@
-package main.tut16
+package glNext.tut16
 
 import com.jogamp.newt.event.KeyEvent
 import com.jogamp.opengl.GL2ES3.*
 import com.jogamp.opengl.GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV
 import com.jogamp.opengl.GL3
-import com.jogamp.opengl.GL3.GL_DEPTH_CLAMP
 import com.jogamp.opengl.util.texture.spi.DDSImage
 import glNext.*
-import glm.L
 import glm.f
-import glm.mat.Mat4
-import glm.vec._3.Vec3
+import glm.glm
+import glm.rad
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
+import uno.buffer.destroyBuffers
 import uno.buffer.intBufferBig
-import uno.buffer.put
 import uno.glm.MatrixStack
+import uno.glsl.programOf
 import uno.time.Timer
 import java.io.File
-import glm.glm
-import glm.rad
-import uno.buffer.destroyBuffers
-import uno.glsl.programOf
+import glm.vec._3.Vec3
+import glm.mat.Mat4
 
 /**
  * Created by GBarbieri on 31.03.2017.
  */
 
 fun main(args: Array<String>) {
-    GammaCheckers_().setup("Tutorial 16 - Gamma Checkers")
+    GammaCheckers_Next().setup("Tutorial 16 - Gamma Checkers")
 }
 
-class GammaCheckers_ : Framework() {
+class GammaCheckers_Next : Framework() {
 
     lateinit var progNoGamma: ProgramData
     lateinit var progGamma: ProgramData
@@ -72,27 +69,30 @@ class GammaCheckers_ : Framework() {
         corridor = Mesh(gl, javaClass, "tut16/Corridor.xml")
         plane = Mesh(gl, javaClass, "tut16/BigPlane.xml")
 
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glFrontFace(GL_CW)
+        cullFace {
+            enable()
+            cullFace = back
+            frontFace = cw
+        }
 
         val depthZNear = 0f
         val depthZFar = 1f
 
-        glEnable(GL_DEPTH_TEST)
-        glDepthMask(true)
-        glDepthFunc(GL_LEQUAL)
-        glDepthRangef(depthZNear, depthZFar)
-        glEnable(GL_DEPTH_CLAMP)
+        depth {
+            test = true
+            mask = true
+            func = lEqual
+            rangef = depthZNear..depthZFar
+            clamp = true
+        }
 
         //Setup our Uniform Buffers
-        glGenBuffer(projBufferName)
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
-        glBufferData(GL_UNIFORM_BUFFER, Mat4.SIZE, GL_DYNAMIC_DRAW)
+        initUniformBuffer(projBufferName) {
 
-        glBindBufferRange(GL_UNIFORM_BUFFER, Semantic.Uniform.PROJECTION, projBufferName, 0, Mat4.SIZE)
+            data(Mat4.SIZE, GL_DYNAMIC_DRAW)
 
-        glBindBuffer(GL_UNIFORM_BUFFER)
+            range(Semantic.Uniform.PROJECTION, 0, Mat4.SIZE)
+        }
 
         loadCheckerTextures(gl)
         createSamplers(gl)
@@ -106,65 +106,67 @@ class GammaCheckers_ : Framework() {
 
     fun loadCheckerTextures(gl: GL3) = with(gl) {
 
-        glGenTextures(textureName)
+        initTextures2d(textureName) {
 
-        glBindTexture(GL_TEXTURE_2D, textureName[Texture.Linear])
+            at(Texture.Linear) {
 
-        var file = File(javaClass.getResource("/tut16/checker_linear.dds").toURI())
-        var ddsImage = DDSImage.read(file)
+                val file = File(javaClass.getResource("/tut16/checker_linear.dds").toURI())
+                val ddsImage = DDSImage.read(file)
 
-        repeat(ddsImage.numMipMaps) { mipmapLevel ->
+                repeat(ddsImage.numMipMaps) { mipmapLevel ->
 
-            val mipmap = ddsImage.getMipMap(mipmapLevel)
+                    val mipmap = ddsImage.getMipMap(mipmapLevel)
 
-            glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_SRGB8, mipmap.width, mipmap.height, 0, GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
+                    image(mipmapLevel, GL_SRGB8, mipmap.width, mipmap.height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
+                }
+                levels = 0 until ddsImage.numMipMaps
+            }
+            at(Texture.Gamma) {
+
+                val file = File(javaClass.getResource("/tut16/checker_gamma.dds").toURI())
+                val ddsImage = DDSImage.read(file)
+
+                repeat(ddsImage.numMipMaps) { mipmapLevel ->
+
+                    val mipmap = ddsImage.getMipMap(mipmapLevel)
+
+                    image(mipmapLevel, GL_SRGB8, mipmap.width, mipmap.height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
+                }
+                levels = 0 until ddsImage.numMipMaps
+            }
         }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, ddsImage.numMipMaps - 1)
-
-        glBindTexture(GL_TEXTURE_2D, textureName[Texture.Gamma])
-
-        file = File(javaClass.getResource("/tut16/checker_gamma.dds").toURI())
-        ddsImage = DDSImage.read(file)
-
-        repeat(ddsImage.numMipMaps) { mipmapLevel ->
-
-            val mipmap = ddsImage.getMipMap(mipmapLevel)
-
-            glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_SRGB8, mipmap.width, mipmap.height, 0, GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV, mipmap.data)
-        }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, ddsImage.numMipMaps - 1)
-
-        glBindTexture(GL_TEXTURE_2D)
     }
 
     fun createSamplers(gl: GL3) = with(gl) {
 
-        glGenSamplers(samplerName)
+        initSamplers(samplerName) {
 
-        repeat(Samplers.MAX) {
+            for (i in 0 until Samplers.MAX)
+                at(i) {
+                    wrapS = repeat
+                    wrapT = repeat
+                }
+            at(Samplers.LinearMipmapLinear) {
+                magFilter = linear
+                minFilter = linear_mmLinear
+            }
 
-            glSamplerParameteri(samplerName[it], GL_TEXTURE_WRAP_S, GL_REPEAT)
-            glSamplerParameteri(samplerName[it], GL_TEXTURE_WRAP_T, GL_REPEAT)
+            val maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT
+
+            at(Samplers.MaxAnisotropic) {
+                magFilter = linear
+                minFilter = linear_mmLinear
+                maxAnisotropy = maxAniso.f // TODO f
+            }
         }
-
-        glSamplerParameteri(samplerName[Samplers.LinearMipmapLinear], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Samplers.LinearMipmapLinear], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-
-        val maxAniso = caps.limits.MAX_TEXTURE_MAX_ANISOTROPY_EXT
-
-        glSamplerParameteri(samplerName[Samplers.MaxAnisotropic], GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glSamplerParameteri(samplerName[Samplers.MaxAnisotropic], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glSamplerParameteri(samplerName[Samplers.MaxAnisotropic], GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso)
     }
 
     override fun display(gl: GL3) = with(gl) {
 
-        glClearBufferf(GL_COLOR, .75f, .75f, 1f, 1f)
-        glClearBufferf(GL_DEPTH)
+        clear {
+            color(.75f, .75f, 1f, 1f)
+            depth()
+        }
 
         camTimer.update()
 
@@ -182,31 +184,26 @@ class GammaCheckers_ : Framework() {
 
         val prog = if (drawGammaProgram) progGamma else progNoGamma
 
-        glUseProgram(prog.theProgram)
-        glUniformMatrix4f(prog.modelToCameraMatrixUnif, modelMatrix.top())
+        usingProgram(prog.theProgram) {
 
-        glActiveTexture(GL_TEXTURE0 + Semantic.Sampler.DIFFUSE)
-        glBindTexture(GL_TEXTURE_2D, textureName[if (drawGammaTexture) Texture.Gamma else Texture.Linear])
-        glBindSampler(Semantic.Sampler.DIFFUSE, samplerName[currSampler])
+            prog.modelToCameraMatrixUnif.mat4 = modelMatrix.top()
 
-        if (drawCorridor)
-            corridor.render(gl, "tex")
-        else
-            plane.render(gl, "tex")
+            val texture = textureName[if (drawGammaTexture) Texture.Gamma else Texture.Linear]
+            withTexture2d(Semantic.Sampler.DIFFUSE, texture, samplerName[currSampler]) {
 
-        glBindSampler(Semantic.Sampler.DIFFUSE)
-        glBindTexture(GL_TEXTURE_2D)
-
-        glUseProgram()
+                if (drawCorridor)
+                    corridor.render(gl, "tex")
+                else
+                    plane.render(gl, "tex")
+            }
+        }
     }
 
     override fun reshape(gl: GL3, w: Int, h: Int) = with(gl) {
 
         val cameraToClipMatrix = glm.perspective(90f.rad, w / h.f, 1f, 1000f)
 
-        glBindBuffer(GL_UNIFORM_BUFFER, projBufferName)
-        glBufferSubData(GL_UNIFORM_BUFFER, cameraToClipMatrix)
-        glBindBuffer(GL_UNIFORM_BUFFER)
+        withUniformBuffer(projBufferName) { subData(cameraToClipMatrix) }
 
         glViewport(w, h)
     }

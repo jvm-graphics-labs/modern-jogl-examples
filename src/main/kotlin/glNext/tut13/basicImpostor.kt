@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     BasicImpostor_Next().setup("Tutorial 13 - Basic Impostor")
 }
 
-class BasicImpostor_Next() : Framework() {
+class BasicImpostor_Next : Framework() {
 
     lateinit var litMeshProg: ProgramMeshData
     lateinit var litImpProgs: Array<ProgramImposData>
