@@ -21,22 +21,31 @@ fun main(args: Array<String>) {
 
 class HelloTriangle_ : Framework() {
 
-    val strVertexShader =
-            "#version 330\n" +
-                    "#define POSITION 0\n" +
-                    "layout(location = POSITION) in vec4 position;\n" +
-                    "void main()\n" +
-                    "{\n" +
-                    "   gl_Position = position;\n" +
-                    "}\n"
+    val strVertexShader = """
+            #version 330
 
-    val strFragmentShader =
-            "#version 330\n" +
-                    "out vec4 outputColor;\n" +
-                    "void main()\n" +
-                    "{\n" +
-                    "   outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n" +
-                    "}\n"
+            #define POSITION 0
+
+            layout (location = POSITION) in vec4 position;
+
+            void main()
+            {
+                gl_Position = position;
+            }
+    """
+
+    val strFragmentShader = """
+        #version 330
+
+        #define FRAG_COLOR  0
+
+        layout (location = FRAG_COLOR) out vec4 outputColor;
+
+        void main()
+        {
+            outputColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    """
 
     val vertexPositions = floatBufferOf(
             +0.75f, +0.75f, 0.0f, 1.0f,

@@ -8,7 +8,9 @@ import com.jogamp.opengl.util.texture.spi.DDSImage
 import glNext.*
 import glm.f
 import glm.glm
+import glm.mat.Mat4
 import glm.rad
+import glm.vec._3.Vec3
 import main.framework.Framework
 import main.framework.Semantic
 import main.framework.component.Mesh
@@ -18,8 +20,6 @@ import uno.glm.MatrixStack
 import uno.glsl.programOf
 import uno.time.Timer
 import java.io.File
-import glm.vec._3.Vec3
-import glm.mat.Mat4
 
 /**
  * Created by GBarbieri on 31.03.2017.
