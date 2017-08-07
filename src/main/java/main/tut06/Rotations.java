@@ -297,7 +297,7 @@ public class Rotations extends Framework {
 
 
     private Instance[] instanceList = {
-            new Instance(NullRotation, new Vec3(0.0f, 0.0f, -25.0f)),
+            new Instance((elapsedTime) -> new Mat3(1f), new Vec3(0.0f, 0.0f, -25.0f)),
             new Instance(RotateX, new Vec3(-5.0f, -5.0f, -25.0f)),
             new Instance(RotateY, new Vec3(-5.0f, +5.0f, -25.0f)),
             new Instance(RotateZ, new Vec3(+5.0f, +5.0f, -25.0f)),
