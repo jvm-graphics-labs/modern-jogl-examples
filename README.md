@@ -1,7 +1,13 @@
-Note: at the moment there is ~~a gradle,~~ a general refreshing and kotlin implementation in progress, it'll be back to normal asap (the most tedious work is to complete chapter 12, it's quite long actually)
-
 modern-jogl-examples
 ====================
+
+This porting is free but needs your support to sustain its development. There are lots of desirable new features and maintenance to do. If you are an individual using dear imgui, please consider donating via Patreon or PayPal. If your company is using dear imgui, please consider financial support (e.g. sponsoring a few weeks/months of development)
+
+Monthly donations via Patreon:
+<br>[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](https://www.patreon.com/user?u=7285753)
+
+One-off donations via PayPal:
+<br>[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KBKVJBQ3NNH8E)
 
 <img src="./src/main/resources/screenshots/jogl.png" height="250px"> 
 
